@@ -1,0 +1,3 @@
+#!/bin/bash
+
+terraform apply -var-file $tc_loc/secrets/terraform_vars/orchestrator.tfvars

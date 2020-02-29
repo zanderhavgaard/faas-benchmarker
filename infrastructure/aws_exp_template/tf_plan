@@ -1,0 +1,3 @@
+#!/bin/bash
+
+terraform plan -var-file $tc_loc/secrets/terraform_vars/aws_exp.tfvars
