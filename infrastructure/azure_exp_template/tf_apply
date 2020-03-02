@@ -1,0 +1,12 @@
+#!/bin/bash
+
+terraform apply -var-file $tc_loc/secrets/terraform_vars/azure_exp.tfvars -auto-approve
+
+echo -e "\nDone running terraform apply ..."
+
+# regex ip address
+[[ $(grep public_ip terraform.tfstate) =~ ([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+) ]]
+ip=${BASH_REMATCH[1]}
+
+echo -e "New linux azure server is running at $ip"
+echo -e "ssh ubuntu@$ip -i <key-path>"

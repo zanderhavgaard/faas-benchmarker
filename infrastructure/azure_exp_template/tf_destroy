@@ -1,0 +1,3 @@
+#!/bin/bash
+
+terraform destroy -var-file $tc_loc/secrets/terraform_vars/azure_exp.tfvars -auto-approve
