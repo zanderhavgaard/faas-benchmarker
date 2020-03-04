@@ -136,3 +136,8 @@ resource "null_resource" "linux-provisioners" {
     ]
   }
 }
+
+# output ip address
+output "ip_addess" {
+  value = azurerm_linux_virtual_machine.azure-experiment-worker.public_ip_address
+}

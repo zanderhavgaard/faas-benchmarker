@@ -27,7 +27,7 @@ resource "aws_instance" "experiment-worker-aws" {
   security_groups = [aws_security_group.allow-ssh.id]
 }
 
-# HACK to run provisioners over SSH after instance 
+# HACK to run provisioners over SSH after instance
 # has been created and recieved a public ip address
 resource "null_resource" "ec2-provisioners" {
   # run the provisioners after the instance has been created
@@ -47,7 +47,7 @@ resource "null_resource" "ec2-provisioners" {
   }
 
   # copy local files to remote server
-  # useage: https://www.terraform.io/docs/provisioners/file.html 
+  # useage: https://www.terraform.io/docs/provisioners/file.html
   # provisioner "file" {
     # source = "../../benchmark"
     # destination = "/home/ubuntu"
@@ -139,4 +139,9 @@ resource "aws_security_group" "allow-ssh" {
     protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+# print ip address
+output "ip_address" {
+  value = aws_eip.experiment-worker-eip.public_ip
 }
