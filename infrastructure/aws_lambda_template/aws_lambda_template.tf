@@ -68,14 +68,14 @@ resource "aws_api_gateway_rest_api" "hw-api" {
 resource "aws_api_gateway_resource" "hw-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.hw-api.id
   parent_id = aws_api_gateway_rest_api.hw-api.root_resource_id
-  path_part = "{proxy+}"
+  path_part = "hello"
 }
 
 # create API endpoint method
 resource "aws_api_gateway_method" "hw-lambda-method" {
   rest_api_id = aws_api_gateway_rest_api.hw-api.id
   resource_id = aws_api_gateway_resource.hw-api-resource.id
-  http_method = "ANY"
+  http_method = "GET"
   authorization = "None" # TODO add auth
   api_key_required = true
 }
@@ -90,36 +90,10 @@ resource "aws_api_gateway_integration" "hw-api-integration" {
   uri                     = aws_lambda_function.hw-python.invoke_arn
 }
 
-
-
-
-# root
-resource "aws_api_gateway_method" "proxy_root" {
-  rest_api_id   = aws_api_gateway_rest_api.hw-api.id
-  resource_id   = aws_api_gateway_rest_api.hw-api.root_resource_id
-  http_method   = "ANY"
-  authorization = "NONE"
-  api_key_required = true
-}
-resource "aws_api_gateway_integration" "lambda_root" {
-  rest_api_id = aws_api_gateway_rest_api.hw-api.id
-  resource_id = aws_api_gateway_method.proxy_root.resource_id
-  http_method = aws_api_gateway_method.proxy_root.http_method
-  integration_http_method = "POST"
-  type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.hw-python.invoke_arn
-}
-# end root
-
-
-
-
-
 # add a deployment of the api
 resource "aws_api_gateway_deployment" "hw-prod" {
   depends_on = [
     aws_api_gateway_integration.hw-api-integration,
-    aws_api_gateway_integration.lambda_root
   ]
   rest_api_id = aws_api_gateway_rest_api.hw-api.id
   stage_name = "prod"
