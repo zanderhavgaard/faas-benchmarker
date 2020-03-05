@@ -43,7 +43,7 @@ resource "digitalocean_droplet" "orchestrator" {
       "chmod 600 /root/.ssh/id_rsa",
 
       # source terraform env file
-      "echo 'source /root/terraform_env' >> .bashrc",
+      "echo 'source /root/thesis-code/secrets/terraform_env/terraform_env' >> .bashrc",
 
       # clone repository
       "git clone https://github.com/zanderhavgaard/thesis-code",
