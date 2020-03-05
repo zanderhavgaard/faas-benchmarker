@@ -3,6 +3,7 @@ secrets/
 *.tfstate.backup
 *.terraform/
 *lambda.zip
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
