@@ -41,7 +41,7 @@ resource "aws_lambda_function" "hw-python" {
   role = aws_iam_role.hw-role.arn
   handler = "lambda_function.lambda_handler"
   runtime = "python3.7"
-  source_code_hash = filemd5(data.archive_file.hw-lambda-code.output_path)
+  source_code_hash = filesha256(data.archive_file.hw-lambda-code.output_path)
   publish = true
 }
 
@@ -51,7 +51,7 @@ resource "aws_lambda_function" "hw2-python" {
   role = aws_iam_role.hw-role.arn
   handler = "lambda_function2.lambda_handler"
   runtime = "python3.7"
-  source_code_hash = filemd5(data.archive_file.hw2-lambda-code.output_path)
+  source_code_hash = filesha256(data.archive_file.hw2-lambda-code.output_path)
   publish = true
 }
 
