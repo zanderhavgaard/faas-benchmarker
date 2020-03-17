@@ -102,7 +102,7 @@ resource "azurerm_storage_blob" "hw-code" {
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "hw1" {
-  name = "hw-1"
+  name = "hw-python"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.hw-rg.name
   app_service_plan_id = azurerm_app_service_plan.hw-plan.id
