@@ -24,32 +24,24 @@ def lambda_handler(event: dict, context: dict) -> dict:
     identifier = f'{function_name}-{invocation_uuid}'
 
     # make sure that things are working...
-    if event['StatusCode'] != 200:
-        raise Exception("Something went wrong ...")
+    #  if event['StatusCode'] != 200:
+    #  raise Exception("Something went wrong ...")
 
     # create a dict that will be parsed to json
-    # and returned to the client
-    response = {
-        "StatusCode": 200,
-        "headers": {
-            "Content-Type": "application/json"
+    body = {
+        identifier: {
+            "identifier": identifier,
+            "uuid": invocation_uuid,
         },
-        "data": {
-            identifier: {
-                "uuid": invocation_uuid
-            }
-        },
-        # tells us which function was the root of a tree of nested function invocations
-        "invocation_root_identifier": identifier,
     }
 
     # if request contains a sleep argument, then sleep for that amount
     # and log the amount of time slept
     if 'sleep' in event:
         time.sleep(event['sleep'])
-        response['data'][identifier]['sleep'] = event['sleep']
+        body[identifier]['sleep'] = event['sleep']
     else:
-        response['data'][identifier]['sleep'] = 0.0
+        body[identifier]['sleep'] = 0.0
 
     # invoke nested lambdas from arguments
     if 'invoke_nested' in event:
@@ -58,35 +50,37 @@ def lambda_handler(event: dict, context: dict) -> dict:
         lambda_client = boto3.client('lambda')
         # execute each nested lambda invocation command
         for invoke in event['invoke_nested']:
-            invoke_lambda(
+            nested_response = invoke_lambda(
                 lambda_name=invoke['lambda_name'],
                 invoke_payload=invoke['invoke_payload'],
                 client=lambda_client,
                 invocation_type=invoke['invocation_type'],
             )
+            # TODO finish
 
     # add invocation metadata to response
     if context is None:
         # add dummy data
-        response['data'][identifier]['memory'] = 128
-        response['data'][identifier]['log_stream_name'] = "foobar"
+        body[identifier]['memory'] = 128
+        body[identifier]['log_stream_name'] = "foobar"
     else:
         # add memory allocation / size of lambda instance
-        response['data'][identifier]['memory'] = context.memory_limit_in_mb
+        body[identifier]['memory'] = context.memory_limit_in_mb
         # add unique lambda instance identifier
-        response['data'][identifier]['log_stream_name'] = context.log_stream_name
+        body[identifier]['log_stream_name'] = context.log_stream_name
 
     # add timings and return
-    response['data'][identifier]['execution_start'] = start_time
-    response['data'][identifier]['execution_end'] = time.time()
+    body[identifier]['execution_start'] = start_time
+    body[identifier]['execution_end'] = time.time()
 
-    # if debugging return as json str
-    if __name__ == "__main__":
-        print(json.dumps(response))
-    else:
-        # return response to invoker,
-        # AWS converts response to json for us
-        return response
+    # create return dict and parse json bodu
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json; charset=utf-8"
+        },
+        "body": json.dumps(body)
+    }
 
 
 # invoke another lambda function using boto3, thus invoking the function
@@ -120,15 +114,15 @@ def invoke_lambda(lambda_name: str,
     payload = json.load(response['Payload'])
 
     # add invocation start/end times to the payload dict for easy parsing by the final client
-    payload['data'][payload['identifier']
+    payload['body'][payload['identifier']
                     ]['invocation_start'] = start_time
-    payload['data'][payload['identifier']]['invocation_end'] = end_time
+    payload['body'][payload['identifier']]['invocation_end'] = end_time
 
     return response
 
 
 # call the method if running locally
-if __name__ == "__main__":
+#  if __name__ == "__main__":
 
     # simplest invoke
     #  test_event = {"StatusCode": 200}
@@ -156,5 +150,5 @@ if __name__ == "__main__":
     #  },
     #  ],
     #  }
-    test_context = None
-    lambda_handler(test_event, test_context)
+    #  test_context = None
+    #  lambda_handler(test_event, test_context)

@@ -125,36 +125,3 @@ def invoke_lambda(lambda_name: str,
     payload['data'][payload['identifier']]['invocation_end'] = end_time
 
     return response
-
-
-# call the method if running locally
-if __name__ == "__main__":
-
-    # simplest invoke
-    #  test_event = {"StatusCode": 200}
-
-    # invoke with sleep
-    #  test_event = {"StatusCode": 200, 'sleep': 2.5}
-
-    # invoke with nested invocations
-    #  test_event = {"StatusCode": 200,
-    #  "invoke_nested": [
-    #  {
-    #  "lambda_name": "function2",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  "sleep": 2.5,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  {
-    #  "lambda_name": "function3",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  ],
-    #  }
-    test_context = None
-    lambda_handler(test_event, test_context)
