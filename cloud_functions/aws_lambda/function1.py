@@ -56,7 +56,9 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 client=lambda_client,
                 invocation_type=invoke['invocation_type'],
             )
-            # TODO finish
+            # add each nested invocation to response body
+            for id in nested_response.keys():
+                body[id] = nested_response[id]
 
     # add invocation metadata to response
     if context is None:
@@ -79,7 +81,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
         "headers": {
             "Content-Type": "application/json; charset=utf-8"
         },
-        "body": json.dumps(body)
+        "body": json.dumps(body),
+        "identifier": identifier
     }
 
 
@@ -112,43 +115,49 @@ def invoke_lambda(lambda_name: str,
 
     # parse json payload to dict
     payload = json.load(response['Payload'])
+    # get identifier of invoked lambda
+    id = payload['identifier']
+    # parse the json body
+    body = json.loads(payload['body'])
 
-    # add invocation start/end times to the payload dict for easy parsing by the final client
-    payload['body'][payload['identifier']
-                    ]['invocation_start'] = start_time
-    payload['body'][payload['identifier']]['invocation_end'] = end_time
+    # add invocation start/end times
+    body[id]['invocation_start'] = start_time
+    body[id]['invocation_end'] = end_time
 
-    return response
+    return body
 
 
 # call the method if running locally
 #  if __name__ == "__main__":
 
-    # simplest invoke
+    #  simplest invoke
     #  test_event = {"StatusCode": 200}
 
-    # invoke with sleep
-    #  test_event = {"StatusCode": 200, 'sleep': 2.5}
+    #  invoke with sleep
+    #  test_event = {"StatusCode": 200, 'sleep': 1.5}
 
-    # invoke with nested invocations
+    #  invoke with nested invocations
     #  test_event = {"StatusCode": 200,
-    #  "invoke_nested": [
-    #  {
-    #  "lambda_name": "function2",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  "sleep": 2.5,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  {
-    #  "lambda_name": "function3",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  ],
-    #  }
+                  #  "invoke_nested": [
+                      #  {
+                          #  "lambda_name": "dev2-python",
+                          #  "invoke_payload": {
+                              #  "StatusCode": 200,
+                              #  "sleep": 0.5,
+                          #  },
+                          #  "invocation_type": "RequestResponse"
+                      #  },
+                      #  {
+                          #  "lambda_name": "dev3-python",
+                          #  "invoke_payload": {
+                              #  "StatusCode": 200,
+                          #  },
+                          #  "invocation_type": "RequestResponse"
+                      #  },
+                  #  ],
+                  #  }
+
     #  test_context = None
-    #  lambda_handler(test_event, test_context)
+
+    #  response = lambda_handler(test_event, test_context)
+    #  print(response)

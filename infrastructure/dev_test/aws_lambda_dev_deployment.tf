@@ -46,6 +46,12 @@ resource "aws_iam_role" "dev-role" {
 EOF
 }
 
+# attach permission to the iam role to allow lambdas to invoke other lambdas
+resource "aws_iam_role_policy_attachment" "lambda-full-access" {
+  role = aws_iam_role.dev-role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSLambdaFullAccess"
+}
+
 # create API gateway
 resource "aws_api_gateway_rest_api" "dev-api" {
   name = "dev"
@@ -56,8 +62,8 @@ resource "aws_api_gateway_rest_api" "dev-api" {
 resource "aws_api_gateway_deployment" "dev-prod" {
   depends_on = [
     aws_api_gateway_integration.dev1-api-integration,
-    # aws_api_gateway_integration.dev2-api-integration,
-    # aws_api_gateway_integration.dev3-api-integration,
+    aws_api_gateway_integration.dev2-api-integration,
+    aws_api_gateway_integration.dev3-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.dev-api.id
   stage_name = "prod"
