@@ -4,58 +4,66 @@ import time
 import json
 import requests
 import multiprocessing as mp
-from abstract_provider import AbstractProvider
-from provider_aws_lambda import AWSLambdaProivder
+from provider_abstract import AbstractProvider
+from provider_aws_lambda import AWSLambdaProvider
 from provider_azure_functions import AzureFunctionsProvider
 from provider_openfaas import OpenFaasProvider
 
 
 class Benchmarker:
 
-    def __init__(self, provider: str, experiment_description: str):
+    def __init__(self, provider: str, experiment_description: str, env_file_path: str):
         # log the time of experiment start
         self.start_time = time.time()
 
         # desribe experiment, to be logged along with results
         self.experiment_description = experiment_description
 
-    def get_provider(self, provider: str) -> AbstractProvider:
+        # get function execution provider
+        self.provider = self.get_provider(
+            provider=provider, env_file_path=env_file_path)
+
+        print('\n================================================')
+        print('FaaS benchmarker ~ Stating experiment ...')
+        print('================================================')
+        print(f'using provider:         {provider}')
+        print(f'using environment file: {env_file_path}')
+        print(f'experiment start time:  {time.ctime(int(self.start_time))}')
+        print('================================================')
+        print(f'experiment description: {self.experiment_description}')
+        print('================================================\n')
+
+    # create cloud function execution provider
+
+    def get_provider(self, provider: str, env_file_path: str) -> AbstractProvider:
         # implemented providers
-        self.providers = ['aws_lambda', 'azure_functions', 'openfaas']
+        providers = ['aws_lambda', 'azure_functions', 'openfaas']
 
-        if provider in self.providers:
-            # choose provider to invoke cloud function
-            if provider == "aws_lambda":
-                self.provider = self.get_aws_provider()
-
-            elif provider == "azure_functions":
+        # choose provider to invoke cloud function
+        if provider in providers:
+            if provider == 'aws_lambda':
+                return AWSLambdaProvider(env_file_path=env_file_path)
+            elif provider == 'azure_functions':
                 raise NotImplementedError()
-
-            elif provider == "openfaas":
+                #  return AzureFunctionsProvider(env_file_path=env_file_path)
+            elif provider == 'openfaas':
                 raise NotImplementedError()
+                #  return OpenFaasProvider(env_file_path=env_file_path)
         else:
             raise RuntimeError(
-                "Error: Please use an implemented provider, \
-                    options are: {}".formate(str(self.providers)))
-
-    # get aws provider singleton
-    def get_aws_provider(self) -> AWSLambdaProivder:
-        if self.aws_provider is None:
-            self.aws_provider = AWSLambdaProivder()
-        return self.aws_provider
-
-    def get_azure_provider(self) -> ProviderAzureFunctions:
-        raise NotImplementedError()
-
-    def get_openfaas_provider(self) -> ProviderOpenFaas:
-        raise NotImplementedError()
+                f'Error: Please use an implemented provider, options are: ' +
+                '{str(self.providers)}')
 
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients
     def log_experiment_running_time(self):
         end_time = time.time()
         experiment_running_time = end_time - self.start_time
-        print('Experiment running time:', experiment_running_time)
+        print('================================================')
+        print(f'Experiment end time: {time.ctime(int(end_time))}')
+        print('Experiment running time: ' +
+              f'{time.strftime("%H:%M:%S", time.gmtime(experiment_running_time))}')
+        print('================================================')
 
     # main method to be used by experiment clients
     def invoke_function(self,
@@ -76,6 +84,7 @@ class Benchmarker:
 
         return response
 
-    class EmptyResponseError(RuntimeError):
-        def __ini__(self, error_msg: str):
-            super(error_msg)
+
+class EmptyResponseError(RuntimeError):
+    def __ini__(self, error_msg: str):
+        super(error_msg)

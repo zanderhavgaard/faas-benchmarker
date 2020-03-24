@@ -24,8 +24,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
     identifier = f'{function_name}-{invocation_uuid}'
 
     # make sure that things are working...
-    #  if event['StatusCode'] != 200:
-    #  raise Exception("Something went wrong ...")
+    if event['StatusCode'] != 200:
+        raise Exception("Something went wrong ...")
 
     # create a dict that will be parsed to json
     body = {
@@ -138,24 +138,24 @@ def invoke_lambda(lambda_name: str,
 
     #  invoke with nested invocations
     #  test_event = {"StatusCode": 200,
-                  #  "invoke_nested": [
-                      #  {
-                          #  "lambda_name": "dev2-python",
-                          #  "invoke_payload": {
-                              #  "StatusCode": 200,
-                              #  "sleep": 0.5,
-                          #  },
-                          #  "invocation_type": "RequestResponse"
-                      #  },
-                      #  {
-                          #  "lambda_name": "dev3-python",
-                          #  "invoke_payload": {
-                              #  "StatusCode": 200,
-                          #  },
-                          #  "invocation_type": "RequestResponse"
-                      #  },
-                  #  ],
-                  #  }
+    #  "invoke_nested": [
+    #  {
+    #  "lambda_name": "dev2-python",
+    #  "invoke_payload": {
+    #  "StatusCode": 200,
+    #  "sleep": 0.5,
+    #  },
+    #  "invocation_type": "RequestResponse"
+    #  },
+    #  {
+    #  "lambda_name": "dev3-python",
+    #  "invoke_payload": {
+    #  "StatusCode": 200,
+    #  },
+    #  "invocation_type": "RequestResponse"
+    #  },
+    #  ],
+    #  }
 
     #  test_context = None
 

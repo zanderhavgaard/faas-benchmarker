@@ -1,7 +1,7 @@
-from abstract_provider import AbstractProvider
+from provider_abstract import AbstractProvider
 
 
-class ProviderOpenFaas(AbstractProvider):
+class OpenFaasProvider(AbstractProvider):
 
     def invoke_function(self,
                         name: str,

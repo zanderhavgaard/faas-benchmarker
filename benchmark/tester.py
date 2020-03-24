@@ -35,6 +35,9 @@ params = {
     ]
 }
 
+print(url)
+print(params)
+
 #  response = requests.post(url=url, headers=headers)
 response = requests.post(url=url, data=json.dumps(params), headers=headers)
 

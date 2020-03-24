@@ -24,8 +24,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
     identifier = f'{function_name}-{invocation_uuid}'
 
     # make sure that things are working...
-    #  if event['StatusCode'] != 200:
-    #  raise Exception("Something went wrong ...")
+    if event['StatusCode'] != 200:
+        raise Exception("Something went wrong ...")
 
     # create a dict that will be parsed to json
     body = {

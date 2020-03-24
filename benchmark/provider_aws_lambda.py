@@ -3,16 +3,17 @@
 import requests
 import json
 import time
-from abstract_provider import AbstractProvider
+import os
+import dotenv
+from provider_abstract import AbstractProvider
 
 
-class AWSLambdaProivder(AbstractProvider):
+class AWSLambdaProvider(AbstractProvider):
 
-    def __init__(self):
+    def __init__(self, env_file_path: str):
 
-        # aws lambda specific invocation url and credentials
-        self.api_key = ""
-        self.url = ""
+        # load aws lambda specific invocation url and credentials
+        self.load_env_vars(env_file_path)
 
         # http headers, contains authentication and data type
         self.headers = {
@@ -20,10 +21,20 @@ class AWSLambdaProivder(AbstractProvider):
             'Content-Type': 'application/json'
         }
 
+    def load_env_vars(self, env_file_path: str):
+        # load .env file and parse values
+        dotenv.load_dotenv(dotenv_path=env_file_path)
+        self.api_key = os.getenv('API_KEY')
+        self.gateway_url = os.getenv('INVOKE_URL')
+
+    # in the case of AWS Lambda the name actually references
+    # the api endpoint where the funcion is attached:
+    #   --> eg: http://..../prod/<name>
     def invoke_function(self,
                         name: str,
                         sleep: float = 0.0,
                         invoke_nested: dict = None) -> dict:
+        pass
 
         # paramters, the only required paramter is the statuscode
         params = {
@@ -41,9 +52,12 @@ class AWSLambdaProivder(AbstractProvider):
         # log start time of invocation
         start_time = time.time()
 
+        # create url of function to invoke
+        invoke_url = f'{self.gateway_url}/{name}'
+
         # invoke the function
         response = requests.post(
-            url=self.url,
+            url=invoke_url,
             headers=self.headers,
             data=json.dumps(params)
         )
@@ -51,6 +65,17 @@ class AWSLambdaProivder(AbstractProvider):
         # log the end time of the invocation
         end_time = time.time()
 
+        # parse response json
         response_data = response.json()
 
-        return response
+        # parse reponse body json
+        response_data['body'] = json.loads(response_data['body'])
+
+        # get the identifer
+        identifier = response_data['identifier']
+
+        # add start / end times to body
+        response_data['body'][identifier]['invocation_start'] = start_time
+        response_data['body'][identifier]['invocation_end'] = end_time
+
+        return response_data
