@@ -10,7 +10,7 @@ variable "aws_account_id" {}
 # path to lambda function code
 variable "path_to_code" {
   type = string
-  default = "../../cloud_functions/aws_lambda"
+  default = "../../../cloud_functions/aws_lambda"
 }
 
 # loacal variables
@@ -27,8 +27,8 @@ provider "aws" {
 }
 
 # create IAM role for lambdas
-resource "aws_iam_role" "dev-role" {
-  name = "dev-role"
+resource "aws_iam_role" "exp-role" {
+  name = "exp-role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -48,39 +48,39 @@ EOF
 
 # attach permission to the iam role to allow lambdas to invoke other lambdas
 resource "aws_iam_role_policy_attachment" "lambda-full-access" {
-  role = aws_iam_role.dev-role.name
+  role = aws_iam_role.exp-role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSLambdaFullAccess"
 }
 
 # create API gateway
-resource "aws_api_gateway_rest_api" "dev-api" {
-  name = "dev"
-  description = "dev/test environment"
+resource "aws_api_gateway_rest_api" "exp-api" {
+  name = "exp"
+  description = "exp/test environment"
 }
 
 # add a deployment of the api
-resource "aws_api_gateway_deployment" "dev-prod" {
+resource "aws_api_gateway_deployment" "exp-prod" {
   depends_on = [
-    aws_api_gateway_integration.dev1-api-integration,
-    aws_api_gateway_integration.dev2-api-integration,
-    aws_api_gateway_integration.dev3-api-integration,
+    aws_api_gateway_integration.exp1-api-integration,
+    aws_api_gateway_integration.exp2-api-integration,
+    aws_api_gateway_integration.exp3-api-integration,
   ]
-  rest_api_id = aws_api_gateway_rest_api.dev-api.id
+  rest_api_id = aws_api_gateway_rest_api.exp-api.id
   stage_name = "prod"
 }
 
 # create api useage plan key
-resource "aws_api_gateway_api_key" "dev-key" {
-  name = "dev-key"
+resource "aws_api_gateway_api_key" "exp-key" {
+  name = "exp-key"
 }
 
 # create api usage plan
-resource "aws_api_gateway_usage_plan" "dev" {
-  name         = "dev-usage-plan"
+resource "aws_api_gateway_usage_plan" "exp" {
+  name         = "exp-usage-plan"
 
   api_stages {
-    api_id = aws_api_gateway_rest_api.dev-api.id
-    stage  = aws_api_gateway_deployment.dev-prod.stage_name
+    api_id = aws_api_gateway_rest_api.exp-api.id
+    stage  = aws_api_gateway_deployment.exp-prod.stage_name
   }
 
   quota_settings {
@@ -96,18 +96,18 @@ resource "aws_api_gateway_usage_plan" "dev" {
 }
 
 # attach api key to useage plan
-resource "aws_api_gateway_usage_plan_key" "dev" {
-  key_id        = aws_api_gateway_api_key.dev-key.id
+resource "aws_api_gateway_usage_plan_key" "exp" {
+  key_id        = aws_api_gateway_api_key.exp-key.id
   key_type      = "API_KEY"
-  usage_plan_id = aws_api_gateway_usage_plan.dev.id
+  usage_plan_id = aws_api_gateway_usage_plan.exp.id
 }
 
 # output the invocation url
 output "invoke_url" {
-  value = aws_api_gateway_deployment.dev-prod.invoke_url
+  value = aws_api_gateway_deployment.exp-prod.invoke_url
 }
 
 # output the api key
 output "api_key" {
-  value = aws_api_gateway_api_key.dev-key.value
+  value = aws_api_gateway_api_key.exp-key.value
 }

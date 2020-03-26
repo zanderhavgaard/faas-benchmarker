@@ -25,11 +25,11 @@ benchmarker = Benchmarker(provider=provider,
                           env_file_path=env_file_path)
 
 # name of function to be invoked
-fx_name = 'dev1'
+fx_name = 'exp1'
 sleep_amount = 0.5
 invoke_nested = [
     {
-        "lambda_name": "dev2-python",
+        "lambda_name": "exp2-python",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.2
@@ -37,7 +37,7 @@ invoke_nested = [
         "invocation_type": "RequestResponse"
     },
     {
-        "lambda_name": "dev3-python",
+        "lambda_name": "exp3-python",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.3

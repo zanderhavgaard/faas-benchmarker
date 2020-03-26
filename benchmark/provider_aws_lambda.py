@@ -24,8 +24,8 @@ class AWSLambdaProvider(AbstractProvider):
     def load_env_vars(self, env_file_path: str):
         # load .env file and parse values
         dotenv.load_dotenv(dotenv_path=env_file_path)
-        self.api_key = os.getenv('API_KEY')
-        self.gateway_url = os.getenv('INVOKE_URL')
+        self.api_key = os.getenv('api_key')
+        self.gateway_url = os.getenv('invoke_url')
 
     # in the case of AWS Lambda the name actually references
     # the api endpoint where the funcion is attached:
