@@ -9,8 +9,8 @@ cf_provider=$2
 client_provider=$3
 experiment_name=$4
 experiment_context="$fbrd/experiments/$5"
-experiment_remote_context="/home/ubuntu/thesis-code/experiments/$5"
 env_file="$experiment_context/$experiment_name.env"
+remote_env_file="/home/ubuntu/thesis-code/experiments/$5/$4.env"
 
 echo "=================================================================================================="
 echo "Infastructure Orchestrator"
@@ -20,8 +20,8 @@ echo "Cloud function provider: $cf_provider"
 echo "Client provider: $client_provider"
 echo "Experiment name: $experiment_name"
 echo "Experiment context: $experiment_context"
-echo "Experiment remote context:" $experiment_remote_context
 echo "Environment file: $env_file"
+echo "Remote Environment file: $remote_env_file"
 echo "=================================================================================================="
 
 # vars
@@ -38,7 +38,6 @@ if [ $command == "create" ]; then
 
     # generate cloud functions
     case $cf_provider in
-        # TODO fix
         aws_lambda)
 
             echo -e "\n--> Copying AWS Lambda functions template ...\n"
@@ -49,7 +48,7 @@ if [ $command == "create" ]; then
             echo -e "\n--> Applying experiment name to copied template ...\n"
             terraform_files=$(ls *.tf)
             for terraform_file in $terraform_files; do
-                sed "s/exp/$experiment_name/g" $terraform_file > $experiment_name\_$terraform_file
+                sed "s/changeme/$experiment_name/g" $terraform_file > $experiment_name\_$terraform_file
                 rm $terraform_file
             done
 
@@ -95,7 +94,7 @@ if [ $command == "create" ]; then
             echo -e "\n--> Applying experiment name to copied template ...\n"
             terraform_files=$(ls *.tf)
             for terraform_file in $terraform_files; do
-                sed "s/exp/$experiment_name/g" $terraform_file > $experiment_name\_$terraform_file
+                sed "s/changeme/$experiment_name/g" $terraform_file > $experiment_name\_$terraform_file
                 rm $terraform_file
             done
 
@@ -103,12 +102,10 @@ if [ $command == "create" ]; then
             terraform init
 
             echo -e "\n--> Creating client infrastructure ...\n"
-            echo $env_file
-            echo $experiment_remote_context
             terraform apply \
                 -auto-approve \
                 -var "env_file=$env_file" \
-                -var "remote_context=$experiment_remote_context" \
+                -var "remote_env_file=$remote_env_file" \
 
             echo -e "\n--> Outputting variables to client.env ...\n"
             terraform output >> "../client.env"
@@ -146,7 +143,7 @@ elif [ $command == "destroy" ]; then
             terraform destroy -auto-approve
             cd $experiment_context
 
-            echo -e "\n--> nRemoving experiment infrastructure files ...\n"
+            echo -e "\n--> Removing experiment infrastructure files ...\n"
             rm -rf $experiment_context/aws_lambda
 
             echo -e "\n--> Done destroying! \n"
@@ -174,8 +171,8 @@ elif [ $command == "destroy" ]; then
             terraform destroy \
                 -auto-approve \
                 -var "env_file=$env_file" \
-                -var "remote_context=$experiment_remote_context" \
-                # TODO refactor
+                -var "remote_env_file=$remote_env_file"
+
             cd $experiment_context
 
             echo -e "\n--> Removing experiment infrastructure files ...\n"

@@ -25,15 +25,20 @@ creation_command="create"
 destruction_command="destroy"
 
 # generate infrastructure from templates
-# bash $fbrd/benchmark/infrastructure_orchestrator.sh \
-    # $creation_command \
-    # $cf_provider \
-    # $client_provider \
-    # $experiment_name \
-    # $experiment_context
+bash $fbrd/benchmark/infrastructure_orchestrator.sh \
+    $creation_command \
+    $cf_provider \
+    $client_provider \
+    $experiment_name \
+    $experiment_context
 
-# sleep 30
-# python dev_experiment.py $experiment_name
+client_user="ubuntu"
+client_ip="$(terraform output -state aws_ec2/terraform.tfstate ip_address)"
+key_path="$fbrd/secrets/ssh_keys/experiment_servers"
+# $fbrd will expanded on the client, the rest will be expanded locally!
+ssh_command="cd \$fbrd/experiments/$experiment_context && python3 \$fbrd/experiments/$experiment_context/$experiment_code $experiment_name"
+
+ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
 # destroy infrastructure after experiment
 bash $fbrd/benchmark/infrastructure_orchestrator.sh \
