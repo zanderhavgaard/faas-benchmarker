@@ -3,9 +3,13 @@
 
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-variable "exp_pub_key" {}
-variable "exp_pvt_key" {}
-variable "exp_ssh_fingerprint" {}
+variable "client_pub_key" {}
+variable "client_pvt_key" {}
+variable "client_ssh_fingerprint" {}
+
+# you must supply the experiment context as a command line argument
+variable "remote_context" {}
+variable "env_file" {}
 
 # setup aws provider
 provider "aws" {
@@ -42,34 +46,34 @@ resource "null_resource" "ec2-provisioners" {
     # host = aws_instance.experiment-worker-aws.public_ip
     host = aws_eip.experiment-worker-eip.public_ip
     type = "ssh"
-    private_key = file(var.exp_pvt_key)
+    private_key = file(var.client_pvt_key)
     timeout = "2m"
   }
-
-  # copy local files to remote server
-  # useage: https://www.terraform.io/docs/provisioners/file.html
-  # provisioner "file" {
-    # source = "../../benchmark"
-    # destination = "/home/ubuntu"
-  # }
 
   # execute commands on the server
   provisioner "remote-exec" {
     inline = [
-      # "sudo apt update",
-      # "sudo apt install -y git python3 python3-pip",
-      # "git clone https://github.com/zanderhavgaard/thesis-code",
-      # "cd thesis-code",
-      "echo hello from Frankfurt...",
-      "ls -al",
+      "sudo apt update >> /dev/null && echo 'updated apt cache'",
+      "sudo apt install -y git python3 python3-dev >> /dev/null && echo 'installed git and python'",
+      "git clone https://github.com/zanderhavgaard/thesis-code >> /dev/null && echo 'cloned git repo'",
+      "echo 'export PYTHONPATH=$PYTHONPATH:/home/ubuntu/thesis-code/benchmark' >> ~/.bashrc",
+      "cd thesis-code",
+      "pip3 install -r requirements.txt >> /dev/null && echo 'installed benchmarker dependencies with pip'",
     ]
+  }
+
+  # copy local files to remote server
+  # useage: https://www.terraform.io/docs/provisioners/file.html
+  provisioner "file" {
+    source = var.env_file
+    destination = "${var.remote_context}/"
   }
 }
 
 # register ssh keys with aws
 resource "aws_key_pair" "experiment_worker_key" {
   key_name = "experiment_worker"
-  public_key = file(var.exp_pub_key)
+  public_key = file(var.client_pub_key)
 }
 
 # create VPC

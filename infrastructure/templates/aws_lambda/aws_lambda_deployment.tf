@@ -1,4 +1,4 @@
-# this terraform file creates a simple 'hello world' aws lambda
+# create a aws lambda cloud function environment
 # setup with an API gateway and a lambda function using the
 # python 3.7 runtime
 # based on: https://learn.hashicorp.com/terraform/aws/lambda-api-gateway

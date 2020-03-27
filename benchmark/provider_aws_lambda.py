@@ -29,9 +29,9 @@ class AWSLambdaProvider(AbstractProvider):
 
     # in the case of AWS Lambda the name actually references
     # the api endpoint where the funcion is attached:
-    #   --> eg: http://..../prod/<name>
+    #   --> eg: https://..../prod/<name>
     def invoke_function(self,
-                        name: str,
+                        function_endpoint: str,
                         sleep: float = 0.0,
                         invoke_nested: dict = None) -> dict:
         pass
@@ -53,7 +53,9 @@ class AWSLambdaProvider(AbstractProvider):
         start_time = time.time()
 
         # create url of function to invoke
-        invoke_url = f'{self.gateway_url}/{name}'
+        invoke_url = f'{self.gateway_url}/{function_endpoint}'
+
+        print('foo', invoke_url)
 
         # invoke the function
         response = requests.post(

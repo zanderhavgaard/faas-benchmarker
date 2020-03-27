@@ -4,11 +4,12 @@
 # to create different experiments
 
 # imports
+import sys
 import json
 from pprint import pprint
 from benchmarker import Benchmarker
 
-
+experiment_name = sys.argv[1]
 # describe experiment, should be verbose enough
 # to figure out what the experiment does and what it
 # attempts to test
@@ -17,19 +18,21 @@ description = 'dev-experiment: this experiment tests ' + \
 # name of cloud function provider for this experiment
 provider = 'aws_lambda'
 # relative path experiment.env file
-env_file_path = 'experiment.env'
+# TODO make argument
+env_file_path = 'dev-exp.env'
 
 # create the benchmarker
-benchmarker = Benchmarker(provider=provider,
+benchmarker = Benchmarker(experiment_name=experiment_name,
+                          provider=provider,
                           experiment_description=description,
                           env_file_path=env_file_path)
 
 # name of function to be invoked
-fx_name = 'exp1'
+fx_name = f'{experiment_name}1'
 sleep_amount = 0.5
 invoke_nested = [
     {
-        "lambda_name": "exp2-python",
+        "lambda_name": f"{experiment_name}2-python",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.2
@@ -37,7 +40,7 @@ invoke_nested = [
         "invocation_type": "RequestResponse"
     },
     {
-        "lambda_name": "exp3-python",
+        "lambda_name": f"{experiment_name}3-python",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.3
@@ -50,20 +53,20 @@ invoke_nested = [
 
 print('invoking with no arguments: ')
 # invoke with no arugments
-response = benchmarker.invoke_function(function_name=fx_name)
+response = benchmarker.invoke_function(function_endpoint=fx_name)
 pprint(response)
 print()
 
 print('invoking with sleep argument')
 # invoke with a sleep argument
-response = benchmarker.invoke_function(function_name=fx_name,
+response = benchmarker.invoke_function(function_endpoint=fx_name,
                                        sleep=sleep_amount)
 pprint(response)
 print()
 
 print('invoking with nested invocations')
 # invoke with nested invocations
-response = benchmarker.invoke_function(function_name=fx_name,
+response = benchmarker.invoke_function(function_endpoint=fx_name,
                                        sleep=sleep_amount,
                                        invoke_nested=invoke_nested)
 #  response = response.json()
