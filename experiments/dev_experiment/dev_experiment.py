@@ -17,6 +17,7 @@ description = 'dev-experiment: this experiment tests ' + \
     'the implmentation of the benchmarking platform'
 # name of cloud function provider for this experiment
 provider = 'aws_lambda'
+#  provider = 'azure_functions'
 # relative path experiment.env file
 # TODO make argument
 env_file_path = 'dev-exp.env'
@@ -32,7 +33,7 @@ fx_name = f'{experiment_name}1'
 sleep_amount = 0.5
 invoke_nested = [
     {
-        "function_name": f"{experiment_name}2-python",
+        "function_name": f"{experiment_name}2",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.2
@@ -40,7 +41,7 @@ invoke_nested = [
         "invocation_type": "RequestResponse"
     },
     {
-        "function_name": f"{experiment_name}3-python",
+        "function_name": f"{experiment_name}3",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.3
