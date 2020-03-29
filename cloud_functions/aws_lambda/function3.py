@@ -51,7 +51,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
         # execute each nested lambda invocation command
         for invoke in event['invoke_nested']:
             nested_response = invoke_lambda(
-                lambda_name=invoke['lambda_name'],
+                lambda_name=invoke['function_name'],
                 invoke_payload=invoke['invoke_payload'],
                 client=lambda_client,
                 invocation_type=invoke['invocation_type'],
@@ -140,7 +140,7 @@ def invoke_lambda(lambda_name: str,
     #  test_event = {"StatusCode": 200,
     #  "invoke_nested": [
     #  {
-    #  "lambda_name": "dev2-python",
+    #  "function_name": "dev2-python",
     #  "invoke_payload": {
     #  "StatusCode": 200,
     #  "sleep": 0.5,
@@ -148,7 +148,7 @@ def invoke_lambda(lambda_name: str,
     #  "invocation_type": "RequestResponse"
     #  },
     #  {
-    #  "lambda_name": "dev3-python",
+    #  "function_name": "dev3-python",
     #  "invoke_payload": {
     #  "StatusCode": 200,
     #  },

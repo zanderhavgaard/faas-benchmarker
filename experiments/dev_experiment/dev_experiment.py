@@ -32,7 +32,7 @@ fx_name = f'{experiment_name}1'
 sleep_amount = 0.5
 invoke_nested = [
     {
-        "lambda_name": f"{experiment_name}2-python",
+        "function_name": f"{experiment_name}2-python",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.2
@@ -40,7 +40,7 @@ invoke_nested = [
         "invocation_type": "RequestResponse"
     },
     {
-        "lambda_name": f"{experiment_name}3-python",
+        "function_name": f"{experiment_name}3-python",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.3
