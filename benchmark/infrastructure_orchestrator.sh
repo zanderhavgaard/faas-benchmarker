@@ -83,6 +83,10 @@ if [ $command == "create" ]; then
             echo "Options are: aws_lambda azure_functions openfaas"
     esac
 
+    echo "================================="
+    echo "= Done creating cloud functions ="
+    echo "================================="
+
     case $client_provider in
         aws_ec2)
 
@@ -117,14 +121,46 @@ if [ $command == "create" ]; then
             ;;
 
         azure_linuxvm)
-            echo azure
-            echo "not implemented yet"
+
+            echo -e "\n--> Copying Azure linux vm template ...\n"
+
+            cp -r $template_path/azure_linuxvm $experiment_context
+            cd $experiment_context/azure_linuxvm
+
+            echo -e "\n--> Applying experiment name to copied template ...\n"
+            terraform_files=$(ls *.tf)
+            for terraform_file in $terraform_files; do
+                sed "s/changeme/$experiment_name/g" $terraform_file > $experiment_name\_$terraform_file
+                rm $terraform_file
+            done
+
+            echo -e "\n--> Initializing terraform ...\n"
+            terraform init
+
+            echo -e "\n--> Creating client infrastructure ...\n"
+            terraform apply \
+                -auto-approve \
+                -var "env_file=$env_file" \
+                -var "remote_env_file=$remote_env_file" \
+
+            echo -e "\n--> Outputting variables to client.env ...\n"
+            terraform output >> "../client.env"
+
+            cd $experiment_context
+
+            echo -e "\n--> Done creating client infrastructure!\n"
+
             ;;
 
         *)
             echo "Please specify a valid provider for client."
             echo "Valid options are: aws_ec2 azure_linuxvm"
     esac
+
+
+    echo "================================="
+    echo "= Done creating cloud client vm ="
+    echo "================================="
 
 #  ____  _____ ____ _____ ____   _____   __
 # |  _ \| ____/ ___|_   _|  _ \ / _ \ \ / /
@@ -162,6 +198,10 @@ elif [ $command == "destroy" ]; then
             echo "Options are: aws_lambda azure_functions openfaas"
     esac
 
+    echo "==================================="
+    echo "= Done destroying cloud functions ="
+    echo "==================================="
+
     case $client_provider in
         aws_ec2)
 
@@ -182,9 +222,23 @@ elif [ $command == "destroy" ]; then
 
             ;;
         azure_linuxvm)
-            echo azure
-            echo "not implemented yet"
+
+            echo -e "\n--> Destroying experiment client infrastructure ...\n"
+
+            cd $experiment_context/azure_linuxvm
+            terraform destroy \
+                -auto-approve \
+                -var "env_file=$env_file" \
+                -var "remote_env_file=$remote_env_file"
+
+            cd $experiment_context
+
+            echo -e "\n--> Removing experiment infrastructure files ...\n"
+            rm -rf $experiment_context/azure_linuxvm
+
+            echo -e "\n--> Done destroying! \n"
             ;;
+
         *)
             echo "Please specify a valid provider for client."
             echo "Valid options are: aws_ec2 azure_linuxvm"
@@ -196,4 +250,7 @@ elif [ $command == "destroy" ]; then
             echo -e "\n--> Removing client.env file ...\n"
             rm $experiment_context/client.env
 
+    echo "==================================="
+    echo "= Done destroying cloud client vm ="
+    echo "==================================="
 fi

@@ -6,15 +6,20 @@
 # based on: https://www.terraform.io/docs/providers/azurerm/r/linux_virtual_machine.html
 # and: https://docs.microsoft.com/en-us/azure/terraform/terraform-create-complete-vm
 
+# you must supply the experiment context as a command line argument
+variable "remote_env_file" {}
+variable "env_file" {}
+
 # import variables
 variable "subscription_id" {}
 variable "client_id" {}
 variable "client_secret" {}
 variable "tenant_id" {}
 
-variable "exp_pub_key" {}
-variable "exp_pvt_key" {}
-variable "exp_ssh_fingerprint" {}
+# ssh key vars
+variable "client_pub_key" {}
+variable "client_pvt_key" {}
+variable "client_ssh_fingerprint" {}
 
 # setup provider
 provider "azurerm" {
@@ -27,64 +32,64 @@ provider "azurerm" {
 }
 
 # create resource group
-resource "azurerm_resource_group" "azure-experiment-worker-rg" {
-  name     = "azure-experiment-worker"
+resource "azurerm_resource_group" "changeme-worker-rg" {
+  name     = "changeme-worker"
   location = "West Europe"
 }
 
 # create VPC
-resource "azurerm_virtual_network" "azure-experiment-worker-network" {
-  name                = "azure-experiment-worker-network"
+resource "azurerm_virtual_network" "changeme-worker-network" {
+  name                = "changeme-worker-network"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.azure-experiment-worker-rg.location
-  resource_group_name = azurerm_resource_group.azure-experiment-worker-rg.name
+  location            = azurerm_resource_group.changeme-worker-rg.location
+  resource_group_name = azurerm_resource_group.changeme-worker-rg.name
 }
 
 # create subnet
-resource "azurerm_subnet" "azure-experiment-worker-subnet" {
-  name                 = "azure-experiment-worker-subnet"
-  resource_group_name  = azurerm_resource_group.azure-experiment-worker-rg.name
-  virtual_network_name = azurerm_virtual_network.azure-experiment-worker-network.name
+resource "azurerm_subnet" "changeme-worker-subnet" {
+  name                 = "changeme-worker-subnet"
+  resource_group_name  = azurerm_resource_group.changeme-worker-rg.name
+  virtual_network_name = azurerm_virtual_network.changeme-worker-network.name
   address_prefix       = "10.0.2.0/24"
 }
 
 # create network interface
-resource "azurerm_network_interface" "azure-experiment-worker-ni" {
-  name                = "azure-experiment-worker-nic"
-  location            = azurerm_resource_group.azure-experiment-worker-rg.location
-  resource_group_name = azurerm_resource_group.azure-experiment-worker-rg.name
+resource "azurerm_network_interface" "changeme-worker-ni" {
+  name                = "changeme-worker-nic"
+  location            = azurerm_resource_group.changeme-worker-rg.location
+  resource_group_name = azurerm_resource_group.changeme-worker-rg.name
 
   ip_configuration {
-    name                          = "azure-experiment-worker-ip-config"
-    subnet_id                     = azurerm_subnet.azure-experiment-worker-subnet.id
+    name                          = "changeme-worker-ip-config"
+    subnet_id                     = azurerm_subnet.changeme-worker-subnet.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id = azurerm_public_ip.azure-experiment-worker-public-ip.id
+    public_ip_address_id = azurerm_public_ip.changeme-worker-public-ip.id
   }
 }
 
 # create public ip address
-resource "azurerm_public_ip" "azure-experiment-worker-public-ip" {
-  name = "azure-experiment-worker-public-ip"
-  location = azurerm_resource_group.azure-experiment-worker-rg.location
-  resource_group_name = azurerm_resource_group.azure-experiment-worker-rg.name
+resource "azurerm_public_ip" "changeme-worker-public-ip" {
+  name = "changeme-worker-public-ip"
+  location = azurerm_resource_group.changeme-worker-rg.location
+  resource_group_name = azurerm_resource_group.changeme-worker-rg.name
   allocation_method = "Dynamic"
 }
 
 # create linux vm
-resource "azurerm_linux_virtual_machine" "azure-experiment-worker" {
-  name                = "azure-experiment-worker"
-  resource_group_name = azurerm_resource_group.azure-experiment-worker-rg.name
-  location            = azurerm_resource_group.azure-experiment-worker-rg.location
+resource "azurerm_linux_virtual_machine" "changeme-worker" {
+  name                = "changeme-worker"
+  resource_group_name = azurerm_resource_group.changeme-worker-rg.name
+  location            = azurerm_resource_group.changeme-worker-rg.location
   size                = "Standard_B1s"
   admin_username      = "ubuntu"
   disable_password_authentication = true
   network_interface_ids = [
-    azurerm_network_interface.azure-experiment-worker-ni.id,
+    azurerm_network_interface.changeme-worker-ni.id,
   ]
 
   admin_ssh_key {
     username   = "ubuntu"
-    public_key = file(var.exp_pub_key)
+    public_key = file(var.client_pub_key)
   }
 
   os_disk {
@@ -106,38 +111,42 @@ resource "null_resource" "linux-provisioners" {
   # run the provisioners after the instance has been created
   # and the ip address has been assigned
   depends_on = [
-    azurerm_linux_virtual_machine.azure-experiment-worker,
-    azurerm_public_ip.azure-experiment-worker-public-ip
+    azurerm_linux_virtual_machine.changeme-worker,
+    azurerm_public_ip.changeme-worker-public-ip
   ]
+
   # setup ssh connection for provisioners
   connection {
     user = "ubuntu"
-    host = azurerm_linux_virtual_machine.azure-experiment-worker.public_ip_address
+    host = azurerm_linux_virtual_machine.changeme-worker.public_ip_address
     type = "ssh"
-    private_key = file(var.exp_pvt_key)
+    private_key = file(var.client_pvt_key)
     timeout = "2m"
   }
-
-  # copy local files to remote server
-  # useage: https://www.terraform.io/docs/provisioners/file.html
-  # provisioner "file" {
-    # source = "../../benchmark"
-    # destination = "/home/ubuntu"
-  # }
 
   # execute commands on the server
   provisioner "remote-exec" {
     inline = [
-      # "sudo apt update",
-      # "sudo apt install -y git python3 python3-pip",
-      # "git clone https://github.com/zanderhavgaard/thesis-code",
-      # "python3 --version",
-      "ls -al",
+      "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      "sudo apt-get update -q",
+      "sudo apt-get install -y -qq git python3 python3-dev python3-pip",
+      "git clone --quiet https://github.com/zanderhavgaard/thesis-code /home/ubuntu/thesis-code",
+      "{ echo -n 'export fbrd=/home/ubuntu/thesis-code\n' ; echo -n 'export PYTHONPATH=$PYTHONPATH:/home/ubuntu/thesis-code/benchmark\n' ; cat .bashrc ; } > /home/ubuntu/.bashrc.new",
+      "mv .bashrc.new .bashrc",
+      "cd /home/ubuntu/thesis-code",
+      "pip3 install -q -r requirements.txt",
     ]
+  }
+
+  # copy local files to remote server
+  # useage: https://www.terraform.io/docs/provisioners/file.html
+  provisioner "file" {
+    source = var.env_file
+    destination = var.remote_env_file
   }
 }
 
 # output ip address
 output "ip_address" {
-  value = azurerm_linux_virtual_machine.azure-experiment-worker.public_ip_address
+  value = azurerm_linux_virtual_machine.changeme-worker.public_ip_address
 }
