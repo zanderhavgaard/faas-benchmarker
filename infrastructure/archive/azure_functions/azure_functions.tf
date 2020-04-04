@@ -20,16 +20,16 @@ provider "azurerm" {
 }
 
 # create resource group
-resource "azurerm_resource_group" "hw-rg" {
-  name = "hw-rg"
+resource "azurerm_resource_group" "changeme-rg" {
+  name = "changeme-rg"
   location = var.azure_region
 }
 
 # create service plan for rg
-resource "azurerm_app_service_plan" "hw-plan" {
-  name = "hw-plan"
+resource "azurerm_app_service_plan" "changeme-plan" {
+  name = "changeme-plan"
   location = var.azure_region
-  resource_group_name = azurerm_resource_group.hw-rg.name
+  resource_group_name = azurerm_resource_group.changeme-rg.name
   kind = "Linux"
   reserved = true
   sku {
@@ -39,24 +39,24 @@ resource "azurerm_app_service_plan" "hw-plan" {
 }
 
 # create storage account for holding function code
-resource "azurerm_storage_account" "helloworld" {
-  name = "thesishelloworld"
-  resource_group_name = azurerm_resource_group.hw-rg.name
+resource "azurerm_storage_account" "changeme-experiment-storage" {
+  name = "changemestorage"
+  resource_group_name = azurerm_resource_group.changeme-rg.name
   location = var.azure_region
   account_tier = "Standard"
   account_replication_type = "LRS"
 }
 
 # create storage container for holding fuctiom code
-resource "azurerm_storage_container" "hw-container" {
-  name = "hw-container"
-  storage_account_name = azurerm_storage_account.helloworld.name
+resource "azurerm_storage_container" "changeme-container" {
+  name = "changeme-container"
+  storage_account_name = azurerm_storage_account.changeme-experiment-storage.name
   container_access_type = "private"
 }
 
 # create permission for function app to access storage container
-data "azurerm_storage_account_sas" "sas-hw" {
-  connection_string = azurerm_storage_account.helloworld.primary_connection_string
+data "azurerm_storage_account_sas" "sas-changeme" {
+  connection_string = azurerm_storage_account.changeme-experiment-storage.primary_connection_string
   https_only        = false
   resource_types {
     service   = false
@@ -84,46 +84,46 @@ data "azurerm_storage_account_sas" "sas-hw" {
 }
 
 # create zip archive locally
-data "archive_file" "hw-function-code" {
+data "archive_file" "changeme-function-code" {
   type = "zip"
   source_dir = "function_code"
   output_path = "function.zip"
 }
 
 # upload zip archive to storage contianer
-resource "azurerm_storage_blob" "hw-code" {
+resource "azurerm_storage_blob" "changeme-code" {
   name = "function.zip"
-  storage_account_name = azurerm_storage_account.helloworld.name
-  storage_container_name = azurerm_storage_container.hw-container.name
+  storage_account_name = azurerm_storage_account.changeme-experiment-storage.name
+  storage_container_name = azurerm_storage_container.changeme-container.name
   type = "Block"
   source = "function.zip"
 }
 
 # create function app 'environment'
 # different from how AWS lambda works
-resource "azurerm_function_app" "hw1" {
-  name = "hw-python"
+resource "azurerm_function_app" "changeme1" {
+  name = "changeme-python"
   location = var.azure_region
-  resource_group_name = azurerm_resource_group.hw-rg.name
-  app_service_plan_id = azurerm_app_service_plan.hw-plan.id
-  storage_connection_string = azurerm_storage_account.helloworld.primary_connection_string
+  resource_group_name = azurerm_resource_group.changeme-rg.name
+  app_service_plan_id = azurerm_app_service_plan.changeme-plan.id
+  storage_connection_string = azurerm_storage_account.changeme-experiment-storage.primary_connection_string
   version = "~2"
 
   app_settings = {
     HASH = filesha256("function.zip")
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.hw-code.url}${data.azurerm_storage_account_sas.sas-hw.sas}"
+    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.changeme-code.url}${data.azurerm_storage_account_sas.sas-changeme.sas}"
   }
 }
 
 # Get the functions key out of the app
 resource "azurerm_template_deployment" "function_key" {
-  depends_on = [azurerm_function_app.hw1]
+  depends_on = [azurerm_function_app.changeme1]
 
   name = "get_fucntion_keys"
   parameters = {
-    "functionApp" = azurerm_function_app.hw1.name
+    "functionApp" = azurerm_function_app.changeme1.name
   }
-  resource_group_name    = azurerm_resource_group.hw-rg.name
+  resource_group_name    = azurerm_resource_group.changeme-rg.name
   deployment_mode = "Incremental"
 
   template_body = <<BODY
@@ -148,9 +148,9 @@ resource "azurerm_template_deployment" "function_key" {
 }
 
 # output some useful variables
-output "func_key" {
+output "funcion_key" {
   value = "${lookup(azurerm_template_deployment.function_key.outputs, "functionkey")}"
 }
 output "function_app_url" {
-  value = azurerm_function_app.hw1.default_hostname
+  value = azurerm_function_app.changeme1.default_hostname
 }

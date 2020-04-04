@@ -12,7 +12,7 @@ from provider_openfaas import OpenFaasProvider
 
 class Benchmarker:
 
-    def __init__(self, experiment_name:str, provider: str, experiment_description: str, env_file_path: str):
+    def __init__(self, experiment_name:str, provider: str, experiment_description: str, env_file_path: str) -> Benchmarker:
 
         # log the experiment name
         self.experiment_name = experiment_name
@@ -56,12 +56,12 @@ class Benchmarker:
                 #  return OpenFaasProvider(env_file_path=env_file_path)
         else:
             raise RuntimeError(
-                f'Error: Please use an implemented provider, options are: ' +
-                '{str(self.providers)}')
+                'Error: Please use an implemented provider, options are: ' +
+                f'{str(self.providers)}')
 
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients
-    def log_experiment_running_time(self):
+    def log_experiment_running_time(self) -> None:
         end_time = time.time()
         experiment_running_time = end_time - self.start_time
         print('=================================================')
@@ -82,7 +82,7 @@ class Benchmarker:
 
         if response is None:
             raise EmptyResponseError(
-                'Error: Empty response from lambda invocation.')
+                'Error: Empty response from cloud function invocation.')
 
         # log repsonse to db
         # TODO
@@ -90,6 +90,7 @@ class Benchmarker:
         return response
 
 
+# create exception class for empty responses
 class EmptyResponseError(RuntimeError):
     def __ini__(self, error_msg: str):
         super(error_msg)

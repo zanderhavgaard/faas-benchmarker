@@ -10,7 +10,7 @@ from provider_abstract import AbstractProvider
 
 class AWSLambdaProvider(AbstractProvider):
 
-    def __init__(self, env_file_path: str):
+    def __init__(self, env_file_path: str) -> AWSLambdaProvider:
 
         # load aws lambda specific invocation url and credentials
         self.load_env_vars(env_file_path)
@@ -21,8 +21,8 @@ class AWSLambdaProvider(AbstractProvider):
             'Content-Type': 'application/json'
         }
 
-    def load_env_vars(self, env_file_path: str):
-        # load .env file and parse values
+    # load .env file and parse values
+    def load_env_vars(self, env_file_path: str) -> None:
         dotenv.load_dotenv(dotenv_path=env_file_path)
         self.api_key = os.getenv('api_key')
         self.gateway_url = os.getenv('invoke_url')
@@ -34,7 +34,6 @@ class AWSLambdaProvider(AbstractProvider):
                         function_endpoint: str,
                         sleep: float = 0.0,
                         invoke_nested: dict = None) -> dict:
-        pass
 
         # paramters, the only required paramter is the statuscode
         params = {
@@ -54,8 +53,6 @@ class AWSLambdaProvider(AbstractProvider):
 
         # create url of function to invoke
         invoke_url = f'{self.gateway_url}/{function_endpoint}'
-
-        print('foo', invoke_url)
 
         # invoke the function
         response = requests.post(

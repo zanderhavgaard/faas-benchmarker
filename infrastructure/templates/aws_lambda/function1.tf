@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "changeme1-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "changeme1-python" {
   filename = data.archive_file.changeme1-lambda-code.output_path
-  function_name = "changeme1-python"
+  function_name = "changeme1"
   role = aws_iam_role.changeme-role.arn
   handler = "function1.lambda_handler"
   runtime = "python3.7"

@@ -31,6 +31,10 @@ provider "azurerm" {
   features {}
 }
 
+provider "null" {
+  version = "2.1"
+}
+
 # create resource group
 resource "azurerm_resource_group" "changeme-worker-rg" {
   name     = "changeme-worker"

@@ -26,6 +26,10 @@ provider "aws" {
   version = "2.51"
 }
 
+provider "archive" {
+  veriosn = "1.3"
+}
+
 # create IAM role for lambdas
 resource "aws_iam_role" "changeme-role" {
   name = "changeme-role"

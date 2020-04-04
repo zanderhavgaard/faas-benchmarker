@@ -19,6 +19,10 @@ provider "aws" {
   version = "2.51"
 }
 
+provider "null" {
+  version = "2.1"
+}
+
 # ec2 instance
 resource "aws_instance" "changeme1-worker-aws" {
   tags = {

@@ -15,9 +15,10 @@ experiment_context="dev_experiment"
 experiment_code="dev_experiment.py"
 
 # terraform templates to use
-cf_provider="aws_lambda"
-# cf_provider="azure_functions"
-client_provider="aws_ec2"
+# cf_provider="aws_lambda"
+cf_provider="azure_functions"
+# client_provider="aws_ec2"
+client_provider="foo"
 # client_provider="azure_linuxvm"
 
 # commands to create/destroy infrastructure
@@ -32,13 +33,15 @@ bash $fbrd/benchmark/infrastructure_orchestrator.sh \
     $experiment_name \
     $experiment_context
 
-client_user="ubuntu"
-client_ip="$(terraform output -state $client_provider/terraform.tfstate ip_address)"
-key_path="$fbrd/secrets/ssh_keys/experiment_servers"
-# $fbrd will expanded on the client, the rest will be expanded locally!
-ssh_command="cd \$fbrd/experiments/$experiment_context && python3 \$fbrd/experiments/$experiment_context/$experiment_code $experiment_name"
+sleep 30
 
-ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
+# client_user="ubuntu"
+# client_ip="$(terraform output -state $client_provider/terraform.tfstate ip_address)"
+# key_path="$fbrd/secrets/ssh_keys/experiment_servers"
+# # $fbrd will expanded on the client, the rest will be expanded locally!
+# ssh_command="cd \$fbrd/experiments/$experiment_context && python3 \$fbrd/experiments/$experiment_context/$experiment_code $experiment_name"
+
+# ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
 # destroy infrastructure after experiment
 bash $fbrd/benchmark/infrastructure_orchestrator.sh \

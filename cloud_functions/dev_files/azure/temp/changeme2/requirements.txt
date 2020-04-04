@@ -1,0 +1,4 @@
+azure-functions
+azure-functions-durable
+psutil
+requests

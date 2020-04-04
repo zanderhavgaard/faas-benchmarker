@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # exit if anything goes wrong
-set -e
+# TODO enable when bug is fixed when destoying azure_functions
+# set -e
 
 # parse argments
 command=$1
@@ -69,8 +70,49 @@ if [ $command == "create" ]; then
 
         azure_functions)
 
-            echo 'azure'
-            echo "not implemented yet"
+
+            echo -e "\n--> Copying Azure functions template ...\n"
+
+            cp -r $template_path/azure_functions $experiment_context
+            cd $experiment_context/azure_functions
+
+            echo -e "\n--> Applying experiment name to copied template ...\n"
+            terraform_files=$(ls *.tf)
+            for terraform_file in $terraform_files; do
+                sed "s/changeme/$experiment_name/g" $terraform_file > $experiment_name\_$terraform_file
+                rm $terraform_file
+            done
+
+            echo -e "\n--> Copying Azure functions app source code ...\n"
+
+            mkdir $experiment_context/azure_functions/function_code
+            cp -r $fbrd/cloud_functions/azure_functions/* $experiment_context/azure_functions/function_code
+
+            echo -e "\n--> Applying experiment name to copied  function source code ...\n"
+
+            function_code_dirs=$(ls function_code/)
+            for fcd in $function_code_dirs; do
+                # get the function number
+                fx_num=${fcd:8:1}
+                exp_filename=$experiment_name$fx_num
+                # file and directory names
+                mv function_code/$fcd/$fcd function_code/$fcd/$exp_filename
+                mv function_code/$fcd function_code/$exp_filename
+            done
+
+            echo -e "\n--> Initializing terraform ...\n"
+            terraform init
+
+            echo -e "\n--> Creating functions ...\n"
+            terraform apply -auto-approve
+
+            echo -e "\n--> Outputting variables to experiment.env ...\n"
+            terraform output >> "../$experiment_name.env"
+
+            cd $experiment_context
+
+            echo -e "\n--> Done creating cloud functions!\n"
+
 
             ;;
 
@@ -186,8 +228,20 @@ elif [ $command == "destroy" ]; then
 
             ;;
         azure_functions)
-            echo 'azure'
-            echo "not implemented yet"
+
+            echo -e "\n--> Destroying experiment cloud function infrastructure ...\n"
+
+            cd $experiment_context/azure_functions
+            terraform destroy -auto-approve
+            # TODO fix, seems to be some bug when destroying function resources, though everything is deleted if run again??
+            terraform destroy -auto-approve
+            cd $experiment_context
+
+            echo -e "\n--> Removing experiment infrastructure files ...\n"
+            rm -rf $experiment_context/azure_functions
+
+            echo -e "\n--> Done destroying! \n"
+
             ;;
         openfaas)
             echo 'openfaas'
