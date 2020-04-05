@@ -235,6 +235,8 @@ elif [ $command == "destroy" ]; then
             terraform destroy -auto-approve
             # TODO fix, seems to be some bug when destroying function resources, though everything is deleted if run again??
             terraform destroy -auto-approve
+            terraform destroy -auto-approve
+            terraform destroy -auto-approve
             cd $experiment_context
 
             echo -e "\n--> Removing experiment infrastructure files ...\n"

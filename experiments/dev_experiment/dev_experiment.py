@@ -9,18 +9,23 @@ import json
 from pprint import pprint
 from benchmarker import Benchmarker
 
+# name of the terraform experiment
 experiment_name = sys.argv[1]
-# describe experiment, should be verbose enough
-# to figure out what the experiment does and what it
-# attempts to test
+
+# describe experiment, should be verbose enough to figure 
+# out what the experiment does and what it attempts to test
 description = 'dev-experiment: this experiment tests ' + \
     'the implmentation of the benchmarking platform'
+
 # name of cloud function provider for this experiment
-provider = 'aws_lambda'
+provider = sys.argv[2]
+
+#  provider = 'aws_lambda'
 #  provider = 'azure_functions'
 # relative path experiment.env file
 # TODO make argument
-env_file_path = 'dev-exp.env'
+#  env_file_path = 'dev-exp.env'
+env_file_path = sys.argv[3]
 
 # create the benchmarker
 benchmarker = Benchmarker(experiment_name=experiment_name,
@@ -65,15 +70,15 @@ response = benchmarker.invoke_function(function_endpoint=fx_name,
 pprint(response)
 print()
 
-print('invoking with nested invocations')
-# invoke with nested invocations
-response = benchmarker.invoke_function(function_endpoint=fx_name,
-                                       sleep=sleep_amount,
-                                       invoke_nested=invoke_nested)
-#  response = response.json()
-#  response['body'] = json.loads(response['body'])
-pprint(response)
-print()
+#  print('invoking with nested invocations')
+#  # invoke with nested invocations
+#  response = benchmarker.invoke_function(function_endpoint=fx_name,
+                                       #  sleep=sleep_amount,
+                                       #  invoke_nested=invoke_nested)
+#  #  response = response.json()
+#  #  response['body'] = json.loads(response['body'])
+#  pprint(response)
+#  print()
 
 
 # log the total running time of this experiment

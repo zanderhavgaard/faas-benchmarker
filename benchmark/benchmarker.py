@@ -1,5 +1,6 @@
 #!/bin/python
 
+import sys
 import time
 import json
 import requests
@@ -12,7 +13,7 @@ from provider_openfaas import OpenFaasProvider
 
 class Benchmarker:
 
-    def __init__(self, experiment_name:str, provider: str, experiment_description: str, env_file_path: str) -> Benchmarker:
+    def __init__(self, experiment_name:str, provider: str, experiment_description: str, env_file_path: str) -> None:
 
         # log the experiment name
         self.experiment_name = experiment_name
@@ -29,6 +30,8 @@ class Benchmarker:
 
         print('\n=================================================')
         print('FaaS benchmarker ~ Stating experiment ...')
+        print('=================================================')
+        print(f'Python version: {sys.version}')
         print('=================================================')
         print(f'experiment name:         {experiment_name}')
         print(f'using provider:          {provider}')
@@ -49,8 +52,7 @@ class Benchmarker:
             if provider == 'aws_lambda':
                 return AWSLambdaProvider(env_file_path=env_file_path)
             elif provider == 'azure_functions':
-                raise NotImplementedError()
-                #  return AzureFunctionsProvider(env_file_path=env_file_path)
+                return AzureFunctionsProvider(env_file_path=env_file_path)
             elif provider == 'openfaas':
                 raise NotImplementedError()
                 #  return OpenFaasProvider(env_file_path=env_file_path)

@@ -26,14 +26,14 @@ creation_command="create"
 destruction_command="destroy"
 
 # generate infrastructure from templates
-bash $fbrd/benchmark/infrastructure_orchestrator.sh \
-    $creation_command \
-    $cf_provider \
-    $client_provider \
-    $experiment_name \
-    $experiment_context
+# bash $fbrd/benchmark/infrastructure_orchestrator.sh \
+    # $creation_command \
+    # $cf_provider \
+    # $client_provider \
+    # $experiment_name \
+    # $experiment_context
 
-sleep 30
+# sleep 30
 
 # client_user="ubuntu"
 # client_ip="$(terraform output -state $client_provider/terraform.tfstate ip_address)"
@@ -43,10 +43,19 @@ sleep 30
 
 # ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
+python $experiment_code $experiment_name $cf_provider "$experiment_name.env"
+
 # destroy infrastructure after experiment
-bash $fbrd/benchmark/infrastructure_orchestrator.sh \
-    $destruction_command \
-    $cf_provider \
-    $client_provider \
-    $experiment_name \
-    $experiment_context
+# bash $fbrd/benchmark/infrastructure_orchestrator.sh \
+    # $destruction_command \
+    # $cf_provider \
+    # $client_provider \
+    # $experiment_name \
+    # $experiment_context
+
+# bash $fbrd/benchmark/infrastructure_orchestrator.sh \
+    # $creation_command \
+    # $cf_provider \
+    # $client_provider \
+    # $experiment_name \
+    # $experiment_context

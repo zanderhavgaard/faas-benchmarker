@@ -10,7 +10,7 @@ from provider_abstract import AbstractProvider
 
 class AWSLambdaProvider(AbstractProvider):
 
-    def __init__(self, env_file_path: str) -> AWSLambdaProvider:
+    def __init__(self, env_file_path: str) -> None:
 
         # load aws lambda specific invocation url and credentials
         self.load_env_vars(env_file_path)
@@ -68,13 +68,20 @@ class AWSLambdaProvider(AbstractProvider):
         response_data = response.json()
 
         # parse reponse body json
-        response_data['body'] = json.loads(response_data['body'])
+        #  response_data['body'] = json.loads(response_data['body'])
+        # TODO make more concise
+        response_data = json.loads(response_data['body'])
 
         # get the identifer
         identifier = response_data['identifier']
 
+        response_data[identifier]['invocation_start'] = start_time
+        response_data[identifier]['invocation_end'] = end_time
+
         # add start / end times to body
-        response_data['body'][identifier]['invocation_start'] = start_time
-        response_data['body'][identifier]['invocation_end'] = end_time
+        #  response_data['body'][identifier]['invocation_start'] = start_time
+        #  response_data['body'][identifier]['invocation_end'] = end_time
+
+        response_data['root_identifier'] = identifier
 
         return response_data

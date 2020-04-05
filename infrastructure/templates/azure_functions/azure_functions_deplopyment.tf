@@ -99,3 +99,10 @@ data "azurerm_storage_account_sas" "sas-changeme" {
     process = false
   }
 }
+
+resource "azurerm_application_insights" "changeme" {
+  name = "changeme-insights"
+  location = var.azure_region
+  resource_group_name = azurerm_resource_group.changeme-rg.name
+  application_type = "web"
+}
