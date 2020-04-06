@@ -70,7 +70,6 @@ if [ $command == "create" ]; then
 
         azure_functions)
 
-
             echo -e "\n--> Copying Azure functions template ...\n"
 
             cp -r $template_path/azure_functions $experiment_context
@@ -105,6 +104,19 @@ if [ $command == "create" ]; then
 
             echo -e "\n--> Creating functions ...\n"
             terraform apply -auto-approve
+
+            echo -e "\n--> Fixing broken terraform azure function code deployment ...\n"
+
+            # reupload function code but with dependencies....
+            function_code_dirs=$(ls function_code/)
+            for fcd in $function_code_dirs; do
+                # get the function number
+                fx_num=${fcd:7:1}
+                exp_function_app_name=$experiment_name$fx_num-python
+                cd function_code/$fcd
+                func azure functionapp publish $exp_function_app_name
+                cd ../..
+            done
 
             echo -e "\n--> Outputting variables to experiment.env ...\n"
             terraform output >> "../$experiment_name.env"

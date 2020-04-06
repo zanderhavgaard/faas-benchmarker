@@ -52,10 +52,3 @@ bash $fbrd/benchmark/infrastructure_orchestrator.sh \
     $client_provider \
     $experiment_name \
     $experiment_context
-
-# bash $fbrd/benchmark/infrastructure_orchestrator.sh \
-    # $creation_command \
-    # $cf_provider \
-    # $client_provider \
-    # $experiment_name \
-    # $experiment_context

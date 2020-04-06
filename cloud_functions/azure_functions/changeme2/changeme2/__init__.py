@@ -1,10 +1,10 @@
 import logging
-import azure.functions as func
 import time
 import json
 import uuid
-#  import psutil
-#  import requests
+import requests
+import psutil
+import azure.functions as func
 
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
@@ -30,8 +30,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     identifier = f'{function_name}-{invocation_uuid}'
 
     # make sure that things are working...
-    #  if req_json['StatusCode'] != 200:
-        #  raise Exception("Something went wrong ...")
+    if req_json['StatusCode'] != 200:
+        raise Exception("Something went wrong ...")
 
     # create a dict that will be parsed to json
     body = {
@@ -50,16 +50,16 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         body[identifier]['sleep'] = 0.0
 
     # invoke nested functions from arguments
-    #  if 'invoke_nested' in req_json:
-        #  for invoke in req_json['invoke_nested']:
-            #  nested_response = invoke_nested_function(
-                #  function_name=invoke['function_name'],
-                #  invoke_payload=invoke['invoke_payload'],
-                #  code=invoke['code']
-            #  )
-            #  # add each nested invocation to response body
-            #  for id in nested_response.keys():
-                #  body[id] = nested_response[id]
+    if 'invoke_nested' in req_json:
+        for invoke in req_json['invoke_nested']:
+            nested_response = invoke_nested_function(
+                function_name=invoke['function_name'],
+                invoke_payload=invoke['invoke_payload'],
+                code=invoke['code']
+            )
+            # add each nested invocation to response body
+            for id in nested_response.keys():
+                body[id] = nested_response[id]
 
     # log some metadata
     body[identifier]['invocation_id'] = context.invocation_id
@@ -69,7 +69,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # in attempt to uniquely identify the instances we log the
     # ip address of the instance executing the function
     # TODO enable
-    #  body[identifier]['ip_address'] = psutil.net_if_addrs()['eth0'][0][1]
+    body[identifier]['ip_address'] = psutil.net_if_addrs()['eth0'][0][1]
 
     # log instance identifier
     body[identifier]['instance_identifier'] = instance_identifier
@@ -102,38 +102,38 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     return response
 
 
-#  def invoke_nested_function(function_name: str, 
-                           #  invoke_payload: dict, 
-                           #  code: str
-                           #  ) -> dict:
+def invoke_nested_function(function_name: str, 
+                           invoke_payload: dict, 
+                           code: str
+                           ) -> dict:
 
-    #  # capture the invocation start time
-    #  start_time = time.time()
+    # capture the invocation start time
+    start_time = time.time()
 
-    #  headers = {
-        #  'Content-Type': 'application/json'
-    #  }
+    headers = {
+        'Content-Type': 'application/json'
+    }
 
-    #  function_app_name = f'https://{function_name}.azurewebsites.net'
+    function_app_name = f'https://{function_name}-python.azurewebsites.net'
 
-    #  invocation_url = f'{function_app_name}/api/{function_name}?code={code}'
+    invocation_url = f'{function_app_name}/api/{function_name}?code={code}'
 
-    #  response = requests.post(
-        #  url=invocation_url,
-        #  headers=headers,
-        #  data=json.dumps(invoke_payload)
-    #  )
+    response = requests.post(
+        url=invocation_url,
+        headers=headers,
+        data=json.dumps(invoke_payload)
+    )
 
-    #  # capture the invocation end time
-    #  end_time = time.time()
+    # capture the invocation end time
+    end_time = time.time()
 
-    #  # parse json payload to dict
-    #  body = response.json()
-    #  # get identifier of invoked lambda
-    #  id = body['identifier']
+    # parse json payload to dict
+    body = response.json()
+    # get identifier of invoked lambda
+    id = body['identifier']
 
-    #  # add invocation start/end times
-    #  body[id]['invocation_start'] = start_time
-    #  body[id]['invocation_end'] = end_time
+    # add invocation start/end times
+    body[id]['invocation_start'] = start_time
+    body[id]['invocation_end'] = end_time
 
-    #  return body
+    return body

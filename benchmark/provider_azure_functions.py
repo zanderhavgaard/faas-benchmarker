@@ -7,6 +7,7 @@ import os
 import dotenv
 from provider_abstract import AbstractProvider
 
+from pprint import pprint
 
 class AzureFunctionsProvider(AbstractProvider):
 
@@ -33,7 +34,7 @@ class AzureFunctionsProvider(AbstractProvider):
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: dict = None) -> dict:
+                        invoke_nested: list = None) -> dict:
 
         function_app_url = os.getenv(f'{function_endpoint}_function_app_url')
         function_key = os.getenv(f'{function_endpoint}_function_key')
@@ -55,7 +56,13 @@ class AzureFunctionsProvider(AbstractProvider):
 
         # add optional dict describing nested invocations, if presente
         if invoke_nested != None:
-            params['invoke_nested'] = invoke_nested
+            check_for_nested_invocation_deadlocks(
+                nested_invocations=invoke_nested,
+                illegal_fx_names=[function_endpoint]
+                )
+            params['invoke_nested'] = add_function_code_for_nested_invocations(
+                nested_invocations=invoke_nested
+                )
 
         # log start time of invocation
         start_time = time.time()
@@ -85,3 +92,33 @@ class AzureFunctionsProvider(AbstractProvider):
         response_data['root_identifier'] = identifier
 
         return response_data
+
+# recursively add function codes to invoke nested dict
+def add_function_code_for_nested_invocations(nested_invocations: list) -> list:
+    for ni in nested_invocations:
+        fx = ni['function_name']
+        ni["code"] = os.getenv(f'{fx}_function_key')
+        if 'invoke_nested' in ni['invoke_payload']:
+            print('fooooo')
+            ni['invoke_payload']["invoke_nested"] = add_function_code_for_nested_invocations(
+                nested_invocations=ni['invoke_payload']['invoke_nested'],
+                )
+    return nested_invocations
+
+# checks that the same fucntions are not invoked recursively
+# creating a deadlock
+def check_for_nested_invocation_deadlocks(
+        nested_invocations: list,
+        illegal_fx_names: list
+        ) -> list:
+    for ni in nested_invocations:
+        if ni['function_name'] in illegal_fx_names:
+            raise RuntimeError('This nested invocation tree will cause a deadlock.')
+        else:
+            if 'invoke_nested' in ni['invoke_payload']:
+                illegal_fx_names.append(ni['function_name'])
+                check_for_nested_invocation_deadlocks(
+                    nested_invocations=ni['invoke_payload']['invoke_nested'],
+                    illegal_fx_names=illegal_fx_names
+                )
+

@@ -33,7 +33,7 @@ class AWSLambdaProvider(AbstractProvider):
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: dict = None) -> dict:
+                        invoke_nested: list = None) -> dict:
 
         # paramters, the only required paramter is the statuscode
         params = {

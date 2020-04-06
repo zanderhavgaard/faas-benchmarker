@@ -24,12 +24,13 @@ resource "azurerm_function_app" "changeme1" {
   resource_group_name = azurerm_resource_group.changeme-rg.name
   app_service_plan_id = azurerm_app_service_plan.changeme-plan.id
   storage_connection_string = azurerm_storage_account.changeme-experiment-storage.primary_connection_string
-  version = "~3"
+  version = "~2"
 
   app_settings = {
     HASH = data.archive_file.changeme1-function-code.output_base64sha256
     WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.changeme1-code.url}${data.azurerm_storage_account_sas.sas-changeme.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.changeme.instrumentation_key
+    FUNCTIONS_WORKER_RUNTIME = "python"
   }
 }
 
