@@ -32,8 +32,8 @@ resource "digitalocean_droplet" "db-server" {
     inline = [
       "export PATH=$PATH:/usr/bin",
       "cd /root",
-      "git clone https://github.com/zanderhavgaard/thesis-code",
-      "cd thesis-code"
+      "git clone https://github.com/zanderhavgaard/faas-benchmarker",
+      "cd faas-benchmarker"
     ]
   }
 }

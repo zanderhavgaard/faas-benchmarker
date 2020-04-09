@@ -11,7 +11,7 @@ client_provider=$3
 experiment_name=$4
 experiment_context="$fbrd/experiments/$5"
 env_file="$experiment_context/$experiment_name.env"
-remote_env_file="/home/ubuntu/thesis-code/experiments/$5/$4.env"
+remote_env_file="/home/ubuntu/faas-benchmarker/experiments/$5/$4.env"
 
 echo "=================================================================================================="
 echo "Infastructure Orchestrator"
