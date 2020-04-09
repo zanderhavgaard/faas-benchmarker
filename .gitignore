@@ -1,3 +1,9 @@
+experiments/*/aws_ec2/*
+experiments/*/aws_lambda/*
+experiments/*/azure_functions/*
+experiments/*/azure_linuxvm/*
+experiments/*/*.env
+
 Session.vim
 
 secrets/
