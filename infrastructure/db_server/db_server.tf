@@ -4,7 +4,7 @@ variable "do_token" {}
 variable "db_pub_key" {}
 variable "db_pvt_key" {}
 variable "db_ssh_fingerprint" {}
-variable "exp_ssh_fingerprint" {}
+variable "client_ssh_fingerprint" {}
 variable "orch_ssh_fingerprint" {}
 
 provider "digitalocean" {
@@ -18,7 +18,7 @@ resource "digitalocean_droplet" "db-server" {
   region = "fra1"
   size = "512mb"
   private_networking = true
-  ssh_keys = [var.db_ssh_fingerprint, var.exp_ssh_fingerprint, var.orch_ssh_fingerprint]
+  ssh_keys = [var.db_ssh_fingerprint, var.client_ssh_fingerprint, var.orch_ssh_fingerprint]
 
   connection {
     user = "root"

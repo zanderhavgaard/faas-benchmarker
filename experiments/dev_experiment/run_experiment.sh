@@ -46,9 +46,9 @@ destruction_command="destroy"
 # python $experiment_code $experiment_name $cf_provider "$experiment_name.env"
 
 # destroy infrastructure after experiment
-bash $fbrd/benchmark/infrastructure_orchestrator.sh \
-    $destruction_command \
-    $cf_provider \
-    $client_provider \
-    $experiment_name \
-    $experiment_context
+# bash $fbrd/benchmark/infrastructure_orchestrator.sh \
+    # $destruction_command \
+    # $cf_provider \
+    # $client_provider \
+    # $experiment_name \
+    # $experiment_context
