@@ -1,0 +1,24 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+functions:
+  function1:
+    lang: python3
+    handler: ./function1
+    image: zanderhavgaard/function1:latest
+    build_options:
+      - dev
+    # TODO change to project account
+  function2:
+    lang: python3
+    handler: ./function2
+    image: zanderhavgaard/function2:latest
+    build_options:
+      - dev
+  function3:
+    lang: python3
+    handler: ./function3
+    image: zanderhavgaard/function3:latest
+    build_options:
+      - dev

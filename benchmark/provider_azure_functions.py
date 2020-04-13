@@ -113,8 +113,7 @@ def add_function_code_for_nested_invocations(nested_invocations: list) -> list:
 
 def check_for_nested_invocation_deadlocks(
         nested_invocations: list,
-        illegal_fx_names: list
-) -> list:
+        illegal_fx_names: list) -> list:
     for ni in nested_invocations:
         if ni['function_name'] in illegal_fx_names:
             raise RuntimeError(

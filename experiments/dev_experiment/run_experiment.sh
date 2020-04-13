@@ -16,7 +16,8 @@ experiment_code="dev_experiment.py"
 
 # terraform templates to use
 # cf_provider="aws_lambda"
-cf_provider="azure_functions"
+# cf_provider="azure_functions"
+cf_provider="openfaas"
 # client_provider="aws_ec2"
 client_provider="foo"
 # client_provider="azure_linuxvm"
@@ -43,7 +44,7 @@ destruction_command="destroy"
 
 # ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
-# python $experiment_code $experiment_name $cf_provider "$experiment_name.env"
+python $experiment_code $experiment_name $cf_provider "$experiment_name.env"
 
 # destroy infrastructure after experiment
 # bash $fbrd/benchmark/infrastructure_orchestrator.sh \

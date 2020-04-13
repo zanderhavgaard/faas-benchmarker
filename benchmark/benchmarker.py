@@ -13,7 +13,7 @@ from provider_openfaas import OpenFaasProvider
 
 class Benchmarker:
 
-    def __init__(self, experiment_name:str, provider: str, experiment_description: str, env_file_path: str) -> None:
+    def __init__(self, experiment_name: str, provider: str, experiment_description: str, env_file_path: str) -> None:
 
         # log the experiment name
         self.experiment_name = experiment_name
@@ -29,7 +29,7 @@ class Benchmarker:
             provider=provider, env_file_path=env_file_path)
 
         print('\n=================================================')
-        print('FaaS benchmarker ~ Stating experiment ...')
+        print('FaaS benchmarker --> Stating experiment')
         print('=================================================')
         print(f'Python version: {sys.version}')
         print('=================================================')
@@ -54,8 +54,7 @@ class Benchmarker:
             elif provider == 'azure_functions':
                 return AzureFunctionsProvider(env_file_path=env_file_path)
             elif provider == 'openfaas':
-                raise NotImplementedError()
-                #  return OpenFaasProvider(env_file_path=env_file_path)
+                return OpenFaasProvider(env_file_path=env_file_path)
         else:
             raise RuntimeError(
                 'Error: Please use an implemented provider, options are: ' +
@@ -91,8 +90,9 @@ class Benchmarker:
 
         return response
 
-
 # create exception class for empty responses
+
+
 class EmptyResponseError(RuntimeError):
     def __ini__(self, error_msg: str):
         super(error_msg)
