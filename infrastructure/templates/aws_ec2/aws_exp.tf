@@ -3,6 +3,8 @@
 
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
+variable "aws_token" {}
+variable "aws_datacenter_region" {}
 variable "client_pub_key" {}
 variable "client_pvt_key" {}
 variable "client_ssh_fingerprint" {}
@@ -13,9 +15,10 @@ variable "env_file" {}
 
 # setup aws provider
 provider "aws" {
-  region = "eu-central-1"
+  region = var.aws_datacenter_region
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
+  token = var.aws_token
   version = "2.51"
 }
 
@@ -28,7 +31,7 @@ resource "aws_instance" "changeme1-worker-aws" {
   tags = {
     Name = "changeme1-worker"
   }
-  ami = "ami-00f69856ea899baec"
+  ami = "ami-085925f297f89fce1"
   instance_type = "t2.micro"
   key_name = "changeme1_worker"
   subnet_id = aws_subnet.changeme1-worker-subnet.id
@@ -110,7 +113,7 @@ resource "aws_internet_gateway" "changeme1-worker-vpc-gateway" {
 resource "aws_subnet" "changeme1-worker-subnet" {
   cidr_block = cidrsubnet(aws_vpc.changeme1-worker-vpc.cidr_block, 3, 1)
   vpc_id = aws_vpc.changeme1-worker-vpc.id
-  availability_zone = "eu-central-1c"
+  availability_zone = "us-east-1c"
 }
 
 # create routing table in subnet

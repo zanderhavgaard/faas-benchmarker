@@ -5,7 +5,8 @@
 
 variable "aws_access_key" {}
 variable "aws_secret_key" {}
-variable "aws_account_id" {}
+variable "aws_token" {}
+variable "aws_datacenter_region" {}
 
 # path to lambda function code
 variable "path_to_code" {
@@ -20,9 +21,10 @@ locals {
 
 # setup aws provider
 provider "aws" {
-  region = local.aws_region
+  region = var.aws_datacenter_region
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
+  token = var.aws_token
   version = "2.51"
 }
 
