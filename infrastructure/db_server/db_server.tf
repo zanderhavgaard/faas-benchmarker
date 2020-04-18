@@ -16,7 +16,7 @@ resource "digitalocean_droplet" "db-server" {
   image = "docker-18-04"
   name = "db-server"
   region = "fra1"
-  size = "512mb"
+  size = "2gb"
   private_networking = true
   ssh_keys = [var.db_ssh_fingerprint, var.client_ssh_fingerprint, var.orch_ssh_fingerprint]
 
