@@ -3,6 +3,13 @@
 # This script is used to install all of the depencies for
 # orchestrating the openfaas on eks/fargate bootstap
 
+# install aws cli
+curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+unzip awscli-bundle.zip
+sudo python3 awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+rm -rf awscli-bundle
+rm awscli-bundle.zip
+
 # install eksctl
 # https://github.com/weaveworks/eksctl
 curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp

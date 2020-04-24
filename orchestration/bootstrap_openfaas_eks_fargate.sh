@@ -12,6 +12,8 @@ echo -e "Experiment name: $experiment_name"
 echo -e "EKS cluster name: $cluster_name"
 echo -e "AWS region: $region\n"
 
+echo -e "\n--> Creating EKS cluster on fargate ...\n"
+
 # create the cluster
 eksctl create cluster \
     --fargate \
@@ -20,6 +22,8 @@ eksctl create cluster \
 
 # wait a bit for things to be ready
 sleep 5
+
+echo -e "\n--> Creating fargateprofile for openfaas namespace ...\n"
 
 # setup fargate profiles for namespaces
 eksctl create fargateprofile \
@@ -30,6 +34,8 @@ eksctl create fargateprofile \
 # wait a bit for things to be ready
 sleep 5
 
+echo -e "\n--> Creating fargateprofile for openfaas-fn namespace ...\n"
+
 eksctl create fargateprofile \
     --cluster "$cluster_name" \
     --region "$region" \
@@ -38,25 +44,40 @@ eksctl create fargateprofile \
 # wait a bit for things to be ready
 sleep 5
 
+echo -e "\n--> arkade install openfaas ...\n"
+
 # install openfaas
 arkade install openfaas --load-balancer
 
 # wait a bit for things to be ready
 sleep 5
 
+echo -e "\n--> Kubectl openfaas gateway rollout ...\n"
+
 # configure openfaas
 kubectl rollout status -n openfaas deploy/gateway
+
+sleep 5
+
+echo -e "\n--> Creating portforwarding ...\n"
+
 kubectl port-forward -n openfaas svc/gateway 8080:8080 &
 
 # wait a bit for things to be ready
 sleep 5
 
+echo -e "\n--> faas-cli log in to cluste ...\n"
+
 # log faas-cli into the new cluster
 PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)
 echo -n $PASSWORD | faas-cli login --username admin --password-stdin
 
+echo -e "\n--> Pulling OpenFaas template files ...\n"
+
 # download openfaas template files
 faas-cli template pull
+
+echo -e "\n--> Deploying functions ...\n"
 
 # deploy the functions
 faas-cli deploy -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml
