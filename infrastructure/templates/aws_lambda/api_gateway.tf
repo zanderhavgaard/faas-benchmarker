@@ -1,37 +1,3 @@
-# create a aws lambda cloud function environment
-# setup with an API gateway and a lambda function using the
-# python 3.7 runtime
-# based on: https://learn.hashicorp.com/terraform/aws/lambda-api-gateway
-
-variable "aws_access_key" {}
-variable "aws_secret_key" {}
-variable "aws_token" {}
-variable "aws_datacenter_region" {}
-
-# path to lambda function code
-variable "path_to_code" {
-  type = string
-  default = "../../../cloud_functions/aws_lambda"
-}
-
-# loacal variables
-locals {
-  aws_region = "eu-central-1"
-}
-
-# setup aws provider
-provider "aws" {
-  region = var.aws_datacenter_region
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
-  token = var.aws_token
-  version = "2.51"
-}
-
-provider "archive" {
-  veriosn = "1.3"
-}
-
 # create IAM role for lambdas
 resource "aws_iam_role" "changeme-role" {
   name = "changeme-role"
@@ -106,14 +72,4 @@ resource "aws_api_gateway_usage_plan_key" "changeme" {
   key_id        = aws_api_gateway_api_key.changeme-key.id
   key_type      = "API_KEY"
   usage_plan_id = aws_api_gateway_usage_plan.changeme.id
-}
-
-# output the invocation url
-output "invoke_url" {
-  value = aws_api_gateway_deployment.changeme-prod.invoke_url
-}
-
-# output the api key
-output "api_key" {
-  value = aws_api_gateway_api_key.changeme-key.value
 }
