@@ -71,6 +71,12 @@ class Benchmarker:
               f'{time.strftime("%H:%M:%S", time.gmtime(experiment_running_time))}')
         print('=================================================')
 
+    def end_experiment(self) -> None:
+        # log the experiment running time, and print to log
+        self.log_experiment_running_time()
+
+        # TODO log experiment metadata
+
     # main method to be used by experiment clients
     def invoke_function(self,
                         function_endpoint: str,
