@@ -4,15 +4,17 @@ import requests
 import dotenv
 import os
 from provider_abstract import AbstractProvider
+import traceback
 
 
 class OpenFaasProvider(AbstractProvider):
 
     def __init__(self, env_file_path: str) -> None:
-
+       
         # load aws lambda specific invocation url and credentials
         self.load_env_vars(env_file_path)
-
+        # added for testing with .test_env
+        self.gateway_url = os.getenv('invoke_url')
         # http headers, contains authentication and data type
         self.headers = {
             'Content-Type': 'application/json'
@@ -25,7 +27,8 @@ class OpenFaasProvider(AbstractProvider):
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: dict = None) -> dict:
+                        invoke_nested: dict = None
+                        ) -> dict:
 
         # paramters, the only required paramter is the statuscode
         params = {
@@ -41,49 +44,87 @@ class OpenFaasProvider(AbstractProvider):
             params['invoke_nested'] = invoke_nested
 
         # TODO change to read from env
-        self.gateway_url = 'http://localhost:8080/function'
+        # commented out while testing
+        # self.gateway_url = 'http://localhost:8080/function'
 
         # create url of function to invoke
         invoke_url = f'{self.gateway_url}/{function_endpoint}'
+       
+        try:
 
-        # log start time of invocation
-        start_time = time.time()
+            # log start time of invocation
+            start_time = time.time()
 
-        # invoke the function
-        response = requests.post(
-            url=invoke_url,
-            headers=self.headers,
-            data=json.dumps(params)
-        )
+            # invoke the function
+            response = requests.post(
+                url=invoke_url,
+                headers=self.headers,
+                data=json.dumps(params)
+            )
+            
+            # log the end time of the invocation
+            end_time = time.time()
 
-        # log the end time of the invocation
-        end_time = time.time()
+            # TODO remove
+            #  print('provider')
+            #  print(response)
+            #  print(response.content.decode())
+          
+            #  import sys
+            #  sys.exit()
 
-        # TODO remove
-        #  print('provider')
-        #  print(response)
-        #  print(response.content.decode())
+            # TODO make same change with if else for AWS and azure
+            # if succesfull invocation parse response
+            if(response.status_code == 200):
 
-        #  import sys
-        #  sys.exit()
+                response_json = json.loads(response.content.decode())
 
-        # parse response
-        response_json = json.loads(response.content.decode())
+                #  import sys
+                #  sys.exit()
 
-        #  print('type', type(response_json))
+                # get the identifier
+                identifier = response_json['identifier']
 
-        #  import sys
-        #  sys.exit()
+                # parse response body
+                response_data = json.loads(response_json['body'])
 
-        # get the identifier
-        identifier = response_json['identifier']
+                # add invocation metadata to response
+                response_data[identifier]['invocation_start'] = start_time
+                response_data[identifier]['invocation_end'] = end_time
+                response_data['root_identifier'] = identifier
 
-        # parse response body
-        response_data = json.loads(response_json['body'])
+                return response_data
 
-        # add invocation metadata to response
-        response_data[identifier]['invocation_start'] = start_time
-        response_data[identifier]['invocation_end'] = end_time
-        response_data['root_identifier'] = identifier
+            else:
+              
+                error_dict = {
+                            'Error': {
+                                'identifier': function_endpoint+'-None-'+str(response.status_code),
+                                'uuid': None,
+                                'sleep': sleep,
+                                'ip_address': None,
+                                'python_version': None,
+                                'hostname': None,
+                                'invocation_start': start_time,
+                                'invocation_end': end_time,
+                                'invocation_start': None,
+                                'invocation_end': None,
+                                'status_code': response.status_code
+                                },
+                                'root_identifier': function_endpoint+'-None-'+str(response.status_code),
+                             }
+                return error_dict
 
-        return response_data
+        except Exception as e:
+            tb = traceback.format_exc()
+            # exception_dict = {
+            #                 'Exception':{
+            #                             'identifier': function_endpoint+'-None-'+str(type(e)),
+            #                             'type':str(type(e)),
+            #                             'message':str(e),
+            #                             'traceback':tb
+            #                             }
+            #                 }
+            # return exception_dict
+            print('caught exception in openfaas of type',type(e), str(e), tb) 
+

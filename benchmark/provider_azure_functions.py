@@ -71,28 +71,83 @@ class AzureFunctionsProvider(AbstractProvider):
         # create url of function to invoke
         invoke_url = f'https://{function_app_url}/api/{function_endpoint}?code={function_key}'
 
-        # invoke the function
-        response = requests.post(
-            url=invoke_url,
-            headers=self.headers,
-            data=json.dumps(params)
-        )
+        try:
 
-        # log the end time of the invocation
-        end_time = time.time()
+            # log start time of invocation
+            start_time = time.time()
 
-        # parse response json
-        response_data = response.json()
+            # invoke the function
+            response = requests.post(
+                url=invoke_url,
+                headers=self.headers,
+                data=json.dumps(params)
+            )
+            
+            # log the end time of the invocation
+            end_time = time.time()
 
-        # get the identifer
-        identifier = response_data['identifier']
+            # TODO remove
+            #  print('provider')
+            #  print(response)
+            #  print(response.content.decode())
+          
+            #  import sys
+            #  sys.exit()
 
-        # add start / end times to body
-        response_data[identifier]['invocation_start'] = start_time
-        response_data[identifier]['invocation_end'] = end_time
-        response_data['root_identifier'] = identifier
+            # TODO make same change with if else for AWS and azure
+            # if succesfull invocation parse response
+            if(response.status_code == 200):
 
-        return response_data
+                response_json = json.loads(response.content.decode())
+
+                #  import sys
+                #  sys.exit()
+
+                # get the identifier
+                identifier = response_json['identifier']
+
+                # parse response body
+                response_data = json.loads(response_json['body'])
+
+                # add invocation metadata to response
+                response_data[identifier]['invocation_start'] = start_time
+                response_data[identifier]['invocation_end'] = end_time
+                response_data['root_identifier'] = identifier
+
+                return response_data
+
+            else:
+              
+                error_dict = {
+                            'Error': {
+                                'identifier': function_endpoint+'-None-'+str(response.status_code),
+                                'uuid': None,
+                                'sleep': sleep,
+                                'ip_address': None,
+                                'python_version': None,
+                                'hostname': None,
+                                'invocation_start': start_time,
+                                'invocation_end': end_time,
+                                'invocation_start': None,
+                                'invocation_end': None,
+                                'status_code': response.status_code
+                                },
+                                'root_identifier': function_endpoint+'-None-'+str(response.status_code),
+                             }
+                return error_dict
+
+        except Exception as e:
+            tb = traceback.format_exc()
+            # exception_dict = {
+            #                 'Exception':{
+            #                             'identifier': function_endpoint+'-None-'+str(type(e)),
+            #                             'type':str(type(e)),
+            #                             'message':str(e),
+            #                             'traceback':tb
+            #                             }
+            #                 }
+            # return exception_dict
+            print('caught exception in openfaas of type',type(e), str(e), tb) 
 
 # recursively add function codes to invoke nested dict
 

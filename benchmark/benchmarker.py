@@ -95,6 +95,31 @@ class Benchmarker:
         # TODO
 
         return response
+    
+
+    # finish implementation
+    def invoke_function_conccurrently(self,
+                        function_endpoint: str,
+                        sleep: float = 0.0,
+                        invoke_nested: dict = None,
+                         numb_threads:int = 1
+                        ) -> list:
+       
+        response = self.provider.invoke_function_conccrently(function_endpoint,
+                                                            sleep,
+                                                            invoke_nested,
+                                                            numb_threads
+                                                            )
+
+        if response is None:
+            raise EmptyResponseError(
+                'Error: Empty response from cloud function invocation.')
+
+        # log repsonse to db
+        # TODO
+
+        # maybe return statuscode 
+        return response
 
 # create exception class for empty responses
 
