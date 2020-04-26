@@ -17,7 +17,13 @@ resource "digitalocean_droplet" "orchestrator" {
   size = "512mb"
   private_networking = true
   ssh_keys = [var.orch_ssh_fingerprint]
+}
 
+resource "random_string" "password" {
+  length = 50
+}
+
+resource "null_resource" "root-provisioner" {
   connection {
     user = "root"
     host = digitalocean_droplet.orchestrator.ipv4_address
@@ -42,19 +48,22 @@ resource "digitalocean_droplet" "orchestrator" {
       # set permissions for experiment servers key
       "chmod 600 /root/.ssh/id_rsa",
 
+      # install unzip
+      "apt update",
+      "apt install -y unzip git python3 python3-dev python3-pip",
+
+      # install terraform v. 0.12.21
+      "wget https://releases.hashicorp.com/terraform/0.12.21/terraform_0.12.21_linux_amd64.zip",
+      "unzip terraform_0.12.21_linux_amd64.zip",
+      "rm terraform_0.12.21_linux_amd64.zip",
+      "mv terraform /usr/bin/terraform",
+
       # source terraform env file
       "echo 'source /root/faas-benchmarker/secrets/terraform_env/terraform_env' >> .bashrc",
 
       # clone repository
       "git clone https://github.com/zanderhavgaard/faas-benchmarker",
 
-      # install terraform v. 0.12.21
-      "apt update",
-      "apt install -y unzip",
-      "wget https://releases.hashicorp.com/terraform/0.12.21/terraform_0.12.21_linux_amd64.zip",
-      "unzip terraform_0.12.21_linux_amd64.zip",
-      "rm terraform_0.12.21_linux_amd64.zip",
-      "mv terraform /usr/bin/terraform",
 
       "echo ======================================",
       "echo = Done setting up orchstrator server =",
