@@ -1,0 +1,14 @@
+version: '3.3'
+
+volumes:
+  mysql_data:
+
+services:
+  mysql:
+    image: 'thomaskeralla/exp_mysql:latest'
+    container_name: db
+    environment:
+      - MYSQL_ROOT_PASSWORD=faas
+    network_mode: host
+    volumes:
+      - mysql_data:/var/lib/mysql
