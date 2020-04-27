@@ -48,7 +48,7 @@ resource "null_resource" "ec2-provisioners" {
       "cd /home/ubuntu/faas-benchmarker",
       "pip3 install -q -r requirements.txt",
       # install depenencies for creating the openfaas cluster
-      "bash /home/ubuntu/faas-benchmarker/orchestration/install_openfaas_orchestration_tools.sh",
+      "bash /home/ubuntu/faas-benchmarker/eks_openfaas_orchestration/install_openfaas_orchestration_tools.sh",
       # create directory for aws credentials
       "mkdir /home/ubuntu/.aws",
     ]
