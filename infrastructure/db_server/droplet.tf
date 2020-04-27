@@ -33,11 +33,11 @@ resource "null_resource" "root-provisioner" {
       "systemctl enable ufw",
 
       # install stuff
-      # "apt-get update -q",
-      # "apt-get upgrade -qq",
+      "apt-get update -q",
+      "apt-get upgrade -qq",
       # there might be more updates dependent on the first batch of updates...
       "apt-get update -q",
-      # "apt-get upgrade -qq",
+      "apt-get upgrade -qq",
       "apt-get install -y -qq figlet unzip git",
 
       # setup non root user
