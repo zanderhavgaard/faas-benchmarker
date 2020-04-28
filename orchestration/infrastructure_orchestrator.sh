@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # exit if anything goes wrong
-# TODO enable when bug is fixed when destoying azure_functions
-# set -e
+set -e
 
 # parse argments
 command=$1
