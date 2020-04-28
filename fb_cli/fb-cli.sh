@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# terminal espace codes for a rainy day
+# NONE='\033[00m'
+# RED='\033[01;31m'
+# GREEN='\033[01;32m'
+# YELLOW='\033[01;33m'
+# PURPLE='\033[01;35m'
+# CYAN='\033[01;36m'
+# WHITE='\033[01;37m'
+# BOLD='\033[1m'
+# UNDERLINE='\033[4m'
+
 banner=$(cat << EOB
   __ _                _ _
  / _| |__         ___| (_)
@@ -27,6 +38,25 @@ function bootstrapOpenfaasLocally {
 function teardownOpenfaasLocally {
   checkThatLocalDevDependenciesAreInstalled
   bash "$fbrd/fb_cli/teardown_openfaas_locally.sh"
+}
+
+function checkValidExperimentName {
+  # get existing experiment names
+  experiment_names=$(ls experiments)
+  # check that name is unique
+  echo "$experiment_names" | grep -qw "$1" && return 1
+  # check that name is valid
+  [[ "$1" =~ ^[a-zA-Z-]*$ ]] || return 1
+  # return true if both checks are good
+  return 0
+}
+
+# create files for a new experiment from templates
+function createExperiment {
+  read -rp "New experiment name [a-zA-Z-]: " exp_name
+  checkValidExperimentName "$exp_name" \
+    && bash "$fbrd/fb_cli/create_experiment.sh" "$exp_name" \
+    || echo -e "Invalid Experiment name ... aborting" && exit
 }
 
 # ==================================
@@ -72,7 +102,7 @@ select opt in $options; do
       ;;
 
     create_experiment)
-      echo "not implemented yet"
+      createExperiment
       ;;
 
     first_time_infrastructure_bootstrap)
