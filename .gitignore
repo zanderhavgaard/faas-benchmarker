@@ -1,3 +1,6 @@
+# openfaas templates
+template/
+
 experiments/*/aws_ec2/*
 experiments/*/aws_lambda/*
 experiments/*/azure_functions/*
