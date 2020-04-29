@@ -88,7 +88,7 @@ resource "null_resource" "root-provisioner" {
       "echo ======================================",
 
       # reboot to apply any kernel updates
-      "reboot",
+      "reboot &",
     ]
   }
 
