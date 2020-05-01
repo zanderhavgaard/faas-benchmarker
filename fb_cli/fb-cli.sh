@@ -40,12 +40,15 @@ function startMinikube {
   fi
 }
 
+<<<<<<< HEAD
 function fixMinikubePortForward {
   msg "Attempting to start port forwarding again ..."
   kubectl port-forward -n openfaas svc/gateway 8080:8080 &
   echo
 }
 
+=======
+>>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 function stopMinikube {
   pmsg "Stopping minikube ..."
   minikube stop
@@ -119,17 +122,28 @@ function chooseExperiment {
 }
 
 # TODO
+<<<<<<< HEAD
 function runExperiment {
   pmsg "Running experiment: $1 ..."
   bash "$fbrd/fb_cli/run_experiment.sh" "$1"
 }
 
+=======
+# function runExperiment {
+
+# }
+
+# TODO
+>>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 function runExperimentLocally {
   pmsg "Running experiment: $1 locally with OpenFaas on Minikube ..."
   bash "$fbrd/fb_cli/run_experiment_local.sh" "$1"
 }
 
+<<<<<<< HEAD
 # TODO
+=======
+>>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 # function reRunLastLocalExperiment {
 # }
 
@@ -162,7 +176,10 @@ options+=" exit"
 
 dev_options="
 run_experiment_locally
+<<<<<<< HEAD
 fix_minikube_port_forward
+=======
+>>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 start_minikube
 stop_minikube
 minikube_status
@@ -181,7 +198,11 @@ select opt in $options; do
       # break out if cancelled
       [ -z "$exp" ] && msg "Cancelled." && break 1
 
+<<<<<<< HEAD
       runExperiment "$exp"
+=======
+      echo "you chose $exp"
+>>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
       ;;
 
     run_all_experiments)
@@ -228,10 +249,13 @@ select opt in $options; do
             runExperimentLocally "$dev_exp"
             ;;
 
+<<<<<<< HEAD
           fix_minikube_port_forward)
             fixMinikubePortForward
             ;;
 
+=======
+>>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
           start_minikube)
             startMinikube
             ;;

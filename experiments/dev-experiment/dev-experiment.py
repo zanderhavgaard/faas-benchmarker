@@ -79,7 +79,7 @@ invoke_nested = [
                 }
             ]
         }
-    },
+    }
 ]
 
 print('invoking with nested invocations')
