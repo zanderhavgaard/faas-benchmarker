@@ -2,40 +2,42 @@
 
 set -e
 
+source "$fbrd/fb_cli/utils.sh"
+
 minikube_driver="kvm2"
 
-echo -e "\n--> Removing any existing minikube ...\n"
+pmsg "Removing any existing minikube ..."
 
 minikube delete
 
-echo -e "\n--> Starting minikube using $minikube_driver driver ...\n"
+pmsg "Starting minikube using $minikube_driver driver ..."
 
 minikube start --driver=$minikube_driver
 sleep 5
 
-echo -e "\n--> Installing OpenFaas using arkade ...\n"
+pmsg "Installing OpenFaas using arkade ..."
 
 arkade install openfaas --wait
 sleep 5
 
-echo -e "\n--> Configuring gateway ...\n"
+pmsg "Configuring gateway ..."
 
 kubectl rollout status -n openfaas deploy/gateway
 sleep 5
 
-echo -e "\n--> Starting port forward ...\n"
+pmsg "Starting port forward ..."
 
 kubectl port-forward -n openfaas svc/gateway 8080:8080 &
 sleep 5
 
-echo -e "\n--> Configuring faas-cli ...\n"
+pmsg "Configuring faas-cli ..."
 
 PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)
 echo -n "$PASSWORD" | faas-cli login --username admin --password-stdin
 
-echo -e "\n--> Deploying functions ...\n"
+pmsg "Deploying functions ..."
 
 faas-cli template pull
 faas-cli deploy -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml
 
-echo -e "\n--> Done configuring OpenFaas\n"
+smsg "Done configuring OpenFaas"

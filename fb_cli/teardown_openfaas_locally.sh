@@ -2,12 +2,14 @@
 
 set -e
 
-echo -e "\n--> Destroying local minikube cluster ...\n"
+source "$fbrd/fb_cli/utils.sh"
+
+pmsg "Destroying local minikube cluster ..."
 
 minikube delete
 
-echo -e "\n--> Stopping any lingering kubectl processes ...\n"
+pmsg "Stopping any lingering kubectl processes ..."
 
 killall -q kubectl
 
-echo -e "\n--> Done destroying minikube cluster ...\n"
+pmsg "Done destroying minikube cluster ..."
