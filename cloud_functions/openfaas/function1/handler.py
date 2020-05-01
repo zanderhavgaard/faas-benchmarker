@@ -26,63 +26,104 @@ def handle(req):
     # whoami?
     identifier = f'{function_name}-{invocation_uuid}'
 
-    # load json to string to dict
-    event = json.loads(req)
+    try:
+        # create a dict that will be parsed to json
+        body = {
+            identifier: {
+                "identifier": identifier,
+                "uuid": invocation_uuid
+            }
+        }
 
-    # make sure that things are working...
-    if event['StatusCode'] != 200:
-        raise Exception("Something went wrong ...")
+        # load json to string to dict
+        event = json.loads(req)
 
-    # create a dict that will be parsed to json
-    body = {
-        identifier: {
-            "identifier": identifier,
-            "uuid": invocation_uuid,
-        },
-    }
+        # make sure that things are working...
+        if event['StatusCode'] != 200:
+            raise Exception(str(event['StatusCode']))
 
-    # if request contains a sleep argument, then sleep for that amount
-    # and log the amount of time slept
-    if 'sleep' in event:
-        time.sleep(event['sleep'])
-        body[identifier]['sleep'] = event['sleep']
-    else:
-        body[identifier]['sleep'] = 0.0
+         # set parent (previous invocation) of this invocation
+        if 'parent' not in event:
+            # if first in chain mark as root
+            body[identifier]['parent'] = 'root'
+        else:
+            body[identifier]['parent'] = event['parent']
 
-    # add ip address of container to uniqely differentiate container instances
-    body[identifier]['ip_address'] = psutil.net_if_addrs()['eth0'][0][1]
+        # set level if root in invocation tree
+        if 'level' not in event:
+            body[identifier]['level'] = 0
+        else:
+            body[identifier]['level'] = event['level'] + 1
 
-    # add python version metadata
-    body[identifier]['python_version'] = platform.python_version()
+        # if request contains a sleep argument, then sleep for that amount
+        # and log the amount of time slept
+        if 'sleep' in event:
+            time.sleep(event['sleep'])
+            body[identifier]['sleep'] = event['sleep']
+        else:
+            body[identifier]['sleep'] = 0.0
 
-    # add the hostname, should uniquely identify container instances
-    body[identifier]['hostname'] = platform.node()
-    # TODO add python version and hostname metadata to other function implementations
+        # add ip address of container to uniqely differentiate container instances
+        body[identifier]['ip_address'] = psutil.net_if_addrs()['eth0'][0][1]
 
-    #  invoke nested functions from arguments
-    if 'invoke_nested' in event:
-        for invoke in event['invoke_nested']:
-            nested_response = invoke_nested_function(
-                function_name=invoke['function_name'],
-                invoke_payload=invoke['invoke_payload']
-            )
-            # add each nested invocation to response body
-            for id in nested_response.keys():
-                body[id] = nested_response[id]
+        # add python version metadata
+        body[identifier]['python_version'] = platform.python_version()
 
-    # add timings and return
-    body[identifier]['execution_start'] = start_time
-    body[identifier]['execution_end'] = time.time()
+        # add the hostname, should uniquely identify container instances
+        body[identifier]['hostname'] = platform.node()
+        # TODO add python version and hostname metadata to other function implementations
 
-    # create return dict and parse json bodu
-    return json.dumps({
-        "statusCode": 200,
-        "headers": {
-            "Content-Type": "application/json; charset=utf-8"
-        },
-        "body": json.dumps(body),
-        "identifier": identifier
-    })
+        #  invoke nested functions from arguments
+        if 'invoke_nested' in event:
+            for invoke in event['invoke_nested']:
+                invoke['invoke_payload']['parent'] = identifier
+                invoke['invoke_payload']['level'] = body[identifier]['level']
+                nested_response = invoke_nested_function(
+                    function_name=invoke['function_name'],
+                    invoke_payload=invoke['invoke_payload']
+                )
+
+                # add each nested invocation to response body
+                for id in nested_response.keys():
+                    body[id] = nested_response[id]
+
+        # add timings and return
+        body[identifier]['execution_start'] = start_time
+        body[identifier]['execution_end'] = time.time()
+
+        # create return dict and parse json bodu
+        return json.dumps({
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            "body": json.dumps(body),
+            "identifier": identifier
+        })
+
+    except Exception as e:
+        return json.dumps({
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            "body": json.dumps({
+                identifier: {
+                    "identifier": identifier,
+                    "uuid": invocation_uuid,
+                    "error": {"message": str(e), "type": str(type(e))},
+                    "parent": None,
+                    "sleep": None,
+                    "ip_address": None,
+                    "python_version": None,
+                    "hostname": None,
+                    "level": None,
+                    "execution_start": start_time,
+                    "execution_end": time.time()
+                }
+            }),
+            "identifier": identifier
+        })
 
 
 def invoke_nested_function(function_name: str,
@@ -92,37 +133,58 @@ def invoke_nested_function(function_name: str,
     # capture the invocation start time
     start_time = time.time()
 
-    headers = {
-        'Content-Type': 'application/json'
-    }
+    try:
 
-    #  function_url = f'{function_name}'
-    # TODO change
-    function_url = 'gateway.openfaas:8080'
-    function_number = function_name[len(function_name)-1:]
+        headers = {
+            'Content-Type': 'application/json'
+        }
 
-    invocation_url = f'http://{function_url}/function/function{function_number}'
+        #  function_url = f'{function_name}'
+        # TODO change
+        function_url = 'gateway.openfaas:8080'
+        function_number = function_name[len(function_name)-1:]
 
-    response = requests.post(
-        url=invocation_url,
-        headers=headers,
-        data=json.dumps(invoke_payload)
-    )
+        invocation_url = f'http://{function_url}/function/function{function_number}'
 
-    # capture the invocation end time
-    end_time = time.time()
+        response = requests.post(
+            url=invocation_url,
+            headers=headers,
+            data=json.dumps(invoke_payload)
+        )
 
-    # parse response_json
-    response_json = json.loads((response.content.decode()))
+        # capture the invocation end time
+        end_time = time.time()
 
-    # get the identifier
-    identifier = response_json['identifier']
+        # parse response_json
+        response_json = json.loads((response.content.decode()))
 
-    # parse response body
-    response_data = json.loads(response_json['body'])
+        # get the identifier
+        identifier = response_json['identifier']
 
-    # add invocation metadata to response
-    response_data[identifier]['invocation_start'] = start_time
-    response_data[identifier]['invocation_end'] = end_time
+        # parse response body
+        response_data = json.loads(response_json['body'])
 
-    return response_data
+        # add invocation metadata to response
+        response_data[identifier]['invocation_start'] = start_time
+        response_data[identifier]['invocation_end'] = end_time
+
+        return response_data
+
+    except Exception as e:
+        return {
+            "error-"+function_name+'-nested_invocation': {
+                "identifier": "error-"+function_name+'-nested_invocation',
+                "uuid": None,
+                "error": {"message": str(e), "type": str(type(e))},
+                "parent": invoke_payload['parent'],
+                "sleep": None,
+                "ip_address": None,
+                "python_version": None,
+                "hostname": None,
+                "level": invoke_payload['level'],
+                "execution_start": None,
+                "execution_end": None,
+                "invocation_start": start_time,
+                "invocation_end": time.time()
+            }
+        }
