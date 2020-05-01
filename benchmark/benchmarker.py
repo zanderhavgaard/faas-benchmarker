@@ -13,7 +13,10 @@ from provider_openfaas import OpenFaasProvider
 
 class Benchmarker:
 
-    def __init__(self, experiment_name: str, provider: str, experiment_description: str, env_file_path: str) -> None:
+    def __init__(self, experiment_name: str, provider: str, experiment_description: str, env_file_path: str, dev_mode: bool = False) -> None:
+
+        # do not log anything if running in dev mode
+        self.dev_mode = dev_mode
 
         # log the experiment name
         self.experiment_name = experiment_name
@@ -95,21 +98,21 @@ class Benchmarker:
         # TODO
 
         return response
-    
 
     # finish implementation
+
     def invoke_function_conccurrently(self,
-                        function_endpoint: str,
-                        sleep: float = 0.0,
-                        invoke_nested: dict = None,
-                         numb_threads:int = 1
-                        ) -> list:
-       
+                                      function_endpoint: str,
+                                      sleep: float = 0.0,
+                                      invoke_nested: dict = None,
+                                      numb_threads: int = 1
+                                      ) -> list:
+
         response = self.provider.invoke_function_conccrently(function_endpoint,
-                                                            sleep,
-                                                            invoke_nested,
-                                                            numb_threads
-                                                            )
+                                                             sleep,
+                                                             invoke_nested,
+                                                             numb_threads
+                                                             )
 
         if response is None:
             raise EmptyResponseError(
@@ -118,7 +121,7 @@ class Benchmarker:
         # log repsonse to db
         # TODO
 
-        # maybe return statuscode 
+        # maybe return statuscode
         return response
 
 # create exception class for empty responses

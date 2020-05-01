@@ -12,18 +12,10 @@ class OpenFaasProvider(AbstractProvider):
 
     def __init__(self, env_file_path: str) -> None:
 
-        # load aws lambda specific invocation url and credentials
-        self.load_env_vars(env_file_path)
-        # added for testing with .test_env
-        self.gateway_url = str(os.getenv('invoke_url'))
         # http headers, contains authentication and data type
         self.headers = {
             'Content-Type': 'application/json'
         }
-
-    # load .env file and parse values
-    def load_env_vars(self, env_file_path: str) -> None:
-        dotenv.load_dotenv(dotenv_path=env_file_path)
 
     def invoke_function(self,
                         function_endpoint: str,
@@ -45,12 +37,12 @@ class OpenFaasProvider(AbstractProvider):
         if invoke_nested != None:
             params['invoke_nested'] = invoke_nested
 
-        # TODO change to read from env
-        # commented out while testing
-        # self.gateway_url = 'http://localhost:8080/function'
+        function_number = function_endpoint[len(function_endpoint)-1:]
 
         # create url of function to invoke
-        invoke_url = f'{self.gateway_url}/{function_endpoint}'
+        invoke_url = f'http://localhost:8080/function/function{function_number}'
+
+        print(invoke_url)
 
         try:
 
