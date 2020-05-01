@@ -2,6 +2,7 @@ import boto3
 import time
 import json
 import uuid
+import platform
 
 
 def lambda_handler(event: dict, context: dict) -> dict:
@@ -23,108 +24,166 @@ def lambda_handler(event: dict, context: dict) -> dict:
     # whoami?
     identifier = f'{function_name}-{invocation_uuid}'
 
-    # make sure that things are working...
-    if event['StatusCode'] != 200:
-        raise Exception("Something went wrong ...")
+    try:
+        # make sure that things are working...
+        if event['StatusCode'] != 200:
+            raise Exception("Error StatusCode: "+str(event['StatusCode']))
 
-    # create a dict that will be parsed to json
-    body = {
-        identifier: {
-            "identifier": identifier,
-            "uuid": invocation_uuid,
-        },
-    }
+        # create a dict that will be parsed to json
+        body = {
+            identifier: {
+                "identifier": identifier,
+                "uuid": invocation_uuid
+            },
+        }
+        # set parent (previous invocation) of this invocation
+        if 'parent' not in event:
+            # if first in chain mark as root
+            body[identifier]['parent'] = 'root'
+        else:
+            body[identifier]['parent'] = event['parent']
+        
+        # set level if root in invocation tree
+        if 'level' not in event:
+            body[identifier]['level'] = 0
+        else:
+            body[identifier]['level'] = event['level'] + 1
 
-    # if request contains a sleep argument, then sleep for that amount
-    # and log the amount of time slept
-    if 'sleep' in event:
-        time.sleep(event['sleep'])
-        body[identifier]['sleep'] = event['sleep']
-    else:
-        body[identifier]['sleep'] = 0.0
+        # if request contains a sleep argument, then sleep for that amount
+        # and log the amount of time slept
+        if 'sleep' in event:
+            time.sleep(event['sleep'])
+            body[identifier]['sleep'] = event['sleep']
+        else:
+            body[identifier]['sleep'] = 0.0
+        
+        # add invocation metadata to response
+        if context is None:
+            # add dummy data
+            body[identifier]['memory'] = 128
+            body[identifier]['instance_identifier'] = "foobar"
+        else:
+            # add memory allocation / size of lambda instance
+            body[identifier]['memory'] = context.memory_limit_in_mb
+            # add unique lambda instance identifier
+            body[identifier]['instance_identifier'] = context.log_stream_name
 
-    # invoke nested lambdas from arguments
-    if 'invoke_nested' in event:
-        # invoke nested will contain a list of dicts specifying how invoke nested functions
-        # create client for invoking other lambdas
-        lambda_client = boto3.client('lambda')
-        # execute each nested lambda invocation command
-        for invoke in event['invoke_nested']:
-            nested_response = invoke_lambda(
+        # add python version metadata
+        body[identifier]['python_version'] = platform.python_version()
+        
+        # invoke nested lambdas from arguments
+        if 'invoke_nested' in event:
+            # invoke nested will contain a list of dicts specifying how invoke nested functions
+            # create client for invoking other lambdas
+            lambda_client = boto3.client('lambda')
+            # execute each nested lambda invocation command
+            for invoke in event['invoke_nested']:
+                invoke['invoke_payload']['parent'] = identifier
+                invoke['invoke_payload']['level'] = body[identifier]['level']
+                nested_response = invoke_lambda(
                 lambda_name=invoke['function_name'],
                 invoke_payload=invoke['invoke_payload'],
                 client=lambda_client,
-                invocation_type=invoke['invocation_type'],
-            )
-            # add each nested invocation to response body
-            for id in nested_response.keys():
-                body[id] = nested_response[id]
+                )
+                # add each nested invocation to response body
+                for id in nested_response.keys():
+                    body[id] = nested_response[id]
 
-    # add invocation metadata to response
-    if context is None:
-        # add dummy data
-        body[identifier]['memory'] = 128
-        body[identifier]['log_stream_name'] = "foobar"
-    else:
-        # add memory allocation / size of lambda instance
-        body[identifier]['memory'] = context.memory_limit_in_mb
-        # add unique lambda instance identifier
-        body[identifier]['log_stream_name'] = context.log_stream_name
 
-    # add timings and return
-    body[identifier]['execution_start'] = start_time
-    body[identifier]['execution_end'] = time.time()
+        # add timings and return
+        body[identifier]['execution_start'] = start_time
+        body[identifier]['execution_end'] = time.time()
 
-    # create return dict and parse json bodu
-    return {
-        "statusCode": 200,
-        "headers": {
-            "Content-Type": "application/json; charset=utf-8"
-        },
-        "body": json.dumps(body),
-        "identifier": identifier
-    }
+        # create return dict and parse json body
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            "body": json.dumps(body),
+            "identifier": identifier
+        }
 
+    except Exception as e:
+        return json.dumps({
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json; charset=utf-8"
+            },
+            "body": json.dumps({
+                identifier: {
+                    "identifier": identifier,
+                    "uuid": invocation_uuid,
+                    "error": {"message": str(e), "type": str(type(e))},
+                    "parent": None,
+                    "sleep": None,
+                    "python_version": None,
+                    "level": None,
+                    "memory": 128,
+                    "instance_identifier": None,
+                    "execution_start": start_time,
+                    "execution_end": time.time()
+                }
+            }),
+            "identifier": identifier
+        })
 
 # invoke another lambda function using boto3, thus invoking the function
 # directly and not interacting with the API gateway
 # params:
 # lambda_name: name of function in AWS
-# inke_payload: dict containing arguments for invoked lambda
+# invoke_payload: dict containing arguments for invoked lambda
 # client: boto3 lambda client, should only be instantiated if needed
-# invocation_type: string that specfifies whether the client lambda should wait for the response
-#   values should be either: 'Event' for asynchronous or 'RequestResponse' for synchronous
-#   default is synchronous
 def invoke_lambda(lambda_name: str,
                   invoke_payload: dict,
-                  client: boto3.client,
-                  invocation_type='RequestResponse') -> dict:
+                  client: boto3.client
+                  ) -> dict:
 
     # capture the invocation start time
     start_time = time.time()
 
-    # invoke the function
-    response = client.invoke(
-        FunctionName=lambda_name,
-        InvocationType=invocation_type,
-        Payload=json.dumps(invoke_payload),
-    )
+    try:
+        # invoke the function
+        response = client.invoke(
+            FunctionName=lambda_name,
+            Payload=json.dumps(invoke_payload),
+        )
 
-    # capture the invocation end time
-    end_time = time.time()
+        # capture the invocation end time
+        end_time = time.time()
 
-    # parse json payload to dict
-    payload = json.load(response['Payload'])
-    # get identifier of invoked lambda
-    id = payload['identifier']
-    # parse the json body
-    body = json.loads(payload['body'])
+        # parse json payload to dict
+        payload = json.load(response['Payload'])
+        # get identifier of invoked lambda
+        id = payload['identifier']
+        # parse the json body
+        body = json.loads(payload['body'])
 
-    # add invocation start/end times
-    body[id]['invocation_start'] = start_time
-    body[id]['invocation_end'] = end_time
+        # add invocation start/end times
+        body[id]['invocation_start'] = start_time
+        body[id]['invocation_end'] = end_time
+        
 
-    return body
+        return body
+    
+    except Exception as e:
+        return {
+            "error-"+lambda_name+'-nested_invocation': {
+                "identifier": "error-"+lambda_name+'-nested_invocation',
+                "uuid": None,
+                "error": {"message": str(e), "type": str(type(e))},
+                "parent": invoke_payload['parent'],
+                "sleep": None,
+                "python_version": None,
+                "level": invoke_payload['level'],
+                "memory": 128,
+                "instance_identifier": None,
+                "execution_start": None,
+                "execution_end": None,
+                "invocation_start": start_time,
+                "invocation_end": time.time()
+            }
+        }
 
 
 # call the method if running locally
