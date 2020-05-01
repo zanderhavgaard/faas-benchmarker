@@ -64,15 +64,13 @@ def handle(req):
             body[identifier]['sleep'] = 0.0
 
         # add ip address of container to uniqely differentiate container instances
-        body[identifier]['ip_address'] = psutil.net_if_addrs()['eth0'][0][1]
+        body[identifier]['instance_identifier'] = str(psutil.net_if_addrs()['eth0'][0][1])+'-'+str(platform.node())
 
+        # add total memory of pod to metadata
+        body[identifier]['memory'] = psutil.virtual_memory()[0]
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
-
-        # add the hostname, should uniquely identify container instances
-        body[identifier]['hostname'] = platform.node()
-        # TODO add python version and hostname metadata to other function implementations
-
+       
         #  invoke nested functions from arguments
         if 'invoke_nested' in event:
             for invoke in event['invoke_nested']:
@@ -118,6 +116,7 @@ def handle(req):
                     "python_version": None,
                     "hostname": None,
                     "level": None,
+                    "instance_identifier": None,
                     "execution_start": start_time,
                     "execution_end": time.time()
                 }
@@ -125,7 +124,10 @@ def handle(req):
             "identifier": identifier
         })
 
-
+# invoke another openfaas function using python requests, will make use of the API gateway
+# params:
+# function_name: name of function in to be called at the gateway
+# invoke_payload: dict containing arguments for invoked function
 def invoke_nested_function(function_name: str,
                            invoke_payload: dict
                            ) -> dict:
@@ -159,16 +161,16 @@ def invoke_nested_function(function_name: str,
         response_json = json.loads((response.content.decode()))
 
         # get the identifier
-        identifier = response_json['identifier']
+        id = response_json['identifier']
 
         # parse response body
-        response_data = json.loads(response_json['body'])
+        body = json.loads(response_json['body'])
 
         # add invocation metadata to response
-        response_data[identifier]['invocation_start'] = start_time
-        response_data[identifier]['invocation_end'] = end_time
+        body[id]['invocation_start'] = start_time
+        body[id]['invocation_end'] = end_time
 
-        return response_data
+        return body
 
     except Exception as e:
         return {
@@ -178,10 +180,9 @@ def invoke_nested_function(function_name: str,
                 "error": {"message": str(e), "type": str(type(e))},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
-                "ip_address": None,
                 "python_version": None,
-                "hostname": None,
                 "level": invoke_payload['level'],
+                "instance_identifier": None,
                 "execution_start": None,
                 "execution_end": None,
                 "invocation_start": start_time,
