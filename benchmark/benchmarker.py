@@ -13,7 +13,10 @@ from provider_openfaas import OpenFaasProvider
 
 class Benchmarker:
 
-    def __init__(self, experiment_name: str, provider: str, experiment_description: str, env_file_path: str) -> None:
+    def __init__(self, experiment_name: str, provider: str, experiment_description: str, env_file_path: str, dev_mode: bool = False) -> None:
+
+        # do not log anything if running in dev mode
+        self.dev_mode = dev_mode
 
         # log the experiment name
         self.experiment_name = experiment_name
