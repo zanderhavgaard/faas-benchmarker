@@ -40,6 +40,12 @@ function startMinikube {
   fi
 }
 
+function fixMinikubePortForward {
+  msg "Attempting to start port forwarding again ..."
+  kubectl port-forward -n openfaas svc/gateway 8080:8080 &
+  echo
+}
+
 function stopMinikube {
   pmsg "Stopping minikube ..."
   minikube stop
@@ -155,6 +161,7 @@ options+=" exit"
 
 dev_options="
 run_experiment_locally
+fix_minikube_port_forward
 start_minikube
 stop_minikube
 minikube_status
@@ -218,6 +225,10 @@ select opt in $options; do
             [ -z "$dev_exp" ] && msg "Cancelled." && break 1
 
             runExperimentLocally "$dev_exp"
+            ;;
+
+          fix_minikube_port_forward)
+            fixMinikubePortForward
             ;;
 
           start_minikube)

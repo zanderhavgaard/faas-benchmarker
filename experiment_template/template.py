@@ -14,6 +14,10 @@ provider = sys.argv[2]
 
 # relative path to experiment.env file
 env_file_path = sys.argv[3]
+
+# dev_mode
+dev_mode = eval(sys.argv[4]) if len(sys.argv) > 4 else False
+
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
@@ -27,7 +31,8 @@ description = f"""
 benchmarker = Benchmarker(experiment_name=experiment_name,
                           provider=provider,
                           experiment_description=description,
-                          env_file_path=env_file_path)
+                          env_file_path=env_file_path,
+                          dev_mode=dev_mode)
 # =====================================================================================
 
 
