@@ -12,20 +12,19 @@ if 'instance_identifier' not in locals():
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # req: HTTPRequest provided by azure
 
-    try:
-        # get start time
-        start_time = time.time()
+    
+    # get start time
+    start_time = time.time()
+    # we create an UUID to ensure that the function has
+    # to do some arbitrary computation such that responses cannot
+    # be cached, as well for identifying unique invocations
+    invocation_uuid = str(uuid.uuid4())
+    # unique name of this function
+    function_name = 'function3'
 
+    try:
         # parse request json
         req_json = json.loads(req.get_body())
-
-        # we create an UUID to ensure that the function has
-        # to do some arbitrary computation such that responses cannot
-        # be cached, as well for identifying unique invocations
-        invocation_uuid = str(uuid.uuid4())
-
-        # unique name of this function
-        function_name = 'function3'
 
         # whoami?
         identifier = f'{function_name}-{invocation_uuid}'
@@ -38,8 +37,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         body = {
             identifier: {
                 "identifier": identifier,
-                "uuid": invocation_uuid,
-                "levle": req_json['level']
+                "uuid": invocation_uuid
             },
         }
 
@@ -56,12 +54,18 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['sleep'] = req_json['sleep']
         else:
             body[identifier]['sleep'] = 0.0
+        
+        # set level if root in invocation tree
+        if 'level' not in req_json:
+            body[identifier]['level'] = 0
+        else:
+            body[identifier]['level'] = req_json['level'] + 1
 
         #  invoke nested functions from arguments
         if 'invoke_nested' in req_json:
             for invoke in req_json['invoke_nested']:
                 invoke['invoke_payload']['parent'] = identifier
-                invoke['invoke_payload']['level'] = req_json['level'] + 1
+                invoke['invoke_payload']['level'] = req_json['level']
                 nested_response = invoke_nested_function(
                 function_name=invoke['function_name'],
                 invoke_payload=invoke['invoke_payload'],
@@ -71,15 +75,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 for id in nested_response.keys():
                     body[id] = nested_response[id]
 
-        # log some metadata
-        body[identifier]['invocation_id'] = context.invocation_id
-        body[identifier]['function_name'] = context.function_name
-        body[identifier]['function_directory'] = context.function_directory
-
-        # in attempt to uniquely identify the instances we log the
-        # ip address of the instance executing the function
-        # TODO enable
-        body[identifier]['ip_address'] = psutil.net_if_addrs()['eth0'][0][1]
 
         # log instance identifier
         body[identifier]['instance_identifier'] = instance_identifier
@@ -110,19 +105,40 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
         # return the HTTPResponse
         return response
-
+    # return httpResponse with error if exception occurs
     except Exception as e:
-        print(str(e))
+        error_body = {
+            "identifier": identifier,
+            identifier: {
+                "identifier": identifier,
+                "uuid": invocation_uuid,
+                "error": {"message": str(e), "type": str(type(e))},
+                "parent": None,
+                "sleep": None,
+                "python_version": None,
+                "level": None,
+                "instance_identifier": instance_identifier,
+                "execution_start": start_time,
+                "execution_end": time.time()
+            }
+        }
+        return func.HttpResponse(body=json.dumps(error_body),
+                                    status_code=200,
+                                    headers={"Content-Type": "application/json; charset=utf-8"},
+                                    charset='utf-8'
+                                    )
+        
 
 def invoke_nested_function(function_name: str, 
                            invoke_payload: dict, 
                            code: str
                            ) -> dict:
 
-    try:
-        # capture the invocation start time
-        start_time = time.time()
+    
+    # capture the invocation start time
+    start_time = time.time()
 
+    try:
         headers = {
             'Content-Type': 'application/json'
         }
@@ -148,10 +164,23 @@ def invoke_nested_function(function_name: str,
         # add invocation start/end times
         body[id]['invocation_start'] = start_time
         body[id]['invocation_end'] = end_time
-        body[id]['level'] = invoke_payload['level']
-        body[id]['parent'] = invoke_payload['parent']
 
         return body
 
     except Exception as e:
-        print(str(e))
+        return {
+            "error-"+function_name+'-nested_invocation': {
+                "identifier": "error-"+function_name+'-nested_invocation',
+                "uuid": None,
+                "error": {"message": str(e), "type": str(type(e))},
+                "parent": invoke_payload['parent'],
+                "sleep": None,
+                "python_version": None,
+                "level": invoke_payload['level'],
+                "instance_identifier": instance_identifier,
+                "execution_start": None,
+                "execution_end": None,
+                "invocation_start": start_time,
+                "invocation_end": time.time()
+            }
+        }

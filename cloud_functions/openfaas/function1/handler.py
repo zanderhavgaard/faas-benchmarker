@@ -98,7 +98,7 @@ def handle(req):
             "body": json.dumps(body),
             "identifier": identifier
         })
-
+    # return json object with error if exception occurs
     except Exception as e:
         return json.dumps({
             "statusCode": 200,
@@ -112,10 +112,9 @@ def handle(req):
                     "error": {"message": str(e), "type": str(type(e))},
                     "parent": None,
                     "sleep": None,
-                    "ip_address": None,
                     "python_version": None,
-                    "hostname": None,
                     "level": None,
+                    "memory": None,
                     "instance_identifier": None,
                     "execution_start": start_time,
                     "execution_end": time.time()
@@ -182,6 +181,7 @@ def invoke_nested_function(function_name: str,
                 "sleep": None,
                 "python_version": None,
                 "level": invoke_payload['level'],
+                "memory": None,
                 "instance_identifier": None,
                 "execution_start": None,
                 "execution_end": None,
