@@ -15,7 +15,7 @@ UNDERLINE='\033[4m'
 
 # for displaying progress
 function pmsg {
-  echo -e "${GREEN}-->${NONE} ${BOLD}$1${NONE}"
+  echo -e "${PURPLE}-->${NONE} ${BOLD}$1${NONE}"
 }
 
 # for errers
@@ -30,5 +30,5 @@ function msg {
 
 # success message
 function smsg {
-echo -e "${BOLD}${YELLOW}--> $1${NONE}"
+echo -e "${BOLD}${GREEN}--> $1${NONE}"
 }
