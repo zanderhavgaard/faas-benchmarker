@@ -119,16 +119,17 @@ function chooseExperiment {
 }
 
 # TODO
-# function runExperiment {
+function runExperiment {
+  pmsg "Running experiment: $1 ..."
+  bash "$fbrd/fb_cli/run_experiment.sh" "$1"
+}
 
-# }
-
-# TODO
 function runExperimentLocally {
   pmsg "Running experiment: $1 locally with OpenFaas on Minikube ..."
   bash "$fbrd/fb_cli/run_experiment_local.sh" "$1"
 }
 
+# TODO
 # function reRunLastLocalExperiment {
 # }
 
@@ -180,7 +181,7 @@ select opt in $options; do
       # break out if cancelled
       [ -z "$exp" ] && msg "Cancelled." && break 1
 
-      echo "you chose $exp"
+      runExperiment "$exp"
       ;;
 
     run_all_experiments)
