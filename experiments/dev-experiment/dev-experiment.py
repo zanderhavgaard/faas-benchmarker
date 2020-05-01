@@ -18,6 +18,10 @@ provider = sys.argv[2]
 # relative path to experiment.env file
 env_file_path = sys.argv[3]
 
+# do not log anything if running in dev mode
+#  dev_mode = bool(sys.argv[4]) if len(sys.argv) > 3 else False
+#  print('dev_mode', dev_mode)
+
 
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
@@ -31,7 +35,7 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           experiment_description=description,
                           env_file_path=env_file_path)
 
-experiment_name = 'function'
+experiment_name = 'dev-experiment'
 
 # name of function to be invoked
 fx_name = f'{experiment_name}1'
