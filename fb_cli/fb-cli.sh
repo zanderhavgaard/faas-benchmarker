@@ -40,15 +40,12 @@ function startMinikube {
   fi
 }
 
-<<<<<<< HEAD
 function fixMinikubePortForward {
   msg "Attempting to start port forwarding again ..."
   kubectl port-forward -n openfaas svc/gateway 8080:8080 &
   echo
 }
 
-=======
->>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 function stopMinikube {
   pmsg "Stopping minikube ..."
   minikube stop
@@ -100,6 +97,22 @@ function listExperiments {
   ls -I "*.md" "$fbrd/experiments"
 }
 
+function updateExperimentInfraTemplates {
+  msg "This will update the templates in each faas-benchmarker/experiments/<experiment> directory"
+  msg "With the templates in faas-benchmarker/infrastructure/templates/"
+  msg "would you like to proceed? [yes/no]"
+  read -n 3 -r ; echo
+  if [[ $REPLY =~ ^yes$ ]]; then
+    for exp in $(listExperiments) ; do
+      stmsg "Updating infrastructure templates for experiment: $exp"
+      bash "$fbrd/fb_cli/copy_infrastructure_templates_to_experiment.sh" "$exp"
+      smsg "Finished updating infrastructure templates for experiment: $exp"
+    done
+  else
+    errmsg "Cancelling."
+  fi
+}
+
 function chooseExperiment {
   experiments=$(listExperiments)
   experiments+=" cancel"
@@ -122,28 +135,17 @@ function chooseExperiment {
 }
 
 # TODO
-<<<<<<< HEAD
 function runExperiment {
   pmsg "Running experiment: $1 ..."
   bash "$fbrd/fb_cli/run_experiment.sh" "$1"
 }
 
-=======
-# function runExperiment {
-
-# }
-
-# TODO
->>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 function runExperimentLocally {
   pmsg "Running experiment: $1 locally with OpenFaas on Minikube ..."
   bash "$fbrd/fb_cli/run_experiment_local.sh" "$1"
 }
 
-<<<<<<< HEAD
 # TODO
-=======
->>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 # function reRunLastLocalExperiment {
 # }
 
@@ -161,9 +163,11 @@ run_experiment
 run_all_experiments
 generate_graphs
 create_experiment
+update_experiment_infra_templates
 first_time_infrastructure_bootstrap
 destroy_permanent_infrastructure
 dev_options
+clear_screen
 "
 
 # add ssh commands if not on orchestrator server
@@ -176,10 +180,7 @@ options+=" exit"
 
 dev_options="
 run_experiment_locally
-<<<<<<< HEAD
 fix_minikube_port_forward
-=======
->>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
 start_minikube
 stop_minikube
 minikube_status
@@ -198,11 +199,7 @@ select opt in $options; do
       # break out if cancelled
       [ -z "$exp" ] && msg "Cancelled." && break 1
 
-<<<<<<< HEAD
       runExperiment "$exp"
-=======
-      echo "you chose $exp"
->>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
       ;;
 
     run_all_experiments)
@@ -219,12 +216,20 @@ select opt in $options; do
       createExperiment
       ;;
 
+    update_experiment_infra_templates)
+      updateExperimentInfraTemplates
+      ;;
+
     first_time_infrastructure_bootstrap)
       firstTimeInfrastrutureBootstrap
       ;;
 
     destroy_permanent_infrastructure)
       destroyPermanentInfrastructure
+      ;;
+
+    clear_screen)
+      clear
       ;;
 
     ssh_orchestrator)
@@ -249,13 +254,10 @@ select opt in $options; do
             runExperimentLocally "$dev_exp"
             ;;
 
-<<<<<<< HEAD
           fix_minikube_port_forward)
             fixMinikubePortForward
             ;;
 
-=======
->>>>>>> 0640f35... implemented running experiments locally on minikube, as well as many utility functions
           start_minikube)
             startMinikube
             ;;
