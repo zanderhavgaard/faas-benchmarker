@@ -82,7 +82,7 @@ class AzureFunctionsProvider(AbstractProvider):
                 headers=self.headers,
                 data=json.dumps(params)
             )
-            
+
             # log the end time of the invocation
             end_time = time.time()
 
@@ -90,7 +90,7 @@ class AzureFunctionsProvider(AbstractProvider):
             #  print('provider')
             #  print(response)
             #  print(response.content.decode())
-          
+
             #  import sys
             #  sys.exit()
 
@@ -117,37 +117,44 @@ class AzureFunctionsProvider(AbstractProvider):
                 return response_data
 
             else:
-              
                 error_dict = {
-                            'Error': {
-                                'identifier': function_endpoint+'-None-'+str(response.status_code),
-                                'uuid': None,
-                                'sleep': sleep,
-                                'ip_address': None,
-                                'python_version': None,
-                                'hostname': None,
-                                'invocation_start': start_time,
-                                'invocation_end': end_time,
-                                'invocation_start': None,
-                                'invocation_end': None,
-                                'status_code': response.status_code
-                                },
-                                'root_identifier': function_endpoint+'-None-'+str(response.status_code),
-                             }
-                return error_dict
+                    'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code): {
+                        'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code),
+                        'uuid': None,
+                        'error':{'message':'None 200 code','responsecode':response.status_code},
+                        'sleep': sleep,
+                        'python_version': None,
+                        "level": 0,
+                        "memory": None,
+                        "instance_identifier": None,
+                        "execution_start": None,
+                        "execution_end": None,
+                        'invocation_start': start_time,
+                        'invocation_end': end_time,
+                    },
+                    'root_identifier':'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
+                }
+                return error_dict               
 
         except Exception as e:
-            tb = traceback.format_exc()
-            # exception_dict = {
-            #                 'Exception':{
-            #                             'identifier': function_endpoint+'-None-'+str(type(e)),
-            #                             'type':str(type(e)),
-            #                             'message':str(e),
-            #                             'traceback':tb
-            #                             }
-            #                 }
-            # return exception_dict
-            print('caught exception in openfaas of type',type(e), str(e), tb) 
+            error_dict = {
+                    'exception-providor_openfaas-'+function_endpoint: {
+                        'identifier': 'exception-providor_openfaas'+function_endpoint,
+                        'uuid': None,
+                        "error": {"message": str(e), "type": str(type(e))},
+                        'sleep': sleep,
+                        'python_version': None,
+                        "level": 0,
+                        "memory": None,
+                        "instance_identifier": None,
+                        "execution_start": None,
+                        "execution_end": None,
+                        'invocation_start': start_time,
+                        'invocation_end': time.time(),
+                    },
+                    'root_identifier':'exception-providor_openfaas'+function_endpoint
+                }
+            return error_dict
 
 # recursively add function codes to invoke nested dict
 

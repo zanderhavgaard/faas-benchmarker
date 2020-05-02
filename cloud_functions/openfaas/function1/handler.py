@@ -40,7 +40,7 @@ def handle(req):
 
         # make sure that things are working...
         if event['StatusCode'] != 200:
-            raise Exception(str(event['StatusCode']))
+            raise Exception('StatusCode:'+str(event['StatusCode']))
 
          # set parent (previous invocation) of this invocation
         if 'parent' not in event:

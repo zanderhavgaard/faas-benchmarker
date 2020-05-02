@@ -5,7 +5,8 @@ import dotenv
 import os
 from provider_abstract import AbstractProvider
 import traceback
-from pprint import pprint
+import sys
+
 
 
 class OpenFaasProvider(AbstractProvider):
@@ -26,7 +27,6 @@ class OpenFaasProvider(AbstractProvider):
         # paramters, the only required paramter is the statuscode
         params = {
             "StatusCode": 200
-            # "level": 0
         }
 
         # add optional sleep parameter if present
@@ -42,20 +42,21 @@ class OpenFaasProvider(AbstractProvider):
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
 
-        print(invoke_url)
+
+        # create url of function to invoke
+        invoke_url = f'http://localhost:8080/function/function{function_number}'
+
+        # log start time of invocation
+        start_time = time.time()
 
         try:
-
-            # log start time of invocation
-            start_time = time.time()
-
             # invoke the function
             response = requests.post(
                 url=invoke_url,
                 headers=self.headers,
                 data=json.dumps(params)
             )
-
+        
             # log the end time of the invocation
             end_time = time.time()
 
@@ -72,8 +73,6 @@ class OpenFaasProvider(AbstractProvider):
             if(response.status_code == 200):
 
                 response_json = json.loads(response.content.decode())
-                # pprint(response_json)
-                # print()
 
                 #  import sys
                 #  sys.exit()
@@ -93,34 +92,42 @@ class OpenFaasProvider(AbstractProvider):
                 return response_data
 
             else:
-
                 error_dict = {
-                    'Error': {
-                        'identifier': function_endpoint+'-None-'+str(response.status_code),
+                    'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code): {
+                        'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code),
                         'uuid': None,
+                        'error':{'message':'None 200 code','responsecode':response.status_code},
                         'sleep': sleep,
-                        'ip_address': None,
                         'python_version': None,
-                        'hostname': None,
+                        "level": 0,
+                        "memory": None,
+                        "instance_identifier": None,
+                        "execution_start": None,
+                        "execution_end": None,
                         'invocation_start': start_time,
                         'invocation_end': end_time,
-                        'invocation_start': None,
-                        'invocation_end': None,
-                        'status_code': response.status_code
                     },
-                    'root_identifier': function_endpoint+'-None-'+str(response.status_code),
+                    'root_identifier':'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
                 }
-                return error_dict
+                return error_dict               
 
         except Exception as e:
-            tb = traceback.format_exc()
-            # exception_dict = {
-            #                 'Exception':{
-            #                             'identifier': function_endpoint+'-None-'+str(type(e)),
-            #                             'type':str(type(e)),
-            #                             'message':str(e),
-            #                             'traceback':tb
-            #                             }
-            #                 }
-            # return exception_dict
-            print('caught exception in openfaas of type', type(e), str(e), tb)
+            error_dict = {
+                    'exception-providor_openfaas-'+function_endpoint: {
+                        'identifier': 'exception-providor_openfaas'+function_endpoint,
+                        'uuid': None,
+                        "error": {"message": str(e), "type": str(type(e))},
+                        'sleep': sleep,
+                        'python_version': None,
+                        "level": 0,
+                        "memory": None,
+                        "instance_identifier": None,
+                        "execution_start": None,
+                        "execution_end": None,
+                        'invocation_start': start_time,
+                        'invocation_end': time.time(),
+                    },
+                    'root_identifier':'exception-providor_openfaas'+function_endpoint
+                }
+            return error_dict  
+            
