@@ -110,19 +110,3 @@ pmsg "Removing experiment environment files ..."
 rm "$experiment_cloud_function_env" "$experiment_client_env"
 
 smsg "Done removing environment files."
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
