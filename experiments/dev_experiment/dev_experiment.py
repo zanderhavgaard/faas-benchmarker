@@ -59,7 +59,7 @@ invoke_nested = [
                 }
             ]
         }
-    }
+    },
 ]
 
 # invoke function and recieve a response body as a dict
