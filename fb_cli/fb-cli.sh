@@ -150,6 +150,7 @@ create_experiment
 first_time_infrastructure_bootstrap
 destroy_permanent_infrastructure
 dev_options
+clear_screen
 "
 
 # add ssh commands if not on orchestrator server
@@ -204,6 +205,10 @@ select opt in $options; do
 
     destroy_permanent_infrastructure)
       destroyPermanentInfrastructure
+      ;;
+
+    clear_screen)
+      clear
       ;;
 
     ssh_orchestrator)

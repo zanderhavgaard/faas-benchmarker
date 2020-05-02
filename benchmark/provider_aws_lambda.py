@@ -5,6 +5,7 @@ import json
 import time
 import os
 import dotenv
+import traceback
 from provider_abstract import AbstractProvider
 
 
