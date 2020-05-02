@@ -43,8 +43,6 @@ class OpenFaasProvider(AbstractProvider):
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
 
-        print(invoke_url)
-
         # log start time of invocation
         start_time = time.time()
 
