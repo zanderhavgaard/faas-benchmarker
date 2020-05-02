@@ -97,6 +97,22 @@ function listExperiments {
   ls -I "*.md" "$fbrd/experiments"
 }
 
+function updateExperimentInfraTemplates {
+  msg "This will update the templates in each faas-benchmarker/experiments/<experiment> directory"
+  msg "With the templates in faas-benchmarker/infrastructure/templates/"
+  msg "would you like to proceed? [yes/no]"
+  read -n 3 -r ; echo
+  if [[ $REPLY =~ ^yes$ ]]; then
+    for exp in $(listExperiments) ; do
+      stmsg "Updating infrastructure templates for experiment: $exp"
+      bash "$fbrd/fb_cli/copy_infrastructure_templates_to_experiment.sh" "$exp"
+      smsg "Finished updating infrastructure templates for experiment: $exp"
+    done
+  else
+    errmsg "Cancelling."
+  fi
+}
+
 function chooseExperiment {
   experiments=$(listExperiments)
   experiments+=" cancel"
@@ -147,6 +163,7 @@ run_experiment
 run_all_experiments
 generate_graphs
 create_experiment
+update_experiment_infra_templates
 first_time_infrastructure_bootstrap
 destroy_permanent_infrastructure
 dev_options
@@ -197,6 +214,10 @@ select opt in $options; do
 
     create_experiment)
       createExperiment
+      ;;
+
+    update_experiment_infra_templates)
+      updateExperimentInfraTemplates
       ;;
 
     first_time_infrastructure_bootstrap)

@@ -49,6 +49,11 @@ resource "null_resource" "linux-provisioners" {
     timeout = "2m"
   }
 
+  provisioner "file" {
+    source = "../../../secrets/ssh_keys/experiment_servers"
+    destination = "/home/ubuntu/.ssh/id_rsa"
+  }
+
   # execute commands on the server
   provisioner "remote-exec" {
     inline = [

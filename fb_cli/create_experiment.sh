@@ -2,13 +2,6 @@
 
 source $fbrd/fb_cli/utils.sh
 
-function applyExperimentNameToTemplate {
-  terraform_files=$(ls $experiment_context/$1/*.tf)
-  for terraform_file in $terraform_files; do
-    sed -i "s/changeme/$experiment_name/g" "$terraform_file"
-  done
-}
-
 # where to find templates
 template_path="$fbrd/infrastructure/templates"
 # name of experiment, must be [a-zA-Z-]
