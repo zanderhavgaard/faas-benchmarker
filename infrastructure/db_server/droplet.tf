@@ -52,6 +52,10 @@ resource "null_resource" "root-provisioner" {
       # clone repository
       "git clone --quiet https://github.com/zanderhavgaard/faas-benchmarker /home/ubuntu/faas-benchmarker",
 
+      # make directory for log files
+      "mkdir -pv /home/ubuntu/logs/experiments",
+      "mkdir -pv /home/ubuntu/logs/orchestration",
+
       # copy the database docker compose file
       "cp /home/ubuntu/faas-benchmarker/infrastructure/db_server/docker-compose.yml /home/ubuntu/docker-compose.yml",
 

@@ -9,10 +9,10 @@ experiment_context="$fbrd/experiments/$experiment_name"
 
 
 function run_experiment_aws {
-  pmsg "Starting experiment for AWS Lambda"
+  stmsg "Starting experiment for AWS Lambda"
   # TODO add nohup?
   bash "$fbrd/orchestration/run_experiment_aws.sh" "$experiment_name"
 }
 
-pmsg "Staring to run Experiment: $experiment_name"
+stmsg "Staring to run Experiment: $experiment_name"
 run_experiment_aws

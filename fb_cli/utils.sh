@@ -13,6 +13,11 @@ WHITE='\033[01;37m'
 BOLD='\033[1m'
 UNDERLINE='\033[4m'
 
+# for displaying messages that indicate the start of a process
+function stmsg {
+  echo -e "${YELLOW}${BOLD}--> $1${NONE}"
+}
+
 # for displaying progress
 function pmsg {
   echo -e "${PURPLE}-->${NONE} ${BOLD}$1${NONE}"
