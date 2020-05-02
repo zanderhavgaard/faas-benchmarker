@@ -2,7 +2,7 @@
 
 STATE_FILE="faas-benchmarker/orchestrator"
 
-echo -e "\nInitializing terraform with spaces backend ...\n"
+echo -e "Initializing terraform with spaces backend ..."
 
 terraform init \
     -backend-config "bucket=$SPACE_NAME" \
