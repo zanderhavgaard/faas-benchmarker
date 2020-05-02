@@ -39,6 +39,9 @@ class OpenFaasProvider(AbstractProvider):
 
         function_number = function_endpoint[len(function_endpoint)-1:]
 
+        # create url of function to invoke
+        invoke_url = f'http://localhost:8080/function/function{function_number}'
+
 
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
