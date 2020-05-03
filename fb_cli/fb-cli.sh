@@ -197,7 +197,7 @@ select opt in $options; do
       exp=$(chooseExperiment)
 
       # break out if cancelled
-      [ -z "$exp" ] && msg "Cancelled." && break 1
+      [ -z "$exp" ] && errmsg "Cancelled." && break 1
 
       runExperiment "$exp"
       ;;
