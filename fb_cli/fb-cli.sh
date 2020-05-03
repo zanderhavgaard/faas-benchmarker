@@ -75,13 +75,13 @@ function destroyPermanentInfrastructure {
 
 function sshOrchestrator {
   cd "$fbrd/infrastructure/orchestrator"
-  ssh ubuntu@$(terraform output ip_address) -i ../../secrets/ssh_keys/orchestrator
+  ssh ubuntu@$TF_VAR_orchstrator_static_ip -i "$fbrd/secrets/ssh_keys/orchestrator"
   cd "$fbrd"
 }
 
 function sshDBServer {
   cd "$fbrd/infrastructure/db_server"
-  ssh ubuntu@$(terraform output ip_address) -i ../../secrets/ssh_keys/db_server
+  ssh ubuntu@$TF_VAR_db_server_static_ip -i "$fbrd/secrets/ssh_keys/db_server"
   cd "$fbrd"
 }
 
