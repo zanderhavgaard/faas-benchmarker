@@ -72,56 +72,57 @@ remote_fbrd="/home/ubuntu/faas-benchmarker"
 
 # ===== run experiment code
 
-pmsg "Executing experiment code on remote client vm ..."
+# pmsg "Executing experiment code on remote client vm ..."
 
-cd "$experiment_context"
+# cd "$experiment_context"
 
-client_user="ubuntu"
-client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
-key_path="$fbrd/secrets/ssh_keys/experiment_servers"
-# $fbrd will expanded on the client, the rest will be expanded locally!
-ssh_command="nohup \
-    python3 $remote_fbrd/experiments/$experiment_name/$experiment_name.py \
-    $experiment_name \
-    $experiment_cloud_function_provider \
-    $remote_fbrd/experiments/$experiment_name/$experiment_name-$experiment_cloud_function_provider.env \
-    "
+# client_user="ubuntu"
+# client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
+# key_path="$fbrd/secrets/ssh_keys/experiment_servers"
+# # $fbrd will expanded on the client, the rest will be expanded locally!
+# ssh_command="nohup \
+    # python3 $remote_fbrd/experiments/$experiment_name/$experiment_name.py \
+    # $experiment_name \
+    # $experiment_cloud_function_provider \
+    # $remote_fbrd/experiments/$experiment_name/$experiment_name-$experiment_cloud_function_provider.env \
+    # "
+
     # > ~/$experiment_name-\$(date -u +\"%d-%m-%Y_%H:%M:%S\").log 2>&1 &
     # "
 
-ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
+# ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
 # ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip "cat *.log"
 
-smsg "Done executing experiment code."
+# smsg "Done executing experiment code."
 
 # ===== destroy cloud functions
 
-cd "$experiment_context/$experiment_cloud_function_provider"
+# cd "$experiment_context/$experiment_cloud_function_provider"
 
-pmsg "Destroying cloud functions ..."
+# pmsg "Destroying cloud functions ..."
 
-terraform destroy -auto-approve
+# terraform destroy -auto-approve
 
-smsg "Done destroying cloud functions."
+# smsg "Done destroying cloud functions."
 
 # ===== destroy client vm
 
-cd "$experiment_context/$experiment_client_provider"
+# cd "$experiment_context/$experiment_client_provider"
 
-pmsg "Destroying client vm ..."
+# pmsg "Destroying client vm ..."
 
-terraform destroy \
-    -auto-approve \
-    -var "env_file=$experiment_cloud_function_env" \
-    -var "remote_env_file=$remote_env_file"
+# terraform destroy \
+    # -auto-approve \
+    # -var "env_file=$experiment_cloud_function_env" \
+    # -var "remote_env_file=$remote_env_file"
 
-smsg "Done destroying client vm."
+# smsg "Done destroying client vm."
 
 # ===== remove experiment env files
 
-pmsg "Removing experiment environment files ..."
+# pmsg "Removing experiment environment files ..."
 
-rm "$experiment_cloud_function_env" "$experiment_client_env"
+# rm "$experiment_cloud_function_env" "$experiment_client_env"
 
-smsg "Done removing environment files."
+# smsg "Done removing environment files."
