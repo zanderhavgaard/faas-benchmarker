@@ -80,8 +80,8 @@ ssh_command="
     $experiment_cloud_function_provider \
     \$fbrd/experiments/$experiment_name/$experiment_name-$experiment_cloud_function_provider.env \
     > $logfile 2>&1 \
-    && scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
-    && touch /home/ubuntu/done
+    ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
+    ; touch /home/ubuntu/done
     ' > /dev/null & "
 
 # start the experiment process on the remote worker server
