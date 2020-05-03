@@ -41,8 +41,10 @@ resource "null_resource" "ec2-provisioners" {
     inline = [
       # wait for cloud-init to finish
       "while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done",
+      # set permission for private key
+      "chmod 600 /home/ubuntu/.ssh/id_rsa",
       # set some environment variables
-      "{ echo -n 'export fbrd=/home/ubuntu/faas-benchmarker\n' ; echo -n 'export PYTHONPATH=$PYTHONPATH:/home/ubuntu/faas-benchmarker/benchmark\n' ; cat .bashrc ; } > /home/ubuntu/.bashrc.new",
+      "{ echo -n 'export fbrd=/home/ubuntu/faas-benchmarker\n' ; echo -n 'export PYTHONPATH=$PYTHONPATH:/home/ubuntu/faas-benchmarker/benchmark\n' ; echo -n 'export DB_HOSTNAME=${var.db_server_static_ip}\n' ; cat .bashrc ; } > /home/ubuntu/.bashrc.new",
       "mv .bashrc.new .bashrc",
       # update and install python
       "sudo apt-get update -q",
