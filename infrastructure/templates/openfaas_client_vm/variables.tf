@@ -1,7 +1,3 @@
-# you must supply the experiment context as a command line argument
-variable "remote_env_file" {}
-variable "env_file" {}
-
 # import variables
 variable "subscription_id" {}
 variable "client_id" {}
