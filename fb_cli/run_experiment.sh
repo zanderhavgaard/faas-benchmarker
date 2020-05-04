@@ -45,8 +45,8 @@ function run_experiment_openfaas {
 
 stmsg "Starting to run Experiment: $experiment_name"
 
-# run_experiment_aws_lambda
-# run_experiment_azure_functions
+run_experiment_aws_lambda
+run_experiment_azure_functions
 run_experiment_openfaas
 
 pmsg "Now waiting for experiments to finish ..."

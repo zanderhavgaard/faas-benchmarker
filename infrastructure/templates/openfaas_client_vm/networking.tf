@@ -7,45 +7,45 @@
 # and: https://docs.microsoft.com/en-us/azure/terraform/terraform-create-complete-vm
 
 # create resource group
-resource "azurerm_resource_group" "changeme-worker-rg" {
-  name     = "changeme-worker"
+resource "azurerm_resource_group" "changene-openfaas-worker-rg" {
+  name     = "changene-openfaas-worker"
   location = "West Europe"
 }
 
 # create VPC
-resource "azurerm_virtual_network" "changeme-worker-network" {
-  name                = "changeme-worker-network"
+resource "azurerm_virtual_network" "changene-openfaas-worker-network" {
+  name                = "changene-openfaas-worker-network"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.changeme-worker-rg.location
-  resource_group_name = azurerm_resource_group.changeme-worker-rg.name
+  location            = azurerm_resource_group.changene-openfaas-worker-rg.location
+  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
 }
 
 # create subnet
-resource "azurerm_subnet" "changeme-worker-subnet" {
-  name                 = "changeme-worker-subnet"
-  resource_group_name  = azurerm_resource_group.changeme-worker-rg.name
-  virtual_network_name = azurerm_virtual_network.changeme-worker-network.name
+resource "azurerm_subnet" "changene-openfaas-worker-subnet" {
+  name                 = "changene-openfaas-worker-subnet"
+  resource_group_name  = azurerm_resource_group.changene-openfaas-worker-rg.name
+  virtual_network_name = azurerm_virtual_network.changene-openfaas-worker-network.name
   address_prefix       = "10.0.2.0/24"
 }
 
 # create network interface
-resource "azurerm_network_interface" "changeme-worker-ni" {
-  name                = "changeme-worker-nic"
-  location            = azurerm_resource_group.changeme-worker-rg.location
-  resource_group_name = azurerm_resource_group.changeme-worker-rg.name
+resource "azurerm_network_interface" "changene-openfaas-worker-ni" {
+  name                = "changene-openfaas-worker-nic"
+  location            = azurerm_resource_group.changene-openfaas-worker-rg.location
+  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
 
   ip_configuration {
-    name                          = "changeme-worker-ip-config"
-    subnet_id                     = azurerm_subnet.changeme-worker-subnet.id
+    name                          = "changene-openfaas-worker-ip-config"
+    subnet_id                     = azurerm_subnet.changene-openfaas-worker-subnet.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id = azurerm_public_ip.changeme-worker-public-ip.id
+    public_ip_address_id = azurerm_public_ip.changene-openfaas-worker-public-ip.id
   }
 }
 
 # create public ip address
-resource "azurerm_public_ip" "changeme-worker-public-ip" {
-  name = "changeme-worker-public-ip"
-  location = azurerm_resource_group.changeme-worker-rg.location
-  resource_group_name = azurerm_resource_group.changeme-worker-rg.name
+resource "azurerm_public_ip" "changene-openfaas-worker-public-ip" {
+  name = "changene-openfaas-worker-public-ip"
+  location = azurerm_resource_group.changene-openfaas-worker-rg.location
+  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
   allocation_method = "Dynamic"
 }

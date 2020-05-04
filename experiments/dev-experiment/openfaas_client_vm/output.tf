@@ -1,4 +1,4 @@
 # output ip address
 output "ip_address" {
-  value = azurerm_linux_virtual_machine.dev-experiment-worker.public_ip_address
+  value = azurerm_linux_virtual_machine.changene-openfaas-worker.public_ip_address
 }

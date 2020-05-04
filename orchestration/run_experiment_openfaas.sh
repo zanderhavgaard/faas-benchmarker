@@ -66,31 +66,31 @@ ssh_command="
     ' > /dev/null & "
 
 # start the experiment process on the remote worker server
-# ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
+ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
 # check every interval if the experiment code has finished running and the infrastructure can be destroyed
-# until ssh -o "StrictHostKeyChecking=no" -i "$key_path" "$client_user@$client_ip" "[ -f '/home/ubuntu/done' ]" ; do
-    # echo "$(date) Waiting for experiment to finish ..."
-    # sleep $check_progress_interval
-# done
+until ssh -o "StrictHostKeyChecking=no" -i "$key_path" "$client_user@$client_ip" "[ -f '/home/ubuntu/done' ]" ; do
+    echo "$(date) Waiting for experiment to finish ..."
+    sleep $check_progress_interval
+done
 
-# smsg "Done executing experiment code."
+smsg "Done executing experiment code."
 
 # ===== destroy client vm
 
-# cd "$experiment_context/$experiment_client_provider"
+cd "$experiment_context/$experiment_client_provider"
 
-# pmsg "Destroying client vm ..."
+pmsg "Destroying client vm ..."
 
-# terraform destroy \
-    # -auto-approve
+terraform destroy \
+    -auto-approve
 
-# smsg "Done destroying client vm."
+smsg "Done destroying client vm."
 
 # ===== remove experiment env files
 
-# pmsg "Removing experiment environment files ..."
+pmsg "Removing experiment environment files ..."
 
-# rm "$experiment_client_env"
+rm "$experiment_client_env"
 
-# smsg "Done removing environment files."
+smsg "Done removing environment files."
