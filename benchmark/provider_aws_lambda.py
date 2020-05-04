@@ -103,40 +103,42 @@ class AWSLambdaProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code): {
-                        'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code),
+                    'StatusCode-error-providor_aws-'+function_endpoint+'-'+str(response.status_code): {
+                        'identifier': 'StatusCode-error-providor_aws'+function_endpoint+'-'+str(response.status_code),
                         'uuid': None,
                         'error':{'message':'None 200 code','responsecode':response.status_code},
+                        'parent': None,
                         'sleep': sleep,
                         'python_version': None,
-                        "level": 0,
-                        "memory": None,
-                        "instance_identifier": None,
-                        "execution_start": None,
-                        "execution_end": None,
+                        'level': None,
+                        'memory': None,
+                        'instance_identifier': None,
+                        'execution_start': None,
+                        'execution_end': None,
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier':'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
+                    'root_identifier':'StatusCode-error-providor_aws'+function_endpoint+'-'+str(response.status_code)
                 }
-                return error_dict
+                return error_dict               
 
         except Exception as e:
             error_dict = {
-                    'exception-providor_openfaas-'+function_endpoint: {
-                        'identifier': 'exception-providor_openfaas'+function_endpoint,
+                    'exception-providor_aws-'+function_endpoint: {
+                        'identifier': 'exception-providor_aws'+function_endpoint,
                         'uuid': None,
-                        "error": {"message": str(e), "type": str(type(e))},
+                        'error': {"message": str(e), "type": str(type(e))},
+                        'parent': None,
                         'sleep': sleep,
                         'python_version': None,
-                        "level": 0,
-                        "memory": None,
-                        "instance_identifier": None,
-                        "execution_start": None,
-                        "execution_end": None,
+                        'level': None,
+                        'memory': None,
+                        'instance_identifier': None,
+                        'execution_start': None,
+                        'execution_end': None,
                         'invocation_start': start_time,
                         'invocation_end': time.time(),
                     },
-                    'root_identifier':'exception-providor_openfaas'+function_endpoint
+                    'root_identifier':'exception-providor_aws'+function_endpoint
                 }
-            return error_dict 
+            return error_dict   

@@ -7,6 +7,7 @@ import os
 import dotenv
 import traceback
 from provider_abstract import AbstractProvider
+from sets import Set
 
 from pprint import pprint
 
@@ -41,9 +42,6 @@ class AzureFunctionsProvider(AbstractProvider):
         function_app_url = os.getenv(f'{function_endpoint}_function_app_url')
         function_key = os.getenv(f'{function_endpoint}_function_key')
 
-        print('url', function_app_url)
-        print('key', function_key)
-
         if function_app_url is None or function_key is None:
             raise RuntimeError('Could not parse function app url or key.')
 
@@ -58,13 +56,16 @@ class AzureFunctionsProvider(AbstractProvider):
 
         # add optional dict describing nested invocations, if presente
         if invoke_nested != None:
-            check_for_nested_invocation_deadlocks(
-                nested_invocations=invoke_nested,
-                illegal_fx_names=[function_endpoint]
-            )
-            params['invoke_nested'] = add_function_code_for_nested_invocations(
-                nested_invocations=invoke_nested
-            )
+            # check_for_nested_invocation_deadlocks(
+            #     nested_invocations=invoke_nested,
+            #     illegal_fx_names=[function_endpoint]
+            # )
+            if(check_for_nested_deadlock(invoke_nested,{function_endpoint})):
+                params['invoke_nested'] = add_function_code_for_nested_invocations(
+                    nested_invocations=invoke_nested
+                )
+            else:
+                raise Exception('azure deadlock')
 
         # log start time of invocation
         start_time = time.time()
@@ -119,43 +120,45 @@ class AzureFunctionsProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code): {
-                        'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code),
+                    'StatusCode-error-providor_azure-'+function_endpoint+'-'+str(response.status_code): {
+                        'identifier': 'StatusCode-error-providor_azure'+function_endpoint+'-'+str(response.status_code),
                         'uuid': None,
                         'error':{'message':'None 200 code','responsecode':response.status_code},
+                        'parent': None,
                         'sleep': sleep,
                         'python_version': None,
-                        "level": 0,
-                        "memory": None,
-                        "instance_identifier": None,
-                        "execution_start": None,
-                        "execution_end": None,
+                        'level': None,
+                        'memory': None,
+                        'instance_identifier': None,
+                        'execution_start': None,
+                        'execution_end': None,
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier':'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
+                    'root_identifier':'StatusCode-error-providor_azure'+function_endpoint+'-'+str(response.status_code)
                 }
                 return error_dict               
 
         except Exception as e:
             error_dict = {
-                    'exception-providor_openfaas-'+function_endpoint: {
-                        'identifier': 'exception-providor_openfaas'+function_endpoint,
+                    'exception-providor_azure-'+function_endpoint: {
+                        'identifier': 'exception-providor_azure'+function_endpoint,
                         'uuid': None,
-                        "error": {"message": str(e), "type": str(type(e))},
+                        'error': {"message": str(e), "type": str(type(e))},
+                        'parent': None,
                         'sleep': sleep,
                         'python_version': None,
-                        "level": 0,
-                        "memory": None,
-                        "instance_identifier": None,
-                        "execution_start": None,
-                        "execution_end": None,
+                        'level': None,
+                        'memory': None,
+                        'instance_identifier': None,
+                        'execution_start': None,
+                        'execution_end': None,
                         'invocation_start': start_time,
                         'invocation_end': time.time(),
                     },
-                    'root_identifier':'exception-providor_openfaas'+function_endpoint
+                    'root_identifier':'exception-providor_azure'+function_endpoint
                 }
-            return error_dict
+            return error_dict  
 
 # recursively add function codes to invoke nested dict
 
@@ -174,17 +177,31 @@ def add_function_code_for_nested_invocations(nested_invocations: list) -> list:
 # creating a deadlock
 
 
-def check_for_nested_invocation_deadlocks(
-        nested_invocations: list,
-        illegal_fx_names: list) -> list:
-    for ni in nested_invocations:
-        if ni['function_name'] in illegal_fx_names:
-            raise RuntimeError(
-                'This nested invocation tree will cause a deadlock.')
-        else:
-            if 'invoke_nested' in ni['invoke_payload']:
-                illegal_fx_names.append(ni['function_name'])
-                check_for_nested_invocation_deadlocks(
-                    nested_invocations=ni['invoke_payload']['invoke_nested'],
-                    illegal_fx_names=illegal_fx_names
-                )
+# def check_for_nested_invocation_deadlocks(
+#         nested_invocations: list,
+#         illegal_fx_names: list) -> list:
+#     for ni in nested_invocations:
+#         if ni['function_name'] in illegal_fx_names:
+#             # raise RuntimeError(
+#             #     'This nested invocation tree will cause a deadlock.')
+#             return False
+#         else:
+#             if 'invoke_nested' in ni['invoke_payload']:
+#                 illegal_fx_names.append(ni['function_name'])
+#                 check_for_nested_invocation_deadlocks(
+#                     nested_invocations=ni['invoke_payload']['invoke_nested'],
+#                     illegal_fx_names=illegal_fx_names
+#                 )
+
+def check_for_nested_deadlock(nested_invocations:list,illegal_fx_names:set):
+    for invo in nested_invocations:
+        if(invo['function_name'] in illegal_fx_names):
+            return False
+    illegal_fx_names.update(i['function_name'] for i in nested_invocations)
+
+    for x in nested_invocations:
+        if('invoke_nested' in x['invoke_payload']):
+            if not(check_for_nested_deadlock(x['invoke_payload']['invoke_nested'], illegal_fx_names)):
+                return False
+    return True
+    

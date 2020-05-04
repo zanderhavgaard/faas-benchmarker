@@ -1,5 +1,6 @@
 from provider_openfaas import OpenFaasProvider as provider
 from pprint import pprint
+# from sets import Set
 
 # class invocation:
 
@@ -32,13 +33,13 @@ function = 'function1'
 sleep = 0.1
 invoke_nested = [
     {
-        "function_name": f"{experiment_name}1",
+        "function_name": f"{experiment_name}2",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.2,
             "invoke_nested": [
                 {
-                    "function_name": f"{experiment_name}1",
+                    "function_name": f"{experiment_name}3",
                     "invoke_payload": {
                         "StatusCode": 200,
                         "sleep": 0.2
@@ -51,7 +52,7 @@ invoke_nested = [
                         "sleep": 0.2,
                         "invoke_nested": [
                             {
-                                "function_name": f"{experiment_name}0",
+                                "function_name": f"{experiment_name}4",
                                 "invoke_payload": {
                                     "StatusCode": 200,
                                     "sleep": 0.4
@@ -71,7 +72,7 @@ invoke_nested = [
         }
     },
     {
-        "function_name": f"{experiment_name}1",
+        "function_name": f"{experiment_name}2",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": "test"
@@ -83,11 +84,11 @@ invoke_nested2 = [
     {
         "function_name": f"{experiment_name}1",
         "invoke_payload": {
-            "StatusCode": 500,
+            "StatusCode": 200,
             "sleep": 0.2,
             "invoke_nested": [
                 {
-                    "function_name": f"{experiment_name}1",
+                    "function_name": f"{experiment_name}4",
                     "invoke_payload": {
                         "StatusCode": 200,
                         "sleep": 0.2
@@ -108,26 +109,26 @@ invoke_nested2 = [
 
 invoke_nested3 = [
     {
-        "function_name": f"{experiment_name}1",
+        "function_name": f"{experiment_name}2",
         "invoke_payload": {
             "StatusCode": 200,
             "sleep": 0.2,
             "invoke_nested": [
                 {
-                    "function_name": f"{experiment_name}1",
+                    "function_name": f"{experiment_name}3",
                     "invoke_payload": {
                         "StatusCode": 200,
                         "sleep": 0.2
                     }
                 },
                 {
-                    "function_name": f"{experiment_name}1",
+                    "function_name": f"{experiment_name}3",
                     "invoke_payload": {
                         "StatusCode": 200,
                         "sleep": 0.2,
                         "invoke_nested": [
                             {
-                                "function_name": f"{experiment_name}1",
+                                "function_name": f"{experiment_name}4",
                                 "invoke_payload": {
                                     "StatusCode": 200,
                                     "sleep": 0.2
@@ -142,12 +143,11 @@ invoke_nested3 = [
 ]
 
 
-provider = provider(
-    '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.test_env')
+provider = provider('/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.test_env')
 # test = provider.invoke_function(function)
 # pprint(test)
 print()
-response_dict = provider.invoke_function('function1', 0.0, invoke_nested)
+response_dict = provider.invoke_function('function1', 0.0, invoke_nested2)
 pprint(response_dict)
 root = response_dict['root_identifier']
 t = type(response_dict[root]['error']['message'])
@@ -155,7 +155,9 @@ t = type(response_dict[root]['error']['message'])
 print(t)
 print(type(t))
 
-# pprint(response_dict)
-# for x in list(response_dict):
-#     print(x,'->',response_dict[x])
-#     print()
+pprint(response_dict)
+for x in list(response_dict):
+    print(x,'->',response_dict[x])
+    print()
+
+
