@@ -7,7 +7,6 @@ import os
 import dotenv
 import traceback
 from provider_abstract import AbstractProvider
-from sets import Set
 
 from pprint import pprint
 
