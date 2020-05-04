@@ -1,4 +1,4 @@
-# print ip address
+# output ip address
 output "ip_address" {
-  value = aws_eip.dev-experiment1-worker-eip.public_ip
+  value = azurerm_linux_virtual_machine.dev-experiment-worker.public_ip_address
 }

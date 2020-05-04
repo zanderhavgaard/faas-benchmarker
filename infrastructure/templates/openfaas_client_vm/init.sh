@@ -2,7 +2,7 @@
 
 experiment_name=$1
 
-STATE_FILE="faas-benchmarker/openfaas_client_vm/$experiment_name"
+STATE_FILE="faas-benchmarker/azure_linuxvm/$experiment_name"
 
 echo -e "Initializing terraform with spaces backend ..."
 

@@ -26,19 +26,19 @@ check_progress_interval=600
 
 # ===== create client vm
 
-# cd "$experiment_context/openfaas_client_vm"
+cd "$experiment_context/openfaas_client_vm"
 
-# pmsg "Initializing terraform ..."
-# bash init.sh "$experiment_name"
+pmsg "Initializing terraform ..."
+bash init.sh "$experiment_name"
 
-# pmsg "Creating client vm ..."
-# terraform apply \
-    # -auto-approve
+pmsg "Creating client vm ..."
+terraform apply \
+    -auto-approve
 
-# pmsg "Outputting variables to $experiment_name-openfaas_client.env ..."
-# terraform output > "$experiment_client_env"
+pmsg "Outputting variables to $experiment_name-openfaas_client.env ..."
+terraform output > "$experiment_client_env"
 
-# smsg "Done creating client vm."
+smsg "Done creating client vm."
 
 # ===== run experiment code
 
@@ -74,23 +74,23 @@ ssh_command="
     # sleep $check_progress_interval
 # done
 
-smsg "Done executing experiment code."
+# smsg "Done executing experiment code."
 
 # ===== destroy client vm
 
-cd "$experiment_context/$experiment_client_provider"
+# cd "$experiment_context/$experiment_client_provider"
 
-pmsg "Destroying client vm ..."
+# pmsg "Destroying client vm ..."
 
-terraform destroy \
-    -auto-approve
+# terraform destroy \
+    # -auto-approve
 
-smsg "Done destroying client vm."
+# smsg "Done destroying client vm."
 
 # ===== remove experiment env files
 
-pmsg "Removing experiment environment files ..."
+# pmsg "Removing experiment environment files ..."
 
-rm "$experiment_client_env"
+# rm "$experiment_client_env"
 
-smsg "Done removing environment files."
+# smsg "Done removing environment files."
