@@ -5,7 +5,7 @@ volumes:
 
 services:
   mysql:
-    image: 'thomaskeralla/exp_mysql:latest'
+    image: 'faasbenchmarker/exp_mysql:latest'
     container_name: db
     environment:
       - MYSQL_ROOT_PASSWORD=faas
