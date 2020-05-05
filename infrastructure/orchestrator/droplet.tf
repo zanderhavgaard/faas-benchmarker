@@ -25,6 +25,14 @@ resource "null_resource" "root-provisioner" {
     destination = "/root/.ssh/id_rsa"
   }
   provisioner "file" {
+    source = "../../secrets/ssh_keys/experiment_servers"
+    destination = "/root/experiment_servers"
+  }
+  provisioner "file" {
+    source = "../../secrets/ssh_keys/experiment_servers.pub"
+    destination = "/root/experiment_servers.pub"
+  }
+  provisioner "file" {
     source = "../../secrets/terraform_env/terraform_env"
     destination = "/root/terraform_env"
   }
@@ -50,7 +58,8 @@ resource "null_resource" "root-provisioner" {
       # there might be more updates dependent on the first batch of updates...
       "apt-get update -q",
       "apt-get upgrade -qq",
-      "apt-get install -y -qq neovim figlet unzip git python3 python3-dev python3-pip",
+      "apt-get install -y -qq zsh neovim figlet unzip git python3 python3-dev python3-pip",
+      "apt-get autoremove -y -qq",
 
       # install terraform v. 0.12.24
       "wget https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip",
@@ -67,6 +76,14 @@ resource "null_resource" "root-provisioner" {
       # "rm -rf /root/.ssh",
       "mv /root/terraform_env /home/ubuntu/terraform_env",
       "echo \"figlet 'orchestrator'\" >> /home/ubuntu/.bashrc",
+      "echo 'export PYTHON_PATH=\"$PYTHON_PATH:$fbrd/benchmark\"' >> /home/ubuntu/.bashrc",
+
+      # install azure functions cli tools
+      "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg",
+      "mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg",
+      "sh -c 'echo \"deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-$(lsb_release -cs)-prod $(lsb_release -cs) main\" > /etc/apt/sources.list.d/dotnetdev.list'",
+      "apt-get update -q",
+      "apt-get install -qq azure-functions-core-tools",
 
       # install azure cli
       "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash",
@@ -79,6 +96,10 @@ resource "null_resource" "root-provisioner" {
 
       # clone repository
       "git clone --quiet https://github.com/zanderhavgaard/faas-benchmarker /home/ubuntu/faas-benchmarker",
+      # move the secrets directory the correct location
+      "mkdir -pv /home/ubuntu/faas-benchmarker/secrets/ssh_keys",
+      "mv /root/experiment_servers /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers",
+      "mv /root/experiment_servers.pub /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers.pub",
 
       # make sure ubuntu owns all of it's stuff...
       "chown -R \"ubuntu:ubuntu\" /home/ubuntu",
