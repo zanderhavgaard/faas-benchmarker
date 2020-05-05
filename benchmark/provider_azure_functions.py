@@ -5,6 +5,7 @@ import json
 import time
 import os
 import dotenv
+import traceback
 from provider_abstract import AbstractProvider
 
 
@@ -122,6 +123,8 @@ class AzureFunctionsProvider(AbstractProvider):
                         'error':{'message':'None 200 code','responsecode':response.status_code},
                         'parent': None,
                         'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
                         'python_version': None,
                         'level': None,
                         'memory': None,
@@ -140,9 +143,11 @@ class AzureFunctionsProvider(AbstractProvider):
                     'exception-providor_azure-'+function_endpoint: {
                         'identifier': 'exception-providor_azure'+function_endpoint,
                         'uuid': None,
-                        'error': {"message": str(e), "type": str(type(e))},
+                        'error': {"trace": traceback.format_exc(), "type": str(type(e))},
                         'parent': None,
                         'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
                         'python_version': None,
                         'level': None,
                         'memory': None,

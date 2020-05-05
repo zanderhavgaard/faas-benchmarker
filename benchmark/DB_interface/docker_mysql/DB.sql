@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `Error` (
   `root_identifier` NOT NULL,
   `identifier` varchar(100) NOT NULL,
   `type` varchar(100) NOT NULL,
-  `message` varchar(200) NOT NULL,
+  `trace` varchar(1500) NOT NULL,
   `uuid` varchar(36) DEFAULT NULL ,
   `parent` varchar(100) DEFAULT NULL,
   `sleep` FLOAT DEFAULT 0.0,

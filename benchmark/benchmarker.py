@@ -9,6 +9,7 @@ from provider_abstract import AbstractProvider
 from provider_aws_lambda import AWSLambdaProvider
 from provider_azure_functions import AzureFunctionsProvider
 from provider_openfaas import OpenFaasProvider
+from experiment import Experiment
 
 from pprint import pprint
 
@@ -32,6 +33,8 @@ class Benchmarker:
         # get function execution provider
         self.provider = self.get_provider(
             provider=provider, env_file_path=env_file_path)
+        # WHAT ABOUT CLIENT!?!?
+        # self.experiment = Experiment(experiment_name,provider,experiment_description)
 
         print('\n=================================================')
         print('FaaS Benchmarker --> Starting Experiment ...')
@@ -93,7 +96,7 @@ class Benchmarker:
         response = self.provider.invoke_function(function_endpoint=function_endpoint,
                                                  sleep=sleep,
                                                  invoke_nested=invoke_nested)
-        pprint(response)
+
         if response is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')

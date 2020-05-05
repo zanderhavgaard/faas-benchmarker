@@ -82,7 +82,12 @@ class OpenFaasProvider(AbstractProvider):
 
                 # parse response body
                 response_data = json.loads(response_json['body'])
-                # pprint(response_data)
+
+                # insert thread_id and total number of threads for the sake of format fot database
+                for val in response_data:
+                    response_data[val]['numb_threads'] = 1
+                    response_data[val]['thread_id'] = 1
+
 
                 # add invocation metadata to response
                 response_data[identifier]['invocation_start'] = start_time
@@ -96,9 +101,11 @@ class OpenFaasProvider(AbstractProvider):
                     'StatusCode-error-providor_openfaas-'+function_endpoint+'-'+str(response.status_code): {
                         'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code),
                         'uuid': None,
-                        'error':{'message':'None 200 code','responsecode':response.status_code},
+                        'error':{'trace':'None 200 code','responsecode':response.status_code},
                         'parent': None,
                         'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
                         'python_version': None,
                         'level': None,
                         'memory': None,
@@ -117,9 +124,11 @@ class OpenFaasProvider(AbstractProvider):
                     'exception-providor_openfaas-'+function_endpoint: {
                         'identifier': 'exception-providor_openfaas'+function_endpoint,
                         'uuid': None,
-                        'error': {"message": str(e), "type": str(type(e))},
+                        'error': {"trace": traceback.format_exc(), "type": str(type(e))},
                         'parent': None,
                         'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
                         'python_version': None,
                         'level': None,
                         'memory': None,

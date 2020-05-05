@@ -35,7 +35,7 @@ data_list = bench.invoke_function_conccurrently('function1',0.2,nested,numb_thre
 # data_list = of.invoke_function_conccurrently('function1',numb_threads=16)
 # print()
 pprint(data_list)
-print(len(data_list))
+# print(len(data_list))
 # print()
 # single = bench.invoke_function('function1',0.2,nested)
 # pprint(single)

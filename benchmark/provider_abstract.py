@@ -41,7 +41,7 @@ class AbstractProvider(ABC):
         responses = []
         # threads to be build in advance to ensure all are executed at the same time
         threads = []
-        # list of expetions to be logged sequentialy at the end if any
+        # list of expetions to be logged sequentialy at the end, if any
         exceptions = [] 
         # lock for protection against race  conditions
         lock = th.Lock()
@@ -60,10 +60,10 @@ class AbstractProvider(ABC):
                     # call cloud function
                     future = executor.submit(self.invoke_function, invo_args[0],invo_args[1],invo_args[2])
                     result = future.result()
-                    for x in result.keys():
-                        if(x != 'root_identifier'):
-                            result[x]['thread_id'] = th_id 
-                            result[x]['numb_threads'] = total_numb_threads
+                    for identifier in result.keys():
+                        if(identifier != 'root_identifier'):
+                            result[identifier]['thread_id'] = th_id 
+                            result[identifier]['numb_threads'] = total_numb_threads
 
                     with lock:
                         # append tuble of thread id and result to responses
@@ -182,7 +182,7 @@ class AbstractProvider(ABC):
             # flatten list of lists
             flatten_data_list = reduce(lambda x,y: x+y, data_list)
             flatten_exception_list = reduce(lambda x,y: x+y, exception_list)
-
+            # print all exception, if any, to log 
             for e in flatten_exception_list:
                 self.print_error(e[0], e[1], e[2], thread_args, e[3], numb_threads)
 
@@ -200,6 +200,6 @@ class AbstractProvider(ABC):
         print('message: ',str(exception))
         print('arguments',args)
         print(f'caught in {numb_threads} thread(s), out of {total_numb} threads')
-        print('-----------------------------------')
+        print('-----------------------------------------------------------------')
 
                 
