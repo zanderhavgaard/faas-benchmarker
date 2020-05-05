@@ -8,7 +8,6 @@ import traceback
 import sys
 
 
-
 class OpenFaasProvider(AbstractProvider):
 
     def __init__(self, env_file_path: str) -> None:
@@ -42,7 +41,6 @@ class OpenFaasProvider(AbstractProvider):
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
 
-
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
 
@@ -56,7 +54,7 @@ class OpenFaasProvider(AbstractProvider):
                 headers=self.headers,
                 data=json.dumps(params)
             )
-        
+
             # log the end time of the invocation
             end_time = time.time()
 
@@ -96,7 +94,7 @@ class OpenFaasProvider(AbstractProvider):
                     'StatusCode-error-providor_openfaas-'+function_endpoint+'-'+str(response.status_code): {
                         'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code),
                         'uuid': None,
-                        'error':{'message':'None 200 code','responsecode':response.status_code},
+                        'error': {'message': 'None 200 code', 'responsecode': response.status_code},
                         'parent': None,
                         'sleep': sleep,
                         'python_version': None,
@@ -108,28 +106,27 @@ class OpenFaasProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier':'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
+                    'root_identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
                 }
-                return error_dict               
+                return error_dict
 
         except Exception as e:
             error_dict = {
-                    'exception-providor_openfaas-'+function_endpoint: {
-                        'identifier': 'exception-providor_openfaas'+function_endpoint,
-                        'uuid': None,
-                        'error': {"message": str(e), "type": str(type(e))},
-                        'parent': None,
-                        'sleep': sleep,
-                        'python_version': None,
-                        'level': None,
-                        'memory': None,
-                        'instance_identifier': None,
-                        'execution_start': None,
-                        'execution_end': None,
-                        'invocation_start': start_time,
-                        'invocation_end': time.time(),
-                    },
-                    'root_identifier':'exception-providor_openfaas'+function_endpoint
-                }
-            return error_dict  
-            
+                'exception-providor_openfaas-'+function_endpoint: {
+                    'identifier': 'exception-providor_openfaas'+function_endpoint,
+                    'uuid': None,
+                    'error': {"message": str(e), "type": str(type(e))},
+                    'parent': None,
+                    'sleep': sleep,
+                    'python_version': None,
+                    'level': None,
+                    'memory': None,
+                    'instance_identifier': None,
+                    'execution_start': None,
+                    'execution_end': None,
+                    'invocation_start': start_time,
+                    'invocation_end': time.time(),
+                },
+                'root_identifier': 'exception-providor_openfaas'+function_endpoint
+            }
+            return error_dict

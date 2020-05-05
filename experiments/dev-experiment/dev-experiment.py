@@ -83,7 +83,6 @@ invoke_nested = [
 ]
 
 print('invoking with nested invocations')
-#  invoke with nested invocations
 response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}1',
                                        sleep=sleep_amount,
                                        invoke_nested=invoke_nested)
