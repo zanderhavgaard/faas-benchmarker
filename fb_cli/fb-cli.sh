@@ -134,10 +134,23 @@ function chooseExperiment {
   done
 }
 
-# TODO
 function runExperiment {
-  pmsg "Running experiment: $1 ..."
   bash "$fbrd/fb_cli/run_experiment.sh" "$1"
+}
+
+function runAllExperiments {
+  msg "Will run all experiments on all platforms, this will take some time...."
+  echo "experiments: $(listExperiments)"
+  msg "Would you like to proceed? [yes/no]"
+  read -n 3 -r ; echo
+  if [[ $REPLY =~ ^yes$ ]]; then
+    for exp in $(listExperiments) ; do
+      bash "$fbrd/fb_cli/run_experiment.sh" "$exp"
+    done
+  else
+    errmsg "Aborting ..."
+  fi
+
 }
 
 function runExperimentLocally {
@@ -148,6 +161,12 @@ function runExperimentLocally {
 # TODO
 # function reRunLastLocalExperiment {
 # }
+
+function checkIfOrchestrator {
+  [ "$HOSTNAME" = "orchestrator" ] \
+    && return 0 \
+    || return 1
+}
 
 # ==================================
 
@@ -194,17 +213,26 @@ select opt in $options; do
   case "$opt" in
 
     run_experiment)
+      # TODO uncomment
+      # checkIfOrchestrator \
+        # || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from there." && exit
+
+      # choose experiment name to run, if cancelledd will be an empty string
       exp=$(chooseExperiment)
 
       # break out if cancelled
-      [ -z "$exp" ] && msg "Cancelled." && break 1
+      [ -z "$exp" ] && errmsg "Cancelled." && break 1
 
+      # actually run the chosen experiment
       runExperiment "$exp"
       ;;
 
     run_all_experiments)
-      # TODO
-      echo "not implemented yet"
+      # TODO uncomment
+      # checkIfOrchestrator \
+        # || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from there." && exit
+
+      runAllExperiments
       ;;
 
     generate_graphs)

@@ -1,74 +1,51 @@
-# register ssh keys with aws
-resource "aws_key_pair" "changeme1_worker_key" {
-  key_name = "changeme1_worker"
-  public_key = file(var.client_pub_key)
+# see https://docs.microsoft.com/en-us/azure/terraform/terraform-install-configure
+# and https://www.terraform.io/docs/providers/azurerm/guides/service_principal_client_secret.html
+# on how to get up and running
+
+# template for creating azure experiment worker vm
+# based on: https://www.terraform.io/docs/providers/azurerm/r/linux_virtual_machine.html
+# and: https://docs.microsoft.com/en-us/azure/terraform/terraform-create-complete-vm
+
+# create resource group
+resource "azurerm_resource_group" "changene-openfaas-worker-rg" {
+  name     = "changene-openfaas-worker"
+  location = "West Europe"
 }
 
 # create VPC
-resource "aws_vpc" "changeme1-worker-vpc" {
-  cidr_block = "10.0.0.0/16"
-  enable_dns_hostnames = true
-  enable_dns_support = true
-  tags = {
-    Name = "changeme1-worker-vpc"
+resource "azurerm_virtual_network" "changene-openfaas-worker-network" {
+  name                = "changene-openfaas-worker-network"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.changene-openfaas-worker-rg.location
+  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
+}
+
+# create subnet
+resource "azurerm_subnet" "changene-openfaas-worker-subnet" {
+  name                 = "changene-openfaas-worker-subnet"
+  resource_group_name  = azurerm_resource_group.changene-openfaas-worker-rg.name
+  virtual_network_name = azurerm_virtual_network.changene-openfaas-worker-network.name
+  address_prefix       = "10.0.2.0/24"
+}
+
+# create network interface
+resource "azurerm_network_interface" "changene-openfaas-worker-ni" {
+  name                = "changene-openfaas-worker-nic"
+  location            = azurerm_resource_group.changene-openfaas-worker-rg.location
+  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
+
+  ip_configuration {
+    name                          = "changene-openfaas-worker-ip-config"
+    subnet_id                     = azurerm_subnet.changene-openfaas-worker-subnet.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.changene-openfaas-worker-public-ip.id
   }
 }
 
-# attach elastic public ip to instance
-resource "aws_eip" "changeme1-worker-eip" {
-  instance = aws_instance.changeme1-worker-aws.id
-  vpc      = true
-}
-
-# create internet gateway to VPC
-resource "aws_internet_gateway" "changeme1-worker-vpc-gateway" {
-  vpc_id = aws_vpc.changeme1-worker-vpc.id
-  tags = {
-    Name = "changeme1-worker-vpc-gateway"
-  }
-}
-
-# create VPC subnet
-resource "aws_subnet" "changeme1-worker-subnet" {
-  cidr_block = cidrsubnet(aws_vpc.changeme1-worker-vpc.cidr_block, 3, 1)
-  vpc_id = aws_vpc.changeme1-worker-vpc.id
-  availability_zone = "eu-west-1c"
-}
-
-# create routing table in subnet
-resource "aws_route_table" "changeme1-worker-vpc-route-table" {
-  vpc_id = aws_vpc.changeme1-worker-vpc.id
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.changeme1-worker-vpc-gateway.id
-  }
-  tags = {
-    Name = "changeme1-worker-vpc-route-table"
-  }
-}
-# attach route table to subnet
-resource "aws_route_table_association" "subnet-association" {
-  subnet_id      = aws_subnet.changeme1-worker-subnet.id
-  route_table_id = aws_route_table.changeme1-worker-vpc-route-table.id
-}
-
-# setup security group to allow traffic from outside VPC
-resource "aws_security_group" "allow-ssh" {
-  name = "allow-ssh"
-  vpc_id = aws_vpc.changeme1-worker-vpc.id
-  ingress {
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-  }
-  # Terraform removes the default rule
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+# create public ip address
+resource "azurerm_public_ip" "changene-openfaas-worker-public-ip" {
+  name = "changene-openfaas-worker-public-ip"
+  location = azurerm_resource_group.changene-openfaas-worker-rg.location
+  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
+  allocation_method = "Dynamic"
 }
