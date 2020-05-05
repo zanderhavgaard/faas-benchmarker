@@ -56,25 +56,70 @@ response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}3',
 pprint(response)
 print()
 
+invoke_1_nested = [
+    {
+        "function_name": f"{experiment_name}2",
+        "invoke_payload": {
+            "StatusCode": 200,
+            "sleep": 0.1
+        }
+    }
+]
+
+print('invoking with 1 nested invocation')
+response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}1',
+                                       invoke_nested=invoke_1_nested)
+pprint(response)
+print()
+
+invoke_1_nested = [
+    {
+        "function_name": f"{experiment_name}3",
+        "invoke_payload": {
+            "StatusCode": 200,
+            "sleep": 0.1
+        }
+    }
+]
+
+print('invoking with 1 nested invocation')
+response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}2',
+                                       invoke_nested=invoke_1_nested)
+pprint(response)
+print()
+
+invoke_1_nested = [
+    {
+        "function_name": f"{experiment_name}1",
+        "invoke_payload": {
+            "StatusCode": 200,
+            "sleep": 0.1
+        }
+    }
+]
+
+print('invoking with 1 nested invocation')
+response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}3',
+                                       invoke_nested=invoke_1_nested)
+pprint(response)
+print()
+
 invoke_nested = [
     {
         "function_name": f"{experiment_name}2",
         "invoke_payload": {
             "StatusCode": 200,
-            "sleep": 0.2,
             "invoke_nested": [
                 {
                     "function_name": f"{experiment_name}3",
                     "invoke_payload": {
                         "StatusCode": 200,
-                        "sleep": 0.2
                     }
                 },
                 {
                     "function_name": f"{experiment_name}3",
                     "invoke_payload": {
                         "StatusCode": 200,
-                        "sleep": 0.2
                     }
                 }
             ]
@@ -83,9 +128,7 @@ invoke_nested = [
 ]
 
 print('invoking with nested invocations')
-#  invoke with nested invocations
 response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}1',
-                                       sleep=sleep_amount,
                                        invoke_nested=invoke_nested)
 pprint(response)
 print()

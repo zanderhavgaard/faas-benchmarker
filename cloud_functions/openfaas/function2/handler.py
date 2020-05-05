@@ -64,13 +64,14 @@ def handle(req):
             body[identifier]['sleep'] = 0.0
 
         # add ip address of container to uniqely differentiate container instances
-        body[identifier]['instance_identifier'] = str(psutil.net_if_addrs()['eth0'][0][1])+'-'+str(platform.node())
+        body[identifier]['instance_identifier'] = str(
+            psutil.net_if_addrs()['eth0'][0][1])+'-'+str(platform.node())
 
         # add total memory of pod to metadata
         body[identifier]['memory'] = psutil.virtual_memory()[0]
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
-       
+
         #  invoke nested functions from arguments
         if 'invoke_nested' in event:
             for invoke in event['invoke_nested']:
@@ -127,6 +128,8 @@ def handle(req):
 # params:
 # function_name: name of function in to be called at the gateway
 # invoke_payload: dict containing arguments for invoked function
+
+
 def invoke_nested_function(function_name: str,
                            invoke_payload: dict
                            ) -> dict:

@@ -8,7 +8,6 @@ import traceback
 import sys
 
 
-
 class OpenFaasProvider(AbstractProvider):
 
     def __init__(self, env_file_path: str) -> None:
@@ -42,7 +41,6 @@ class OpenFaasProvider(AbstractProvider):
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
 
-
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
 
@@ -56,7 +54,7 @@ class OpenFaasProvider(AbstractProvider):
                 headers=self.headers,
                 data=json.dumps(params)
             )
-        
+
             # log the end time of the invocation
             end_time = time.time()
 
@@ -115,9 +113,9 @@ class OpenFaasProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier':'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
+                    'root_identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(response.status_code)
                 }
-                return error_dict               
+                return error_dict
 
         except Exception as e:
             error_dict = {
@@ -142,3 +140,4 @@ class OpenFaasProvider(AbstractProvider):
                 }
             return error_dict  
             
+

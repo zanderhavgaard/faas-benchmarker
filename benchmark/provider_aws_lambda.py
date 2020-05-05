@@ -118,9 +118,9 @@ class AWSLambdaProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier':'StatusCode-error-providor_aws'+function_endpoint+'-'+str(response.status_code)
+                    'root_identifier': 'StatusCode-error-providor_aws'+function_endpoint+'-'+str(response.status_code)
                 }
-                return error_dict               
+                return error_dict
 
         except Exception as e:
             error_dict = {
@@ -144,3 +144,4 @@ class AWSLambdaProvider(AbstractProvider):
                     'root_identifier':'exception-providor_aws'+function_endpoint
                 }
             return error_dict   
+

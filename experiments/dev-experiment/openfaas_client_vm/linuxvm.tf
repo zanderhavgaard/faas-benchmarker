@@ -1,31 +1,49 @@
-# this terraform file creates an EC2 instance on aws
+# create linux vm
+resource "azurerm_linux_virtual_machine" "changene-openfaas-worker" {
+  depends_on = [azurerm_network_interface.changene-openfaas-worker-ni]
 
-# ec2 instance
-resource "aws_instance" "dev-experiment1-worker-aws" {
-  tags = {
-    Name = "dev-experiment1-worker"
+  name                = "changene-openfaas-worker"
+  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
+  location            = azurerm_resource_group.changene-openfaas-worker-rg.location
+  size                = "Standard_B1s"
+  admin_username      = "ubuntu"
+  disable_password_authentication = true
+  network_interface_ids = [
+    azurerm_network_interface.changene-openfaas-worker-ni.id,
+  ]
+
+  admin_ssh_key {
+    username   = "ubuntu"
+    public_key = file(var.client_pub_key)
   }
-  ami = "ami-0701e7be9b2a77600"
-  instance_type = "t2.micro"
-  key_name = "dev-experiment1_worker"
-  subnet_id = aws_subnet.dev-experiment1-worker-subnet.id
-  security_groups = [aws_security_group.allow-ssh.id]
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
 }
 
 # HACK to run provisioners over SSH after instance
 # has been created and recieved a public ip address
-resource "null_resource" "ec2-provisioners" {
+resource "null_resource" "linux-provisioners" {
   # run the provisioners after the instance has been created
   # and the ip address has been assigned
   depends_on = [
-    aws_eip.dev-experiment1-worker-eip,
-    aws_instance.dev-experiment1-worker-aws
+    azurerm_linux_virtual_machine.changene-openfaas-worker,
+    azurerm_public_ip.changene-openfaas-worker-public-ip
   ]
+
   # setup ssh connection for provisioners
   connection {
     user = "ubuntu"
-    # host = aws_instance.experiment-worker-aws.public_ip
-    host = aws_eip.dev-experiment1-worker-eip.public_ip
+    host = azurerm_linux_virtual_machine.changene-openfaas-worker.public_ip_address
     type = "ssh"
     private_key = file(var.client_pvt_key)
     timeout = "2m"
