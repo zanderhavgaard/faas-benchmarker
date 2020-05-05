@@ -8,7 +8,6 @@ import dotenv
 from provider_abstract import AbstractProvider
 
 
-
 class AzureFunctionsProvider(AbstractProvider):
 
     def __init__(self, env_file_path: str) -> None:

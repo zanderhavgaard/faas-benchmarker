@@ -10,6 +10,8 @@ from provider_aws_lambda import AWSLambdaProvider
 from provider_azure_functions import AzureFunctionsProvider
 from provider_openfaas import OpenFaasProvider
 
+from pprint import pprint
+
 
 class Benchmarker:
 
@@ -91,7 +93,7 @@ class Benchmarker:
         response = self.provider.invoke_function(function_endpoint=function_endpoint,
                                                  sleep=sleep,
                                                  invoke_nested=invoke_nested)
-
+        pprint(response)
         if response is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
@@ -110,13 +112,13 @@ class Benchmarker:
                                       numb_threads: int = 1
                                       ) -> list:
 
-        response = self.provider.invoke_function_conccrently(function_endpoint,
+        response_list = self.provider.invoke_function_conccrently(function_endpoint,
                                                              sleep,
                                                              invoke_nested,
                                                              numb_threads
                                                              )
 
-        if response is None:
+        if response_list is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
 
@@ -124,7 +126,7 @@ class Benchmarker:
         # TODO
 
         # maybe return statuscode
-        return response
+        return response_list
 
 # create exception class for empty responses
 

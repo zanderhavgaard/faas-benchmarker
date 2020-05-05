@@ -19,13 +19,13 @@ CREATE TABLE IF NOT EXISTS `Experiment` (
   `start_time` FLOAT NOT NULL,
   `end_time` FLOAT NOT NULL,
   `total_time` FLOAT NOT NULL,
-  `root_invocation` VARCHAR(100) NOT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
 
 -- Table of all invocations and their data, linked to an experiment
 CREATE TABLE IF NOT EXISTS `Invocation` (
   `exp_id`varchar(36) NOT NULL,
+  `root_identifier` NOT NULL,
   `identifier` varchar(100) NOT NULL,
   `function_name` varchar(50) NOT NULL,
   `uuid` varchar(36) NOT NULL,
@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS `Invocation` (
   `py_version` varchar(50) NOT NULL,
   `memory` INT NOT NULL,
   `throughput` FLOAT DEFAULT 0.0,
-  `nested` BOOLEAN NOT NULL,
   `numb_threads` INT NOT NULL,
   `thread_id` INT NOT NULL,
   `execution_start` FLOAT NOT NULL,
@@ -53,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `Invocation` (
 -- have to use bad practice with possible many NULL values due to unpredictability of exceptions
 CREATE TABLE IF NOT EXISTS `Error` (
   `exp_id`varchar(36) NOT NULL,
+  `root_identifier` NOT NULL,
   `identifier` varchar(100) NOT NULL,
   `type` varchar(100) NOT NULL,
   `message` varchar(200) NOT NULL,
@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS `Error` (
   `python_version` varchar(100) DEFAULT NULL,
   `level` INT DEFAULT 0,
   `memory` INT DEFAULT 0,
+  `numb_threads` INT NOT NULL,
+  `thread_id` INT NOT NULL,
   `instance_identifier` varchar(100) DEFAULT NULL,
   `execution_start` FLOAT DEFAULT 0.0,
   `execution_end` FLOAT DEFAULT 0.0,
