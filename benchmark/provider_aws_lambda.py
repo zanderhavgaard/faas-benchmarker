@@ -71,13 +71,6 @@ class AWSLambdaProvider(AbstractProvider):
             # log the end time of the invocation
             end_time = time.time()
 
-            # TODO remove
-            #  print('provider')
-            #  print(response)
-            #  print(response.content.decode())
-
-            #  import sys
-            #  sys.exit()
 
             # TODO make same change with if else for AWS and azure
             # if succesfull invocation parse response
@@ -94,6 +87,11 @@ class AWSLambdaProvider(AbstractProvider):
                 # parse response body
                 response_data = json.loads(response_json['body'])
 
+                # insert thread_id and total number of threads for the sake of format fot database
+                for val in response_data:
+                    response_data[val]['numb_threads'] = 1
+                    response_data[val]['thread_id'] = 1
+
                 # add invocation metadata to response
                 response_data[identifier]['invocation_start'] = start_time
                 response_data[identifier]['invocation_end'] = end_time
@@ -106,9 +104,11 @@ class AWSLambdaProvider(AbstractProvider):
                     'StatusCode-error-providor_aws-'+function_endpoint+'-'+str(response.status_code): {
                         'identifier': 'StatusCode-error-providor_aws'+function_endpoint+'-'+str(response.status_code),
                         'uuid': None,
-                        'error': {'message': 'None 200 code', 'responsecode': response.status_code},
+                        'error':{'trace':'None 200 code','responsecode':response.status_code},
                         'parent': None,
                         'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
                         'python_version': None,
                         'level': None,
                         'memory': None,
@@ -124,21 +124,24 @@ class AWSLambdaProvider(AbstractProvider):
 
         except Exception as e:
             error_dict = {
-                'exception-providor_aws-'+function_endpoint: {
-                    'identifier': 'exception-providor_aws'+function_endpoint,
-                    'uuid': None,
-                    'error': {"message": str(e), "type": str(type(e))},
-                    'parent': None,
-                    'sleep': sleep,
-                    'python_version': None,
-                    'level': None,
-                    'memory': None,
-                    'instance_identifier': None,
-                    'execution_start': None,
-                    'execution_end': None,
-                    'invocation_start': start_time,
-                    'invocation_end': time.time(),
-                },
-                'root_identifier': 'exception-providor_aws'+function_endpoint
-            }
-            return error_dict
+                    'exception-providor_aws-'+function_endpoint: {
+                        'identifier': 'exception-providor_aws'+function_endpoint,
+                        'uuid': None,
+                        'error': {"trace": traceback.format_exc(), "type": str(type(e))},
+                        'parent': None,
+                        'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
+                        'python_version': None,
+                        'level': None,
+                        'memory': None,
+                        'instance_identifier': None,
+                        'execution_start': None,
+                        'execution_end': None,
+                        'invocation_start': start_time,
+                        'invocation_end': time.time(),
+                    },
+                    'root_identifier':'exception-providor_aws'+function_endpoint
+                }
+            return error_dict   
+

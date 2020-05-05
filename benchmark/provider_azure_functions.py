@@ -7,7 +7,6 @@ import os
 import dotenv
 import traceback
 from provider_abstract import AbstractProvider
-from pprint import pprint
 
 
 class AzureFunctionsProvider(AbstractProvider):
@@ -105,6 +104,8 @@ class AzureFunctionsProvider(AbstractProvider):
                         'error': {'message': 'None 200 code', 'responsecode': response.status_code},
                         'parent': None,
                         'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
                         'python_version': None,
                         'level': None,
                         'memory': None,
@@ -120,24 +121,26 @@ class AzureFunctionsProvider(AbstractProvider):
 
         except Exception as e:
             error_dict = {
-                'exception-providor_azure-'+function_endpoint: {
-                    'identifier': 'exception-providor_azure'+function_endpoint,
-                    'uuid': None,
-                    'error': {"message": str(e), "type": str(type(e))},
-                    'parent': None,
-                    'sleep': sleep,
-                    'python_version': None,
-                    'level': None,
-                    'memory': None,
-                    'instance_identifier': None,
-                    'execution_start': None,
-                    'execution_end': None,
-                    'invocation_start': start_time,
-                    'invocation_end': time.time(),
-                },
-                'root_identifier': 'exception-providor_azure'+function_endpoint
-            }
-            return error_dict
+                    'exception-providor_azure-'+function_endpoint: {
+                        'identifier': 'exception-providor_azure'+function_endpoint,
+                        'uuid': None,
+                        'error': {"trace": traceback.format_exc(), "type": str(type(e))},
+                        'parent': None,
+                        'sleep': sleep,
+                        'numb_threads': 1,
+                        'thread_id': 1,
+                        'python_version': None,
+                        'level': None,
+                        'memory': None,
+                        'instance_identifier': None,
+                        'execution_start': None,
+                        'execution_end': None,
+                        'invocation_start': start_time,
+                        'invocation_end': time.time(),
+                    },
+                    'root_identifier':'exception-providor_azure'+function_endpoint
+                }
+            return error_dict  
 
 # recursively add function codes to invoke nested dict
 
