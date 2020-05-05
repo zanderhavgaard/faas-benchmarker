@@ -9,10 +9,10 @@ import azure.functions as func
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
 
+
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # req: HTTPRequest provided by azure
 
-    
     # get start time
     start_time = time.time()
     # we create an UUID to ensure that the function has
@@ -54,7 +54,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['sleep'] = req_json['sleep']
         else:
             body[identifier]['sleep'] = 0.0
-        
+
         # set level if root in invocation tree
         if 'level' not in req_json:
             body[identifier]['level'] = 0
@@ -65,16 +65,15 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         if 'invoke_nested' in req_json:
             for invoke in req_json['invoke_nested']:
                 invoke['invoke_payload']['parent'] = identifier
-                invoke['invoke_payload']['level'] = req_json['level']
+                invoke['invoke_payload']['level'] = body[identifier]['level']
                 nested_response = invoke_nested_function(
-                function_name=invoke['function_name'],
-                invoke_payload=invoke['invoke_payload'],
-                code=invoke['code']
+                    function_name=invoke['function_name'],
+                    invoke_payload=invoke['invoke_payload'],
+                    code=invoke['code']
                 )
                 # add each nested invocation to response body
                 for id in nested_response.keys():
                     body[id] = nested_response[id]
-
 
         # log instance identifier
         body[identifier]['instance_identifier'] = instance_identifier
@@ -84,7 +83,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         body[identifier]['execution_end'] = time.time()
 
         # for azure functions we have to follow the response form
-        # that azure provides, so we add an extra key to body that 
+        # that azure provides, so we add an extra key to body that
         # contains the function identifier
         body['identifier'] = identifier
 
@@ -98,10 +97,10 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
         # create the azure functions response
         response = func.HttpResponse(body=json.dumps(body),
-                                    status_code=status_code,
-                                    headers=headers,
-                                    charset='utf-8'
-                                    )
+                                     status_code=status_code,
+                                     headers=headers,
+                                     charset='utf-8'
+                                     )
 
         # return the HTTPResponse
         return response
@@ -123,18 +122,18 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             }
         }
         return func.HttpResponse(body=json.dumps(error_body),
-                                    status_code=200,
-                                    headers={"Content-Type": "application/json; charset=utf-8"},
-                                    charset='utf-8'
-                                    )
-        
+                                 status_code=200,
+                                 headers={
+                                     "Content-Type": "application/json; charset=utf-8"},
+                                 charset='utf-8'
+                                 )
 
-def invoke_nested_function(function_name: str, 
-                           invoke_payload: dict, 
+
+def invoke_nested_function(function_name: str,
+                           invoke_payload: dict,
                            code: str
                            ) -> dict:
 
-    
     # capture the invocation start time
     start_time = time.time()
 
@@ -157,7 +156,7 @@ def invoke_nested_function(function_name: str,
         end_time = time.time()
 
         # parse json payload to dict
-        body = response.json()
+        body = json.loads(response.content.decode())
         # get identifier of invoked lambda
         id = body['identifier']
 
