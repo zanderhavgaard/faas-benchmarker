@@ -50,7 +50,7 @@ resource "null_resource" "root-provisioner" {
       # there might be more updates dependent on the first batch of updates...
       "apt-get update -q",
       "apt-get upgrade -qq",
-      "apt-get install -y -qq figlet unzip git python3 python3-dev python3-pip",
+      "apt-get install -y -qq neovim figlet unzip git python3 python3-dev python3-pip",
 
       # install terraform v. 0.12.24
       "wget https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip",
