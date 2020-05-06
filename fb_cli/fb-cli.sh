@@ -158,9 +158,20 @@ function runExperimentLocally {
   bash "$fbrd/fb_cli/run_experiment_local.sh" "$1"
 }
 
-# TODO
-# function reRunLastLocalExperiment {
-# }
+function rerunLastExperimentLocally {
+  runExperimentLocally $1
+}
+
+function echoOpenfaasMinikubePassword {
+  kubectl \
+    get secret \
+    -n openfaas \
+    basic-auth \
+    -o jsonpath="{.data.basic-auth-password}" \
+    | base64 --decode \
+    ; echo
+}
+
 
 function checkIfOrchestrator {
   [ "$HOSTNAME" = "orchestrator" ] \
@@ -180,7 +191,7 @@ cat "$fbrd/fb_cli/banner"
 options="
 run_experiment
 run_all_experiments
-generate_graphs
+generate_report
 create_experiment
 update_experiment_infra_templates
 first_time_infrastructure_bootstrap
@@ -199,6 +210,8 @@ options+=" exit"
 
 dev_options="
 run_experiment_locally
+rerun_last_experiment_locally
+echo_minikube_openfaas_password
 fix_minikube_port_forward
 start_minikube
 stop_minikube
@@ -213,7 +226,7 @@ select opt in $options; do
   case "$opt" in
 
     run_experiment)
-      # TODO uncomment
+      # TODO fix
       # checkIfOrchestrator \
         # || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from there." && exit
 
@@ -228,14 +241,14 @@ select opt in $options; do
       ;;
 
     run_all_experiments)
-      # TODO uncomment
+      # TODO fix
       # checkIfOrchestrator \
         # || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from there." && exit
 
       runAllExperiments
       ;;
 
-    generate_graphs)
+    generate_report)
       # TODO
       echo "not implemented yet"
       ;;
@@ -275,11 +288,25 @@ select opt in $options; do
 
           run_experiment_locally)
             dev_exp=$(chooseExperiment)
-
             # break out if cancelled
             [ -z "$dev_exp" ] && msg "Cancelled." && break 1
-
             runExperimentLocally "$dev_exp"
+            ;;
+
+          rerun_last_experiment_locally)
+            if [ -z "$dev_exp" ] ; then
+              msg "Have not run any experiment locally yet, choose one to run..."
+              dev_exp=$(chooseExperiment)
+              # break out if cancelled
+              [ -z "$dev_exp" ] && msg "Cancelled." && break 1
+              runExperimentLocally "$dev_exp"
+            else
+              rerunLastExperimentLocally $dev_exp
+            fi
+            ;;
+
+          echo_minikube_openfaas_password)
+            echoOpenfaasMinikubePassword
             ;;
 
           fix_minikube_port_forward)
