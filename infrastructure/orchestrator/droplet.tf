@@ -36,6 +36,14 @@ resource "null_resource" "root-provisioner" {
     source = "../../secrets/terraform_env/terraform_env"
     destination = "/root/terraform_env"
   }
+  provisioner "file" {
+    source = "../../secrets/openfaas_orchestration_credentials/config"
+    destination = "/root/config"
+  }
+  provisioner "file" {
+    source = "../../secrets/openfaas_orchestration_credentials/credentials"
+    destination = "/root/credentials"
+  }
 
   provisioner "remote-exec" {
     inline = [
@@ -102,6 +110,11 @@ resource "null_resource" "root-provisioner" {
       "mv /root/experiment_servers.pub /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers.pub",
       "chmod 600 /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers",
       "chmod 644 /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers.pub",
+
+      # move eks/aws credentials
+      "mkdir -pv /home/ubuntu/faas-benchmarker/secrets/openfaas_orchestration_credentials",
+      "mv /root/config /home/ubuntu/faas-benchmarker/secrets/openfaas_orchestration_credentials/config",
+      "mv /root/credentials /home/ubuntu/faas-benchmarker/secrets/openfaas_orchestration_credentials/credentials",
 
 
       # make sure ubuntu owns all of it's stuff...
