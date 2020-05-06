@@ -111,7 +111,7 @@ def handle(req):
                 identifier: {
                     "identifier": identifier,
                     "uuid": invocation_uuid,
-                    "error": {"trace": traceback.format_exc(), "type": str(type(e))},
+                    "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
                     "python_version": None,

@@ -25,6 +25,8 @@ nested = [
     }
 ]
 
+
+
 bench = bench('exp','openfaas','test', 'concurrent','/home/thomas/Msc/faas-benchmarker/.test_env')
 
 # bench.log_experiment_running_time()

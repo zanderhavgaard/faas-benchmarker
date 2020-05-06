@@ -177,7 +177,7 @@ def invoke_nested_function(function_name: str,
             "error-"+function_name+'-nested_invocation': {
                 "identifier": "error-"+function_name+'-nested_invocation',
                 "uuid": None,
-                "error": {"trace": traceback.format_exc(), "type": str(type(e))},
+                "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "python_version": None,

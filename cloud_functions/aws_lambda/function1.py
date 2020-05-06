@@ -115,7 +115,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 identifier: {
                     "identifier": identifier,
                     "uuid": invocation_uuid,
-                    "error": {"trace": traceback.format_exc(), "type": str(type(e))},
+                    "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
                     "python_version": None,
@@ -172,7 +172,7 @@ def invoke_lambda(lambda_name: str,
             "error-"+lambda_name+'-nested_invocation': {
                 "identifier": "error-"+lambda_name+'-nested_invocation',
                 "uuid": None,
-                "error": {"trace": traceback.format_exc(), "type": str(type(e))},
+                "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "python_version": None,
