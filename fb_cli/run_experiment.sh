@@ -19,7 +19,7 @@ function run_experiment_aws_lambda {
   pmsg "Logging orchestration to file: $aws_lambda_log"
   nohup bash -c " \
       bash \"$fbrd/orchestration/run_experiment_aws.sh\" \"$experiment_name\" > $aws_lambda_log 2>&1 \
-      ; scp -i $key_file $aws_lambda_log ubuntu@$TF_VAR_db_server_static_ip:$log_location \
+      ; scp -o StrictHostKeyChecking=no -i $key_file $aws_lambda_log ubuntu@$TF_VAR_db_server_static_ip:$log_location \
       " > /dev/null 2>&1 &
 }
 
@@ -29,7 +29,7 @@ function run_experiment_azure_functions {
   pmsg "Logging orchestration to file: $azure_functions_log"
   nohup bash -c " \
       bash \"$fbrd/orchestration/run_experiment_azure.sh\" \"$experiment_name\" > $azure_functions_log 2>&1 \
-      ; scp -i $key_file $azure_functions_log ubuntu@$TF_VAR_db_server_static_ip:$log_location \
+      ; scp -o StrictHostKeyChecking=no -i $key_file $azure_functions_log ubuntu@$TF_VAR_db_server_static_ip:$log_location \
       " > /dev/null 2>&1 &
 }
 
@@ -39,7 +39,7 @@ function run_experiment_openfaas {
   pmsg "Logging orchestrion to file: $openfaas_log"
   nohup bash -c " \
       bash \"$fbrd/orchestration/run_experiment_openfaas.sh\" \"$experiment_name\" > $openfaas_log 2>&1 \
-      ; scp -i $key_file $openfaas_log ubuntu@$TF_VAR_db_server_static_ip:$log_location \
+      ; scp -o StrictHostKeyChecking=no -i $key_file $openfaas_log ubuntu@$TF_VAR_db_server_static_ip:$log_location \
       " > /dev/null 2>&1 &
 }
 
