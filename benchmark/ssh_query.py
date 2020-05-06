@@ -12,7 +12,7 @@ import dotenv
 import traceback
 
 
-class ssh_query:
+class SSH_query:
     # set variables for connection to MySql on DB server via ssh tunnel
     def __init__(self, env_file_path: str):
         self.load_env_vars(env_file_path)
@@ -143,7 +143,8 @@ class ssh_query:
     # function for writing wroor messages to ErrorLogFile.txt"
     def write_errorlog(self, ex:Exception, description:str, query:str = None):
        
-        with open("ErrorLogFile.txt","a+") as f:
+        # with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
+        with open("/home/thomas/ErrorLogFile.log","a+") as f:
             f.write(description+'\n')
             if(query != None):
                 f.write(query+'\n')

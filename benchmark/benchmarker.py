@@ -10,13 +10,14 @@ from provider_aws_lambda import AWSLambdaProvider
 from provider_azure_functions import AzureFunctionsProvider
 from provider_openfaas import OpenFaasProvider
 from experiment import Experiment
+from mysql_interface import SQL_Interface
 
 from pprint import pprint
 
 
 class Benchmarker:
 
-    def __init__(self, experiment_name: str, provider: str, experiment_description: str, env_file_path: str, dev_mode: bool = False) -> None:
+    def __init__(self, experiment_name: str, provider: str, client_provider:str, experiment_description: str, env_file_path: str, dev_mode: bool = False) -> None:
 
         # do not log anything if running in dev mode
         self.dev_mode = dev_mode
@@ -33,8 +34,8 @@ class Benchmarker:
         # get function execution provider
         self.provider = self.get_provider(
             provider=provider, env_file_path=env_file_path)
-        # WHAT ABOUT CLIENT!?!?
-        # self.experiment = Experiment(experiment_name,provider,experiment_description)
+        
+        self.experiment = Experiment(experiment_name,provider,client_provider,experiment_description)
 
         print('\n=================================================')
         print('FaaS Benchmarker --> Starting Experiment ...')
@@ -46,9 +47,9 @@ class Benchmarker:
         print(f'Experiment name:         {experiment_name}')
         print(f'Using provider:          {provider}')
         print(f'Using environment file:  {env_file_path}')
-        print(f'Experiment start time:   {time.ctime(int(self.start_time))}')
+        print(f'Experiment start time:   {time.ctime(int(self.experiment.get_start_time()))}')
         print('=================================================')
-        print(f'Experiment description: {self.experiment_description}')
+        print(f'Experiment description: {self.experiment.get_experiment_description()}')
         print('=================================================\n')
 
     # create cloud function execution provider
@@ -73,25 +74,29 @@ class Benchmarker:
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients
     def log_experiment_running_time(self) -> None:
-        end_time = time.time()
-        experiment_running_time = end_time - self.start_time
+        (end_time,total_time) = self.experiment.end_experiment()
+        # experiment_running_time = end_time - self.start_time
         print('=================================================')
         print(f'Experiment end time: {time.ctime(int(end_time))}')
         print('Experiment running time: ' +
-              f'{time.strftime("%H:%M:%S", time.gmtime(experiment_running_time))}')
+              f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
         print('=================================================')
+        
+        # store all data from experiment in database
+        db = SQL_Interface(self.experiment)
+        db.log_experiment()
+
 
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log
         self.log_experiment_running_time()
 
-        # TODO log experiment metadata
 
     # main method to be used by experiment clients
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: dict = None) -> dict:
+                        invoke_nested: dict = None) -> None:
 
         response = self.provider.invoke_function(function_endpoint=function_endpoint,
                                                  sleep=sleep,
@@ -101,19 +106,17 @@ class Benchmarker:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
 
-        # log repsonse to db
-        # TODO
+        self.experiment.add_invocations([response])
 
-        return response
+        # return response
 
-    # finish implementation
 
     def invoke_function_conccurrently(self,
                                       function_endpoint: str,
                                       sleep: float = 0.0,
                                       invoke_nested: dict = None,
                                       numb_threads: int = 1
-                                      ) -> list:
+                                      ) -> None:
 
         response_list = self.provider.invoke_function_conccrently(function_endpoint,
                                                              sleep,
@@ -126,14 +129,14 @@ class Benchmarker:
                 'Error: Empty response from cloud function invocation.')
 
         # log repsonse to db
-        # TODO
+        self.experiment.add_invocations(response_list)
 
-        # maybe return statuscode
-        return response_list
 
 # create exception class for empty responses
 
-
+# do something smarter here 
 class EmptyResponseError(RuntimeError):
     def __ini__(self, error_msg: str):
         super(error_msg)
+
+
