@@ -3,6 +3,7 @@ import time
 import json
 import uuid
 import platform
+import traceback
 
 
 def lambda_handler(event: dict, context: dict) -> dict:
@@ -114,7 +115,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 identifier: {
                     "identifier": identifier,
                     "uuid": invocation_uuid,
-                    "error": {"message": str(e), "type": str(type(e))},
+                    "error": {"trace": traceback.format_exc(), "type": str(type(e))},
                     "parent": None,
                     "sleep": None,
                     "python_version": None,
@@ -171,7 +172,7 @@ def invoke_lambda(lambda_name: str,
             "error-"+lambda_name+'-nested_invocation': {
                 "identifier": "error-"+lambda_name+'-nested_invocation',
                 "uuid": None,
-                "error": {"message": str(e), "type": str(type(e))},
+                "error": {"trace": traceback.format_exc(), "type": str(type(e))},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "python_version": None,

@@ -5,6 +5,7 @@ import uuid
 import requests
 import psutil
 import azure.functions as func
+import traceback
 
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
@@ -111,7 +112,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             identifier: {
                 "identifier": identifier,
                 "uuid": invocation_uuid,
-                "error": {"message": str(e), "type": str(type(e))},
+                "error": {"trace": traceback.format_exc(), "type": str(type(e))},
                 "parent": None,
                 "sleep": None,
                 "python_version": None,
@@ -171,7 +172,7 @@ def invoke_nested_function(function_name: str,
             "error-"+function_name+'-nested_invocation': {
                 "identifier": "error-"+function_name+'-nested_invocation',
                 "uuid": None,
-                "error": {"message": str(e), "type": str(type(e))},
+                "error": {"trace": traceback.format_exc(), "type": str(type(e))},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "python_version": None,
