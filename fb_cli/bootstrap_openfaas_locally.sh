@@ -17,7 +17,10 @@ sleep 5
 
 pmsg "Installing OpenFaas using arkade ..."
 
-arkade install openfaas --wait
+arkade install openfaas \
+    --wait \
+    --set "faasIdler.dryRun=false" \
+    --set "faasIdler.inactivityDuration=1m"
 sleep 5
 
 pmsg "Configuring gateway ..."
@@ -38,6 +41,8 @@ echo -n "$PASSWORD" | faas-cli login --username admin --password-stdin
 pmsg "Deploying functions ..."
 
 faas-cli template pull
-faas-cli deploy -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml
+faas-cli deploy \
+  -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml \
+  --label "com.openfaas.scale.zero=true"
 
 smsg "Done configuring OpenFaas"

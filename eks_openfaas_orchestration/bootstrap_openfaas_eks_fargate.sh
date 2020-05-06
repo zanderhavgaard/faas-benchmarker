@@ -47,7 +47,11 @@ sleep 5
 echo -e "\n--> arkade install openfaas ...\n"
 
 # install openfaas
-arkade install openfaas --load-balancer
+arkade install openfaas \
+    --wait \
+    --load-balancer \
+    --set "faasIdler.dryRun=false" \
+    --set "faasIdler.inactivityDuration=30m"
 
 # wait a bit for things to be ready
 sleep 5
@@ -80,6 +84,8 @@ faas-cli template pull
 echo -e "\n--> Deploying functions ...\n"
 
 # deploy the functions
-faas-cli deploy -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml
+faas-cli deploy \
+  -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml \
+  --label "com.openfaas.scale.zero=true"
 
 echo -e "\nDone configuring OpenFaas\n"
