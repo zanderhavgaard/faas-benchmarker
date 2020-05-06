@@ -50,7 +50,7 @@ client_user="ubuntu"
 client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
 key_path="$fbrd/secrets/ssh_keys/experiment_servers"
 timestamp=$(date -u +\"%d-%m-%Y_%H-%M-%S\")
-logfile="~/$experiment_cloud_function_provider-$experiment_name-$timestamp.log"
+logfile="~/$timestamp-$experiment_cloud_function_provider-$experiment_name.log"
 # $fbrd will expanded on the client, the rest will be expanded locally!
 ssh_command="
     nohup bash -c ' \
