@@ -100,6 +100,9 @@ resource "null_resource" "root-provisioner" {
       "mkdir -pv /home/ubuntu/faas-benchmarker/secrets/ssh_keys",
       "mv /root/experiment_servers /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers",
       "mv /root/experiment_servers.pub /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers.pub",
+      "chmod 600 /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers",
+      "chmod 644 /home/ubuntu/faas-benchmarker/secrets/ssh_keys/experiment_servers.pub",
+
 
       # make sure ubuntu owns all of it's stuff...
       "chown -R \"ubuntu:ubuntu\" /home/ubuntu",
