@@ -176,7 +176,7 @@ function echoOpenfaasMinikubePassword {
 function checkIfOrchestrator {
   [ "$HOSTNAME" = "orchestrator" ] \
     && return 0 \
-    || return 1
+    || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from the server." && exit
 }
 
 # ==================================
@@ -226,25 +226,17 @@ select opt in $options; do
   case "$opt" in
 
     run_experiment)
-      # TODO fix
-      # checkIfOrchestrator \
-        # || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from there." && exit
-
+      checkIfOrchestrator
       # choose experiment name to run, if cancelledd will be an empty string
       exp=$(chooseExperiment)
-
       # break out if cancelled
       [ -z "$exp" ] && errmsg "Cancelled." && break 1
-
       # actually run the chosen experiment
       runExperiment "$exp"
       ;;
 
     run_all_experiments)
-      # TODO fix
-      # checkIfOrchestrator \
-        # || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from there." && exit
-
+      checkIfOrchestrator
       runAllExperiments
       ;;
 
