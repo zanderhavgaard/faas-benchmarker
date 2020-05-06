@@ -58,6 +58,7 @@ ssh_command="
     ; python3 \$fbrd/experiments/$experiment_name/$experiment_name.py \
     $experiment_name \
     $experiment_cloud_function_provider \
+    $experiment_client_provider \
     'openfaas-does-not-need-an-env-file' \
     >> $logfile 2>&1
     ; bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1

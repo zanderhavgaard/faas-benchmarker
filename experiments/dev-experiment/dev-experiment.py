@@ -12,11 +12,14 @@ experiment_name = sys.argv[1]
 # name of cloud function provider for this experiment
 provider = sys.argv[2]
 
+# name of the client provider
+client_provider = sys.argv[3]
+
 # relative path to experiment.env file
-env_file_path = sys.argv[3]
+env_file_path = sys.argv[4]
 
 # dev_mode
-dev_mode = eval(sys.argv[4]) if len(sys.argv) > 4 else False
+dev_mode = eval(sys.argv[5]) if len(sys.argv) > 5 else False
 
 # =====================================================================================
 
@@ -30,6 +33,7 @@ description = f"""
 # create the benchmarker
 benchmarker = Benchmarker(experiment_name=experiment_name,
                           provider=provider,
+                          client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
                           dev_mode=dev_mode)

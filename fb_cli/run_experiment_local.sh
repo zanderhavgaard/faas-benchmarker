@@ -8,6 +8,8 @@ experiment_context="$fbrd/experiments/$experiment_name"
 experiment_python_file="$experiment_context/$experiment_name.py"
 # we test locally againt minikube
 experiment_cloud_function_provider="openfaas"
+# client is the dev machine
+experiment_client_provider="dev"
 # we do not need an env file for openfaas on minikube
 experiment_env_file="$experiment_context/$experiment_name.env"
 # dev_mode
@@ -17,5 +19,6 @@ python \
   $experiment_python_file \
   $experiment_name \
   $experiment_cloud_function_provider \
+  $experiment_client_provider \
   $experiment_env_file \
   $dev_mode

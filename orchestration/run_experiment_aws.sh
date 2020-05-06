@@ -78,6 +78,7 @@ ssh_command="
     python3 \$fbrd/experiments/$experiment_name/$experiment_name.py \
     $experiment_name \
     $experiment_cloud_function_provider \
+    $experiment_client_provider \
     \$fbrd/experiments/$experiment_name/$experiment_name-$experiment_cloud_function_provider.env \
     > $logfile 2>&1 \
     ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
