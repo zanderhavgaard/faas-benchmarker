@@ -50,7 +50,7 @@ client_user="ubuntu"
 client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
 key_path="$fbrd/secrets/ssh_keys/experiment_servers"
 timestamp=$(date -u +\"%d-%m-%Y_%H-%M-%S\")
-logfile="~/$timestamp-$experiment_cloud_function_provider-$experiment_name.log"
+logfile="/home/ubuntu/$timestamp-$experiment_cloud_function_provider-$experiment_name.log"
 # $fbrd will expanded on the client, the rest will be expanded locally!
 ssh_command="
     nohup bash -c ' \
@@ -63,6 +63,8 @@ ssh_command="
     >> $logfile 2>&1
     ; bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
     ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
+    ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \
+        ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/error_logs/$timestamp-$experiment_client_provider-$experiment_name-ErrorLogFile.log
     ; touch /home/ubuntu/done
     ' > /dev/null & "
 

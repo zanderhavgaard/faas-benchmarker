@@ -55,6 +55,7 @@ resource "null_resource" "root-provisioner" {
       # make directory for log files
       "mkdir -pv /home/ubuntu/logs/experiments",
       "mkdir -pv /home/ubuntu/logs/orchestration",
+      "mkdir -pv /home/ubuntu/logs/error_logs",
 
       # copy the database docker compose file
       "cp /home/ubuntu/faas-benchmarker/infrastructure/db_server/docker-compose.yml /home/ubuntu/docker-compose.yml",
