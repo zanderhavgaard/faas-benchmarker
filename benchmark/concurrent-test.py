@@ -3,6 +3,7 @@ from benchmarker import Benchmarker as bench
 import time
 from pprint import pprint
 from invocation import Invocation
+from ssh_query import SSH_query
 # import benchmark.provider_abstract as abstract
 
 def print_dict(d:dict):
@@ -17,10 +18,10 @@ def print_dict(d:dict):
 # of.test()
 nested = [
        {
-        "function_name": 'function2',
+        "function_name": 'function1',
         "invoke_payload": {
-            "StatusCode": 200,
-            "sleep": 0.2
+            "StatusCode": 500,
+            "sleep": "test"
         }
     }
 ]
@@ -31,12 +32,45 @@ bench = bench('exp','openfaas','test', 'concurrent','/home/thomas/Msc/faas-bench
 
 # bench.log_experiment_running_time()
 # print(bench.get_self())
+bench.invoke_function('function1',0.0,nested)
 
-bench.invoke_function('function1','test')
-single = bench.experiment.get_invocations()[0]
+invocations = bench.experiment.get_invocations()
+# # pprint(invocations)
+# # print()
+# for invo in invocations:
+#     print(invo.get_query_string())
+#     print()
+path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
 
-invo = Invocation('test',single)
-pprint(invo.get_data())
+ssh = SSH_query(path)
+
+queries = ['truncate Error','truncate Invocation']+[i.get_query_string() for i in invocations]
+print()
+for x in queries:
+    print('query in loop',x)
+    print()
+
+val = ssh.insert_queries(queries)
+print(val)
+vals = ssh.retrive_query('select * from Invocation')
+print(vals)
+print()
+# print('length',len(vals))
+vals2 = ssh.retrive_query('select * from Error')
+print(vals2)
+# print('---------------------------------------')
+
+# bench.invoke_function_conccurrently('function1',numb_threads=8)
+# invocations2 = bench.experiment.get_invocations()
+
+# for invo in invocations2:
+#     pprint(invo.get_data())
+#     print()
+
+# pprint(single)
+
+# invo = Invocation('test',single)
+# pprint(invo.get_data())
 
 
 # pprint(bench.experiment.get_invocations())
@@ -86,3 +120,4 @@ pprint(invo.get_data())
 #     print()
 
 
+# insert into Invocation (exp_id,root_identifier,identifier,function_name,uuid,parent,level,sleep,instance_identifier,python_version,memory,throughput,numb_threads,thread_id,execution_start,execution_end,invocation_start,invocation_end,execution_total,invocation_total) values ('testid','test','test2','func1','uuid','far',0,1.1,'test','3.7',100,12.0,1,1, 2.2, 2.2, 3.3,3.3,4.4,5.5);

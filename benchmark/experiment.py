@@ -4,7 +4,7 @@ import psutil
 import time
 import platform
 from functools import reduce
-# from invocation import Invocation
+from invocation import Invocation
 # remove for production
 from pprint import pprint
 
@@ -21,11 +21,8 @@ class Experiment:
         self.description = desc
         self.py_version = platform.python_version()
         self.cores = psutil.cpu_count()
-        self.memory = psutil.virtual_memory()
-        if(invocations != None):
-            self.invocations=invocations
-        else:
-            self.invocations= []
+        self.memory = psutil.virtual_memory()[0]
+        self.invocations= []
 
     def get_start_time(self) -> float:
         return self.start_time
@@ -45,12 +42,28 @@ class Experiment:
     def get_invocations_original_form(self):
         return self.invocations
     
-    def add_invocations(self, invocations:list):
-        self.invocations.append(invocations)
+    # make Invocation object out of function invocation dict and append to experiment list
+    def add_invocation(self, invocations:dict) -> None:
+        invocation_list = []
+        root = invocations['root_identifier']
+        del invocations['root_identifier']
 
+        for x in invocations.keys():
+            invocation_list.append(Invocation(self.uuid,root,invocations[x]))
+
+        self.invocations.append(invocation_list)
+
+    # for concurrent invoked function runs that returns a list of invocation dicts
+    def add_invocations_list(self,invocations:list) -> None:
+        for i in invocations:
+            self.add_invocation(i)
+
+    # end experiment, log time and return some data to benchmarker
     def end_experiment(self):
         self.end_time = time.time()
         self.total_time = self.end_time - self.start_time
         return (self.end_time, self.total_time)
+    
+    def 
     
 

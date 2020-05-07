@@ -32,7 +32,8 @@ def handle(req):
         body = {
             identifier: {
                 "identifier": identifier,
-                "uuid": invocation_uuid
+                "uuid": invocation_uuid,
+                "function_name": function_name
             }
         }
 
@@ -41,7 +42,7 @@ def handle(req):
 
         # make sure that things are working...
         if event['StatusCode'] != 200:
-            raise Exception('StatusCode:'+str(event['StatusCode']))
+            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
 
          # set parent (previous invocation) of this invocation
         if 'parent' not in event:
@@ -111,7 +112,8 @@ def handle(req):
                 identifier: {
                     "identifier": identifier,
                     "uuid": invocation_uuid,
-                    "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
+                    "function_name": function_name,
+                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
                     "python_version": None,
@@ -176,11 +178,13 @@ def invoke_nested_function(function_name: str,
         return body
 
     except Exception as e:
+        end_time = time.time()
         return {
-            "error-"+function_name+'-nested_invocation': {
-                "identifier": "error-"+function_name+'-nested_invocation',
+            "error-"+function_name+'-nested_invocation-'+str(end_time): {
+                "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
                 "uuid": None,
-                "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
+                "function_name": 'function1',
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "python_version": None,
@@ -190,6 +194,9 @@ def invoke_nested_function(function_name: str,
                 "execution_start": None,
                 "execution_end": None,
                 "invocation_start": start_time,
-                "invocation_end": time.time()
+                "invocation_end": end_time
             }
         }
+
+class StatusCodeException(Exception):
+    pass

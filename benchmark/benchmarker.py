@@ -106,7 +106,7 @@ class Benchmarker:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
 
-        self.experiment.add_invocations([response])
+        self.experiment.add_invocation(response)
 
         # return response
 
@@ -129,7 +129,8 @@ class Benchmarker:
                 'Error: Empty response from cloud function invocation.')
 
         # log repsonse to db
-        self.experiment.add_invocations(response_list)
+        # pprint(response_list)
+        self.experiment.add_invocations_list(response_list)
 
 
 # create exception class for empty responses
