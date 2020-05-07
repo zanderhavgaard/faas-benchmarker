@@ -10,7 +10,7 @@ from provider_aws_lambda import AWSLambdaProvider
 from provider_azure_functions import AzureFunctionsProvider
 from provider_openfaas import OpenFaasProvider
 from experiment import Experiment
-from mysql_interface import SQL_Interface
+from mysql_interface import SQL_Interface as db_interface
 
 from pprint import pprint
 
@@ -22,14 +22,16 @@ class Benchmarker:
         # do not log anything if running in dev mode
         self.dev_mode = dev_mode
 
-        # log the experiment name
-        self.experiment_name = experiment_name
+        self.env_path = env_file_path
 
-        # log the time of experiment start
-        self.start_time = time.time()
+        # # log the experiment name
+        # self.experiment_name = experiment_name
 
-        # desribe experiment, to be logged along with results
-        self.experiment_description = experiment_description
+        # # log the time of experiment start
+        # self.start_time = time.time()
+
+        # # desribe experiment, to be logged along with results
+        # self.experiment_description = experiment_description
 
         # get function execution provider
         self.provider = self.get_provider(
@@ -83,8 +85,10 @@ class Benchmarker:
         print('=================================================')
         
         # store all data from experiment in database
-        db = SQL_Interface(self.experiment)
-        db.log_experiment()
+        path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
+        db = db_interface(path)
+        # db = db_interface(self.env_path)
+        db.log_experiment(self.experiment)
 
 
     def end_experiment(self) -> None:

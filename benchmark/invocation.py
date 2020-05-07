@@ -43,8 +43,6 @@ class Invocation:
     def get_query_string(self):
         key_values = self.__dict__
         is_error = key_values.pop('is_error')
-        # if(is_error):
-        #     key_values['trace'] = 'test'
         keys = reduce(lambda x,y: str(x)+','+str(y), key_values.keys()) 
         vals = ''
         for k,v in key_values.items():

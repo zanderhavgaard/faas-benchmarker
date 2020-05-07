@@ -28,13 +28,14 @@ def lambda_handler(event: dict, context: dict) -> dict:
     try:
         # make sure that things are working...
         if event['StatusCode'] != 200:
-            raise Exception("Error StatusCode: "+str(event['StatusCode']))
+            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
 
         # create a dict that will be parsed to json
         body = {
             identifier: {
                 "identifier": identifier,
-                "uuid": invocation_uuid
+                "uuid": invocation_uuid,
+                "function_name": function_name
             },
         }
         # set parent (previous invocation) of this invocation
@@ -115,12 +116,13 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 identifier: {
                     "identifier": identifier,
                     "uuid": invocation_uuid,
-                    "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
+                    "function_name": function_name,
+                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
                     "python_version": None,
                     "level": None,
-                    "memory": 128,
+                    "memory": None,
                     "instance_identifier": None,
                     "execution_start": start_time,
                     "execution_end": time.time()
@@ -128,7 +130,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
             }),
             "identifier": identifier
         })
-
 # invoke another lambda function using boto3, thus invoking the function
 # directly and not interacting with the API gateway
 # params:
@@ -168,23 +169,30 @@ def invoke_lambda(lambda_name: str,
         return body
     
     except Exception as e:
+        end_time = time.time()
         return {
-            "error-"+lambda_name+'-nested_invocation': {
-                "identifier": "error-"+lambda_name+'-nested_invocation',
+            "error-"+lambda_name+'-nested_invocation-'+str(end_time): {
+                "identifier": "error-"+lambda_name+'-nested_invocation-'+str(end_time),
                 "uuid": None,
-                "error": {"trace": traceback.format_exc(), "type": str(type(e).__name__ )},
+                "function_name": 'function1',
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "python_version": None,
                 "level": invoke_payload['level'],
-                "memory": 128,
+                "memory": None,
                 "instance_identifier": None,
                 "execution_start": None,
                 "execution_end": None,
                 "invocation_start": start_time,
-                "invocation_end": time.time()
+                "invocation_end": end_time
             }
         }
+
+class StatusCodeException(Exception):
+    pass
+
+
 
 
 # call the method if running locally

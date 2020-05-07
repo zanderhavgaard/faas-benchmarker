@@ -4,6 +4,7 @@ import time
 from pprint import pprint
 from invocation import Invocation
 from ssh_query import SSH_query
+from mysql_interface import SQL_Interface
 # import benchmark.provider_abstract as abstract
 
 def print_dict(d:dict):
@@ -27,37 +28,80 @@ nested = [
 ]
 
 
+path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
+
+# ssh = SSH_query(path)
+
+db_interface = SQL_Interface(path)
+
+# db_interface.delete_data_table_Experiment()
+# db_interface.delete_data_table_Invocation()
+# db_interface.delete_data_table_Error()
+
+
+
+
+# queries = ['truncate Error','truncate Invocation']
+
+# val = ssh.insert_queries(queries)
 
 bench = bench('exp','openfaas','test', 'concurrent','/home/thomas/Msc/faas-benchmarker/.test_env')
 
 # bench.log_experiment_running_time()
 # print(bench.get_self())
 bench.invoke_function('function1',0.0,nested)
+print('invocations',len(bench.experiment.get_invocations()))
 
-invocations = bench.experiment.get_invocations()
-# # pprint(invocations)
-# # print()
-# for invo in invocations:
-#     print(invo.get_query_string())
+bench.log_experiment_running_time()
+
+# experiment_vals = db_interface.get_most_recent_experiment()
+# print(experiment_vals)
+print()
+all_experiment_vals = db_interface.get_all_from_Experiment() 
+print('All Experiments',all_experiment_vals)
+print()
+all_invocations = db_interface.get_all_from_Invocation()
+print('All Invocations',all_invocations)
+print()
+all_errors = db_interface.get_all_from_error()
+print('All errors',all_errors)
+print()
+experiment_vals = db_interface.get_most_recent_experiment()
+print('MOST RECENT EXPERIMENT',experiment_vals)
+print()
+experiment_uuid = db_interface.get_most_recent_experiment('uuid')
+print('experiment uuid',experiment_uuid)
+
+
+
+
+
+
+
+# print(bench.experiment.get_experiment_query_string())
+# pprint(bench.experiment.log_experiment())
+
+
+# invocations = bench.experiment.get_invocations()
+# # # pprint(invocations)
+# # # print()
+# # for invo in invocations:
+# #     print(invo.get_query_string())
+# #     print()
+
+
+# for x in queries:
+#     print('query in loop',x)
 #     print()
-path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
 
-ssh = SSH_query(path)
-
-queries = ['truncate Error','truncate Invocation']+[i.get_query_string() for i in invocations]
-print()
-for x in queries:
-    print('query in loop',x)
-    print()
-
-val = ssh.insert_queries(queries)
-print(val)
-vals = ssh.retrive_query('select * from Invocation')
-print(vals)
-print()
-# print('length',len(vals))
-vals2 = ssh.retrive_query('select * from Error')
-print(vals2)
+# val = ssh.insert_queries(queries)
+# print(val)
+# vals = ssh.retrive_query('select * from Invocation')
+# print(vals)
+# print()
+# # print('length',len(vals))
+# vals2 = ssh.retrive_query('select * from Error')
+# print(vals2)
 # print('---------------------------------------')
 
 # bench.invoke_function_conccurrently('function1',numb_threads=8)
