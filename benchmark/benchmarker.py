@@ -17,27 +17,17 @@ from pprint import pprint
 
 class Benchmarker:
 
-    def __init__(self, experiment_name: str, provider: str, client_provider:str, experiment_description: str, env_file_path: str, dev_mode: bool = False) -> None:
+    def __init__(self, experiment_name: str, provider: str, client_provider: str, experiment_description: str, env_file_path: str, dev_mode: bool = False) -> None:
 
         # do not log anything if running in dev mode
         self.dev_mode = dev_mode
 
-        self.env_path = env_file_path
-
-        # # log the experiment name
-        # self.experiment_name = experiment_name
-
-        # # log the time of experiment start
-        # self.start_time = time.time()
-
-        # # desribe experiment, to be logged along with results
-        # self.experiment_description = experiment_description
-
         # get function execution provider
         self.provider = self.get_provider(
             provider=provider, env_file_path=env_file_path)
-        
-        self.experiment = Experiment(experiment_name,provider,client_provider,experiment_description)
+
+        self.experiment = Experiment(
+            experiment_name, provider, client_provider, experiment_description)
 
         print('\n=================================================')
         print('FaaS Benchmarker --> Starting Experiment ...')
@@ -49,9 +39,11 @@ class Benchmarker:
         print(f'Experiment name:         {experiment_name}')
         print(f'Using provider:          {provider}')
         print(f'Using environment file:  {env_file_path}')
-        print(f'Experiment start time:   {time.ctime(int(self.experiment.get_start_time()))}')
+        print(
+            f'Experiment start time:   {time.ctime(int(self.experiment.get_start_time()))}')
         print('=================================================')
-        print(f'Experiment description: {self.experiment.get_experiment_description()}')
+        print(
+            f'Experiment description: {self.experiment.get_experiment_description()}')
         print('=================================================\n')
 
     # create cloud function execution provider
@@ -76,27 +68,30 @@ class Benchmarker:
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients
     def log_experiment_running_time(self) -> None:
-        (end_time,total_time) = self.experiment.end_experiment()
+        (end_time, total_time) = self.experiment.end_experiment()
         # experiment_running_time = end_time - self.start_time
         print('=================================================')
         print(f'Experiment end time: {time.ctime(int(end_time))}')
         print('Experiment running time: ' +
               f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
         print('=================================================')
-        
-        # store all data from experiment in database
-        path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
-        db = db_interface(path)
-        # db = db_interface(self.env_path)
-        db.log_experiment(self.experiment)
 
+        # do not log data if running in development mode locally
+        if not self.dev_mode:
+            # store all data from experiment in database
+            db = db_interface()
+            # db = db_interface(self.env_path)
+            db.log_experiment(self.experiment)
+        else:
+            # print logged stuff for dev
+            pass
 
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log
         self.log_experiment_running_time()
 
-
     # main method to be used by experiment clients
+
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
@@ -112,8 +107,7 @@ class Benchmarker:
 
         self.experiment.add_invocation(response)
 
-        # return response
-
+        return response
 
     def invoke_function_conccurrently(self,
                                       function_endpoint: str,
@@ -123,10 +117,10 @@ class Benchmarker:
                                       ) -> None:
 
         response_list = self.provider.invoke_function_conccrently(function_endpoint,
-                                                             sleep,
-                                                             invoke_nested,
-                                                             numb_threads
-                                                             )
+                                                                  sleep,
+                                                                  invoke_nested,
+                                                                  numb_threads
+                                                                  )
 
         if response_list is None:
             raise EmptyResponseError(
@@ -139,9 +133,7 @@ class Benchmarker:
 
 # create exception class for empty responses
 
-# do something smarter here 
+# do something smarter here
 class EmptyResponseError(RuntimeError):
     def __ini__(self, error_msg: str):
         super(error_msg)
-
-

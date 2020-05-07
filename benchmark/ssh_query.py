@@ -15,21 +15,20 @@ import time
 
 class SSH_query:
     # set variables for connection to MySql on DB server via ssh tunnel
-    def __init__(self, env_file_path: str):
-        self.load_env_vars(env_file_path)
-        self.ssh_address = (os.getenv('DB_HOSTNAME'),22)
-        print('ssh_address',self.ssh_address)
+    def __init__(self):
+        self.ssh_address = (os.getenv('DB_HOSTNAME'), 22)
 
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
         # self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
-        self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
-        self.remote_bind_address = ('127.0.0.1',3306)
+        self.ssh_pkey = paramiko.RSAKey.from_private_key_file(
+            '/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
+        self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
         self.db_password = 'faas'
         self.database = 'Benchmarks'
-        
+
         # comment below lines in if you want to load it from environment variables instead of default
         # self.ssh_username = os.getenv('ssh_username')
         # self.ssh_pkey = paramiko.RSAKey.from_private_key_file(os.getenv('ssh_pkey_path'))
@@ -38,12 +37,8 @@ class SSH_query:
         # self.db_password = os.getenv('db_password')
         # self.database = os.getenv('database')
 
-     # load .env file and parse values
-    def load_env_vars(self, env_file_path: str) -> None:
-        dotenv.load_dotenv(dotenv_path=env_file_path)
-    
-    # apply arbitrary many insert queries on MySql 
-    def insert_queries(self, queries:list) -> bool:
+    # apply arbitrary many insert queries on MySql
+    def insert_queries(self, queries: list) -> bool:
         # try up 10 times to establish an ssh tunnel
         for x in range(10):
             try:
@@ -69,19 +64,18 @@ class SSH_query:
                                 try:
                                     cur.execute(queries[0])
                                     # if query is successful then remove it from list
-                                    print('executed',queries[0])
+                                    print('executed', queries[0])
                                     queries.pop(0)
                                     break
-                                
+
                                 except Exception as qe:
                                     time.sleep(2)
                                     if(x == 2):
                                         # if not successful remove query from list and log error message
                                         q = queries.pop(0)
-                                        self.write_errorlog(qe,'Sql error with query:',q)
+                                        self.write_errorlog(
+                                            qe, 'Sql error with query:', q)
 
-                                        
-                                        
                         conn.close()
                         tunnel.stop()
 
@@ -91,17 +85,16 @@ class SSH_query:
                         if('conn' in locals()):
                             conn.close()
                         # log error message if database connection failed
-                        self.write_errorlog(ex,'MySql connection error')
-
+                        self.write_errorlog(ex, 'MySql connection error')
 
             except Exception as e:
                 if(x == 9):
                     # if all 10 atempts failed log error and return False
-                    self.write_errorlog(e,"Caught tunnel exception while inserting")
+                    self.write_errorlog(
+                        e, "Caught tunnel exception while inserting")
                     return False
-                
 
-    def retrive_query(self, query:str) -> list: # consider changing return type
+    def retrive_query(self, query: str) -> list:  # consider changing return type
         # try up 10 times to establish an ssh tunnel
         for x in range(10):
             try:
@@ -116,11 +109,11 @@ class SSH_query:
                         try:
                             # consider executemany if more complicated queries has to be made
                             conn = pymysql.connect(host=self.remote_bind_address[0],
-                                                user=self.db_user,
-                                                passwd=self.db_password,
-                                                db=self.database,
-                                                port=tunnel.local_bind_port
-                                                )
+                                                   user=self.db_user,
+                                                   passwd=self.db_password,
+                                                   db=self.database,
+                                                   port=tunnel.local_bind_port
+                                                   )
 
                             # retrive and read data
                             data = pd.read_sql_query(query, conn)
@@ -137,24 +130,25 @@ class SSH_query:
                             if('conn' in locals()):
                                 conn.close()
                             if(i == 2):
-                                self.write_errorlog(ex,"Exception caught at remote site while retriving data")
-                        
+                                self.write_errorlog(
+                                    ex, "Exception caught at remote site while retriving data")
+
             # log error message if tunnel could not be established within 10 atempts
             except Exception as e:
                 if(x == 9):
-                    self.write_errorlog(e,'Caught tunnel exception while retriving data')
+                    self.write_errorlog(
+                        e, 'Caught tunnel exception while retriving data')
                     return None
-               
 
     # function for writing wroor messages to ErrorLogFile.txt"
-    def write_errorlog(self, ex:Exception, description:str, query:str = None):
-       
+    def write_errorlog(self, ex: Exception, description: str, query: str = None):
+
         # with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
-        with open("/home/thomas/ErrorLogFile.log","a+") as f:
+        with open("/home/thomas/ErrorLogFile.log", "a+") as f:
             f.write(description+'\n')
             if(query != None):
                 f.write(query+'\n')
-            f.write(str(datetime.datetime.now()) +'\n' )
-            f.write('type: '+ str(type(ex)) +' exception: '+ str(ex) + '\n') 
+            f.write(str(datetime.datetime.now()) + '\n')
+            f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
             f.write("--------------------------\n")
             f.close()
