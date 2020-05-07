@@ -20,7 +20,7 @@ pmsg "Installing OpenFaas using arkade ..."
 arkade install openfaas \
     --wait \
     --set "faasIdler.dryRun=false" \
-    --set "faasIdler.inactivityDuration=1m"
+    --set "faasIdler.inactivityDuration=10m"
 sleep 5
 
 pmsg "Configuring gateway ..."
