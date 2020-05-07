@@ -5,6 +5,7 @@ import uuid
 import requests
 import psutil
 import azure.functions as func
+import traceback
 
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
@@ -31,13 +32,14 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
         # make sure that things are working...
         if req_json['StatusCode'] != 200:
-            raise Exception("Error StatusCode: "+str(req_json['StatusCode']))
+            raise StatusCodeException('StatusCode: '+str(req_json['StatusCode']))
 
         # create a dict that will be parsed to json
         body = {
             identifier: {
                 "identifier": identifier,
-                "uuid": invocation_uuid
+                "uuid": invocation_uuid,
+                "function_name": function_name
             },
         }
 
@@ -109,17 +111,19 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         error_body = {
             "identifier": identifier,
             identifier: {
-                "identifier": identifier,
-                "uuid": invocation_uuid,
-                "error": {"message": str(e), "type": str(type(e))},
-                "parent": None,
-                "sleep": None,
-                "python_version": None,
-                "level": None,
-                "instance_identifier": instance_identifier,
-                "execution_start": start_time,
-                "execution_end": time.time()
-            }
+                    "identifier": identifier,
+                    "uuid": invocation_uuid,
+                    "function_name": function_name,
+                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
+                    "parent": None,
+                    "sleep": None,
+                    "python_version": None,
+                    "level": None,
+                    "memory": None,
+                    "instance_identifier": None,
+                    "execution_start": start_time,
+                    "execution_end": time.time()
+                }
         }
         return func.HttpResponse(body=json.dumps(error_body),
                                  status_code=200,
@@ -167,19 +171,25 @@ def invoke_nested_function(function_name: str,
         return body
 
     except Exception as e:
+        end_time = time.time()
         return {
-            "error-"+function_name+'-nested_invocation': {
-                "identifier": "error-"+function_name+'-nested_invocation',
+            "error-"+function_name+'-nested_invocation-'+str(end_time): {
+                "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
                 "uuid": None,
-                "error": {"message": str(e), "type": str(type(e))},
+                "function_name": 'function1',
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "python_version": None,
                 "level": invoke_payload['level'],
-                "instance_identifier": instance_identifier,
+                "memory": None,
+                "instance_identifier": None,
                 "execution_start": None,
                 "execution_end": None,
                 "invocation_start": start_time,
-                "invocation_end": time.time()
+                "invocation_end": end_time
             }
         }
+
+class StatusCodeException(Exception):
+    pass

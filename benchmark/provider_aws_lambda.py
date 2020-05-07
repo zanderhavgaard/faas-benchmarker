@@ -101,10 +101,11 @@ class AWSLambdaProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-providor_aws-'+function_endpoint+'-'+str(response.status_code): {
-                        'identifier': 'StatusCode-error-providor_aws'+function_endpoint+'-'+str(response.status_code),
+                    'StatusCode-error-providor_openfaas-'+function_endpoint+'-'+str(end_time): {
+                        'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(end_time),
                         'uuid': None,
-                        'error':{'trace':'None 200 code','responsecode':response.status_code},
+                        'function_name': function_endpoint,
+                        'error':{'trace':'None 200 code in providor_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: '+ str(response.status_code)},
                         'parent': None,
                         'sleep': sleep,
                         'numb_threads': 1,
@@ -118,16 +119,18 @@ class AWSLambdaProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-providor_aws'+function_endpoint+'-'+str(response.status_code)
+                    'root_identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
+            end_time = time.time()
             error_dict = {
-                    'exception-providor_aws-'+function_endpoint: {
-                        'identifier': 'exception-providor_aws'+function_endpoint,
+                    'exception-providor_openfaas-'+function_endpoint+str(end_time): {
+                        'identifier': 'exception-providor_openfaas'+function_endpoint+str(end_time),
                         'uuid': None,
-                        'error': {"trace": traceback.format_exc(), "type": str(type(e))},
+                        'function_name': function_endpoint,
+                        'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e) },
                         'parent': None,
                         'sleep': sleep,
                         'numb_threads': 1,
@@ -139,9 +142,9 @@ class AWSLambdaProvider(AbstractProvider):
                         'execution_start': None,
                         'execution_end': None,
                         'invocation_start': start_time,
-                        'invocation_end': time.time(),
+                        'invocation_end': t,
                     },
-                    'root_identifier':'exception-providor_aws'+function_endpoint
+                    'root_identifier':'exception-providor_openfaas'+function_endpoint+str(end_time)
                 }
             return error_dict   
 

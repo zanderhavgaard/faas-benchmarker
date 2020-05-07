@@ -10,13 +10,15 @@ from sshtunnel import SSHTunnelForwarder
 import datetime
 import dotenv
 import traceback
+import time
 
 
-class ssh_query:
+class SSH_query:
     # set variables for connection to MySql on DB server via ssh tunnel
     def __init__(self, env_file_path: str):
         self.load_env_vars(env_file_path)
         self.ssh_address = (os.getenv('DB_HOSTNAME'),22)
+        print('ssh_address',self.ssh_address)
 
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
@@ -67,14 +69,18 @@ class ssh_query:
                                 try:
                                     cur.execute(queries[0])
                                     # if query is successful then remove it from list
+                                    print('executed',queries[0])
                                     queries.pop(0)
                                     break
                                 
                                 except Exception as qe:
+                                    time.sleep(2)
                                     if(x == 2):
                                         # if not successful remove query from list and log error message
                                         q = queries.pop(0)
                                         self.write_errorlog(qe,'Sql error with query:',q)
+
+                                        
                                         
                         conn.close()
                         tunnel.stop()
@@ -95,7 +101,7 @@ class ssh_query:
                     return False
                 
 
-    def retrive_query(self, query):
+    def retrive_query(self, query:str) -> list: # consider changing return type
         # try up 10 times to establish an ssh tunnel
         for x in range(10):
             try:
@@ -143,7 +149,8 @@ class ssh_query:
     # function for writing wroor messages to ErrorLogFile.txt"
     def write_errorlog(self, ex:Exception, description:str, query:str = None):
        
-        with open("ErrorLogFile.txt","a+") as f:
+        # with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
+        with open("/home/thomas/ErrorLogFile.log","a+") as f:
             f.write(description+'\n')
             if(query != None):
                 f.write(query+'\n')
