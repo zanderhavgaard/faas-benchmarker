@@ -65,6 +65,15 @@ function checkValidExperimentName {
   return 0
 }
 
+function checkThatExperimentExists {
+  # get existing experiment names
+  experiment_names=$(ls experiments)
+  # check that experiment exists
+  echo "$experiment_names" | grep -qw "$1" && return 0
+  errmsg "Invalid experiment name."
+  return 1
+}
+
 function firstTimeInfrastrutureBootstrap {
   bash "$fbrd/fb_cli/first_time_infrasctructure_bootstrap.sh"
 }
@@ -179,13 +188,188 @@ function checkIfOrchestrator {
     || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from the server." && exit
 }
 
+# TODO refactor
+function runExperimentWrapper {
+  checkIfOrchestrator
+  # choose experiment name to run, if cancelledd will be an empty string
+  exp=$(chooseExperiment)
+  # break out if cancelled
+  [ -z "$exp" ] && errmsg "Cancelled." && break 1
+  # actually run the chosen experiment
+  runExperiment "$exp"
+}
+
+# TODO refactor
+function runAllExperimentsWrapper {
+  checkIfOrchestrator
+  runAllExperiments
+}
+
+# ==================================
+
+function devInteractive {
+  echo "Options for running experiments locally for development:"
+  select dev_opt in $dev_options ; do
+    case $dev_opt in
+
+      run_experiment_locally)
+        dev_exp=$(chooseExperiment)
+        # break out if cancelled
+        [ -z "$dev_exp" ] && msg "Cancelled." && break 1
+        runExperimentLocally "$dev_exp"
+        ;;
+
+      rerun_last_experiment_locally)
+        if [ -z "$dev_exp" ] ; then
+          msg "Have not run any experiment locally yet, choose one to run..."
+          dev_exp=$(chooseExperiment)
+          # break out if cancelled
+          [ -z "$dev_exp" ] && msg "Cancelled." && break 1
+          runExperimentLocally "$dev_exp"
+        else
+          rerunLastExperimentLocally $dev_exp
+        fi
+        ;;
+
+      echo_minikube_openfaas_password)
+        echoOpenfaasMinikubePassword
+        ;;
+
+      fix_minikube_port_forward)
+        fixMinikubePortForward
+        ;;
+
+      start_minikube)
+        startMinikube
+        ;;
+
+      stop_minikube)
+        stopMinikube
+        ;;
+
+      minikube_status)
+        minikube status
+        ;;
+
+      bootstrap_openfaas_locally)
+        bootstrapOpenfaasLocally
+        ;;
+
+      teardown_openfaas_locally)
+        teardownOpenfaasLocally
+        ;;
+
+      # go back to previous menu
+      main_menu)
+        break 1
+        ;;
+
+      *)
+        echo "Press return to see options ..."
+        ;;
+
+    esac
+  done
+}
+
+function runInteractively {
+  banner
+  # interactively choose command
+  select opt in $options; do
+    case "$opt" in
+
+      run_experiment)
+        runExperimentWrapper
+        ;;
+
+      run_all_experiments)
+        runAllExperimentsWrapper
+        ;;
+
+      generate_report)
+        # TODO
+        echo "not implemented yet"
+        ;;
+
+      create_experiment)
+        createExperiment
+        ;;
+
+      update_experiment_infra_templates)
+        updateExperimentInfraTemplates
+        ;;
+
+      first_time_infrastructure_bootstrap)
+        firstTimeInfrastrutureBootstrap
+        ;;
+
+      destroy_permanent_infrastructure)
+        destroyPermanentInfrastructure
+        ;;
+
+      clear_screen)
+        clear
+        ;;
+
+      ssh_orchestrator)
+        sshOrchestrator
+        ;;
+
+      ssh_db_server)
+        sshDBServer
+        ;;
+
+      dev_options)
+        devInteractive
+        ;;
+
+      exit)
+        exit
+        ;;
+
+      *)
+        echo "Press return to see options ..."
+        ;;
+
+    esac
+  done
+}
+
+function usage {
+  msg "Options:"
+  msg "-i | --interactive : run in interactive mode"
+  msg "-d | --dev : run in interactive development mode"
+  msg "-l | --list-experiments : list available experiments"
+  msg "-r | --run-experiment [experiment name] : run experiment with provided [experiment name]"
+  msg "\tyou may pass multiple experiments to be run in parallel"
+  msg "-ra | --run-all-experiments : run all experiments"
+  msg "--generate-report : generate report based from result {not implemented yet}"
+  msg "--create-experiment [experiment name] : create new experiment with provided [experiment name]"
+  msg "--update-experiment-infrastructure-templates : update infrastructure templates for existing experiments"
+  msg "--bootstrap-permamnent-infrastructure : create the orchestrator and database/log servers"
+  msg "--destroy-permanent-infrastructure : destroy the orchestrator and database/log servers"
+  msg "--ssh-orchestrator : ssh to the orchestrator server"
+  msg "--ssh-db-server : ssh to the database/log server"
+  msg "-h | --help : print this help message"
+  echo
+}
+
+function banner {
+  # raise the banner...
+  cat "$fbrd/fb_cli/banner"
+  msg "Command-line tool for controlling the faas-benchmarker framework."
+  echo
+}
+
+function printHelp {
+  banner
+  usage
+}
+
 # ==================================
 
 # check that all env vars are set
 bash "$fbrd/fb_cli/check_env_vars.sh" && exit
-
-# raise the banner...
-cat "$fbrd/fb_cli/banner"
 
 # commands that can be issued
 options="
@@ -221,130 +405,91 @@ teardown_openfaas_locally
 main_menu
 "
 
-# interactively choose command
-select opt in $options; do
-  case "$opt" in
+# ==================================
+# parse postional options and arguments
 
-    run_experiment)
-      checkIfOrchestrator
-      # choose experiment name to run, if cancelledd will be an empty string
-      exp=$(chooseExperiment)
-      # break out if cancelled
-      [ -z "$exp" ] && errmsg "Cancelled." && break 1
-      # actually run the chosen experiment
-      runExperiment "$exp"
-      ;;
 
-    run_all_experiments)
-      checkIfOrchestrator
-      runAllExperiments
-      ;;
+if [[ ! $# -gt 0 ]] ; then
 
-    generate_report)
-      # TODO
-      echo "not implemented yet"
-      ;;
+  # if there are no options, then print help
+  printHelp
 
-    create_experiment)
-      createExperiment
-      ;;
+else
 
-    update_experiment_infra_templates)
-      updateExperimentInfraTemplates
-      ;;
+  # parse option/argument pairs
 
-    first_time_infrastructure_bootstrap)
-      firstTimeInfrastrutureBootstrap
-      ;;
+  POSITIONAL=()
+  while [[ $# -gt 0 ]] ; do
+    KEY="$1"
+    case $KEY in
 
-    destroy_permanent_infrastructure)
-      destroyPermanentInfrastructure
-      ;;
+      -i | --interactive)
+        runInteractively
+        ;;
 
-    clear_screen)
-      clear
-      ;;
+      -d | --dev)
+        devInteractive
+        ;;
 
-    ssh_orchestrator)
-      sshOrchestrator
-      ;;
+      -le | --list-experiments)
+        listExperiments
+        exit
+        ;;
 
-    ssh_db_server)
-      sshDBServer
-      ;;
+      -r | --run-experiment)
+        EXPERIMENT="$2"
+        checkThatExperimentExists "$EXPERIMENT" \
+          && runExperiment "$EXPERIMENT"
+        shift
+        shift
+        ;;
 
-    dev_options)
-      echo "Options for running experiments locally for development:"
-      select dev_opt in $dev_options ; do
-        case $dev_opt in
+      -ra | --run-all-experiments)
+        runAllExperiments
+        exit
+        ;;
 
-          run_experiment_locally)
-            dev_exp=$(chooseExperiment)
-            # break out if cancelled
-            [ -z "$dev_exp" ] && msg "Cancelled." && break 1
-            runExperimentLocally "$dev_exp"
-            ;;
+      --generate-report)
+        generateReport
+        exit
+        ;;
 
-          rerun_last_experiment_locally)
-            if [ -z "$dev_exp" ] ; then
-              msg "Have not run any experiment locally yet, choose one to run..."
-              dev_exp=$(chooseExperiment)
-              # break out if cancelled
-              [ -z "$dev_exp" ] && msg "Cancelled." && break 1
-              runExperimentLocally "$dev_exp"
-            else
-              rerunLastExperimentLocally $dev_exp
-            fi
-            ;;
+      --update-experiment-infrastructure-templates)
+        updateExperimentInfraTemplates
+        exit
+        ;;
 
-          echo_minikube_openfaas_password)
-            echoOpenfaasMinikubePassword
-            ;;
+      --bootstrap-permamnent-infrastructure)
+        firstTimeInfrastrutureBootstrap
+        exit
+        ;;
 
-          fix_minikube_port_forward)
-            fixMinikubePortForward
-            ;;
+      --destroy-permanent-infrastructure)
+        destroyPermanentInfrastructure
+        exit
+        ;;
 
-          start_minikube)
-            startMinikube
-            ;;
+      --ssh-orchestrator)
+        sshOrchestrator
+        exit
+        ;;
 
-          stop_minikube)
-            stopMinikube
-            ;;
+      --ssh-db-server)
+        sshDBServer
+        exit
+        ;;
 
-          minikube_status)
-            minikube status
-            ;;
+      -h | --help)
+        printHelp
+        exit
+        ;;
 
-          bootstrap_openfaas_locally)
-            bootstrapOpenfaasLocally
-            ;;
+      *)
+        errmsg "Unknown option ..."
+        usage
+        exit
+        ;;
 
-          teardown_openfaas_locally)
-            teardownOpenfaasLocally
-            ;;
-
-          # go back to previous menu
-          main_menu)
-            break 1
-            ;;
-
-          *)
-            echo "Press return to see options ..."
-            ;;
-
-        esac
-      done
-      ;;
-
-    exit)
-      exit
-      ;;
-
-    *)
-      echo "Press return to see options ..."
-      ;;
-
-  esac
-done
+    esac
+  done
+fi
