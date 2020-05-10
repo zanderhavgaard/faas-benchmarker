@@ -20,21 +20,21 @@ class SSH_query:
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
-        self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
-        # self.ssh_pkey = paramiko.RSAKey.from_private_key_file(
-        #     '/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
+        # self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
+        self.ssh_pkey = paramiko.RSAKey.from_private_key_file(
+            '/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
         self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
         self.db_password = 'faas'
         self.database = 'Benchmarks'
 
         # comment below lines in if you want to load it from environment variables instead of default
-        # self.ssh_username = os.getenv('ssh_username')
-        # self.ssh_pkey = paramiko.RSAKey.from_private_key_file(os.getenv('ssh_pkey_path'))
-        # self.remote_bind_address = (os.getenv('remote_bind_ip'), int(os.getenv('remote_bind_port')))
-        # self.db_user = os.getenv('db_user')
-        # self.db_password = os.getenv('db_password')
-        # self.database = os.getenv('database')
+        # # self.ssh_username = os.getenv('ssh_username')
+        # # self.ssh_pkey = paramiko.RSAKey.from_private_key_file(os.getenv('ssh_pkey_path'))
+        # # self.remote_bind_address = (os.getenv('remote_bind_ip'), int(os.getenv('remote_bind_port')))
+        # # self.db_user = os.getenv('db_user')
+        # # self.db_password = os.getenv('db_password')
+        # # self.database = os.getenv('database')
 
     # apply arbitrary many insert queries on MySql
     def insert_queries(self, queries: list) -> bool:
