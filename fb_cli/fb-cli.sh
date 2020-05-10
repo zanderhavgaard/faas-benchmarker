@@ -247,8 +247,11 @@ function devInteractive {
         stopMinikube
         ;;
 
-      minikube_status)
+      minikube_openfaas_status)
+        pmsg "Minikube Status"
         minikube status
+        pmsg "OpenFaas on Minikube Status, if faas-cli returns an error, run the fix_minikube_port_forward option."
+        faas-cli list
         ;;
 
       bootstrap_openfaas_locally)
@@ -399,7 +402,7 @@ echo_minikube_openfaas_password
 fix_minikube_port_forward
 start_minikube
 stop_minikube
-minikube_status
+minikube_openfaas_status
 bootstrap_openfaas_locally
 teardown_openfaas_locally
 main_menu
