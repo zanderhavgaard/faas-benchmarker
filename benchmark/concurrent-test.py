@@ -22,28 +22,39 @@ nested = [
 ]
 
 
-# path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
+path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
 
-# ssh = SSH_query(path)
+ssh = SSH_query()
 
-# db_interface = SQL_Interface()
+db_interface = SQL_Interface()
 
-# db_interface.delete_data_table_Experiment()
-# db_interface.delete_data_table_Invocation()
-# db_interface.delete_data_table_Error()
+db_interface.delete_data_table_Experiment()
+db_interface.delete_data_table_Invocation()
+db_interface.delete_data_table_Error()
+
+print('experiment',db_interface.get_most_recent_experiment(flag=False))
+print()
+print('invocations',db_interface.get_all_from_Invocation(flag=False))
+print()
+print('errors',db_interface.get_all_from_Error(flag=False))
 
 
 bench = bench('exp','openfaas','test', 'concurrent','/home/thomas/Msc/faas-benchmarker/.test_env')
+bench.invoke_function('function1',0.0,nested,1.0)
+bench.invoke_function('function1',0.0,nested,1.0)
+bench.invoke_function_conccurrently('function2',throughput_time=1.0,numb_threads=6)
 
-# # bench.log_experiment_running_time()
-# # print(bench.get_self())
-# bench.invoke_function('function1',0.0,nested)
-# print('invocations',len(bench.experiment.get_invocations()))
+invocations = bench.experiment.get_invocations()
+print('invocations',len(invocations))
 
-# bench.log_experiment_running_time()
+bench.log_experiment_running_time()
 
-# # experiment_vals = db_interface.get_most_recent_experiment()
-# # print(experiment_vals)
+experiment_vals = db_interface.get_most_recent_experiment(flag=False)
+print('experiments',experiment_vals)
+print()
+print('invocations',db_interface.get_all_from_Invocation(flag=False))
+print()
+print('errors',db_interface.get_all_from_Error(flag=False))
 # print()
 # all_experiment_vals = db_interface.get_all_from_Experiment(flag=False) 
 # print('All Experiments',all_experiment_vals)

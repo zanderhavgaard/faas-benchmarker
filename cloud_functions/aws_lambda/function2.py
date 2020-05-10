@@ -116,7 +116,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
         # add timings and return
         body[identifier]['execution_start'] = start_time
         body[identifier]['execution_end'] = time.time()
-        body[identifier]['cpy'] = platform.processor()
+        body[identifier]['cpu'] = platform.processor()
         body[identifier]['process_time'] = time.process_time()
 
         # create return dict and parse json body
@@ -153,7 +153,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                     "instance_identifier": None,
                     "execution_start": start_time,
                     "execution_end": time.time(),
-                    "cpy": platform.processor(),
+                    "cpu": platform.processor(),
                     "process_time": time.process_time()
                 }
             }),
@@ -219,7 +219,7 @@ def invoke_lambda(lambda_name: str,
                 "execution_end": None,
                 "invocation_start": start_time,
                 "invocation_end": end_time,
-                "cpy": platform.processor(),
+                "cpu": platform.processor(),
                 "process_time": time.process_time()
             }
         }

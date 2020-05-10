@@ -113,7 +113,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         # add timings and return
         body[identifier]['execution_start'] = start_time
         body[identifier]['execution_end'] = time.time()
-        body[identifier]['cpy'] = platform.processor()
+        body[identifier]['cpu'] = platform.processor()
         body[identifier]['process_time'] = time.process_time()
 
         # for azure functions we have to follow the response form
@@ -159,7 +159,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                     "instance_identifier": None,
                     "execution_start": start_time,
                     "execution_end": time.time(),
-                    "cpy": platform.processor(),
+                    "cpu": platform.processor(),
                     "process_time": time.process_time()
                 }
         }
@@ -230,7 +230,7 @@ def invoke_nested_function(function_name: str,
                 "execution_end": None,
                 "invocation_start": start_time,
                 "invocation_end": end_time,
-                "cpy": platform.processor(),
+                "cpu": platform.processor(),
                 "process_time": time.process_time()
             }
         }

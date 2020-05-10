@@ -111,10 +111,11 @@ class AbstractProvider(ABC):
     def invoke_function_conccrently(self, name: str,
                                     sleep=0.0,
                                     invoke_nested=None,
+                                    throughput_time=0.0,
                                     numb_threads=1) -> list:
 
 
-        thread_args = (name, sleep, invoke_nested)
+        thread_args = (name, sleep, invoke_nested,throughput_time)
         # find number of cpus that work can be delegated to
         system_cores = mp.cpu_count()
         # find number of threads to assign to each core

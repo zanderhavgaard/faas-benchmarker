@@ -42,7 +42,6 @@ class Experiment:
     
     def get_invocations(self) -> list:
         return reduce(lambda x,y: x+y,self.invocations)
-        # return self.invocations
     
     def get_invocations_original_form(self) -> list:
         return self.invocations

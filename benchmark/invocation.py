@@ -18,8 +18,8 @@ class Invocation:
     def get_data(self):
         return self.__dict__
     
-    def is_error(self) -> bool:
-        return self.is_error
+    # def is_error(self) -> bool:
+    #     return self.is_error
     
     def dev_print(self):
         pprint(vars(self)) # use get_data
@@ -32,7 +32,7 @@ class Invocation:
         if('error' in data):
             self.is_error = True
             self.type = self.error['type']
-            self.trace = self.error['trace'].replace('\'','*')+'all qoutationmarks have been replaced with *'
+            self.trace = self.error['trace'].replace('\'','*')+'all qoutation marks have been replaced with *'
             self.message = self.error['message']
             delattr(self,'error')
         else:
@@ -53,8 +53,8 @@ class Invocation:
         values = vals[:-1].replace('None', 'NULL') 
        
        
-        if(is_error):            
-            return 'INSERT INTO Error ({0}) VALUES ({1});'.format(keys,values)
+        if(is_error):   
+            return 'INSERT INTO Error ({0}) VALUES ({1});'.format(keys,values)   
         else:
             return 'INSERT INTO Invocation ({0}) VALUES ({1});'.format(keys,values)
 

@@ -17,7 +17,6 @@ class SSH_query:
     # set variables for connection to MySql on DB server via ssh tunnel
     def __init__(self):
         self.ssh_address = (os.getenv('DB_HOSTNAME'), 22)
-
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
@@ -48,6 +47,7 @@ class SSH_query:
                     ssh_private_key=self.ssh_pkey,
                     remote_bind_address=self.remote_bind_address,
                 ) as tunnel:
+
                     try:
                         conn = pymysql.connect(host=self.remote_bind_address[0],
                                                user=self.db_user,
@@ -58,6 +58,7 @@ class SSH_query:
 
                         cur = conn.cursor()
                         list_length = len(queries)
+                        error_list = []
                         # iterate over list of queries and execute. Try up to 3 times if exception is thrown
                         for i in range(list_length):
                             for x in range(3):
@@ -68,16 +69,16 @@ class SSH_query:
                                     break
 
                                 except Exception as qe:
-                                    time.sleep(2)
+                                    time.sleep(1)
                                     if(x == 2):
                                         # if not successful remove query from list and log error message
-                                        q = queries.pop(0)
+                                        error_list.append( queries.pop(0) )
                                         self.write_errorlog(qe, 'Sql error with query:', q)
 
                         conn.close()
                         tunnel.stop()
 
-                        return True
+                        return len(queries) / 2 >= len(error_list)
 
                     except Exception as ex:
                         if('conn' in locals()):
