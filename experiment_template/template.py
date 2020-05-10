@@ -1,5 +1,6 @@
 import sys
 import json
+import time
 from pprint import pprint
 from benchmarker import Benchmarker
 
@@ -33,6 +34,7 @@ description = f"""
 # create the benchmarker
 benchmarker = Benchmarker(experiment_name=experiment_name,
                           provider=provider,
+                          client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
                           dev_mode=dev_mode)
