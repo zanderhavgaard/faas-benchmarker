@@ -1,5 +1,6 @@
 import sys
 import json
+import time
 from pprint import pprint
 from benchmarker import Benchmarker
 

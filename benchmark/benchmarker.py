@@ -130,6 +130,16 @@ class Benchmarker:
         # pprint(response_list)
         self.experiment.add_invocations_list(response_list)
 
+    def get_delay_between_experiment_iterations(self):
+        # should return the delay between a single function will coldstart in seconds
+
+        # TODO add actual minutes from db, should be different for each provider
+        #  return self.db_interface.get_delay_between_experiment_iterations(self.provider)
+
+        # until we have no data we use the conservative estimate 35 minutes
+        delay = 2100
+        return delay
+
 
 # create exception class for empty responses
 
