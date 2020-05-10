@@ -20,8 +20,8 @@ class OpenFaasProvider(AbstractProvider):
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: list = None
-                        ) -> dict:
+                        invoke_nested: list = None,
+                        throughput_time:float = 0.0) -> dict:
 
         # paramters, the only required paramter is the statuscode
         params = {
@@ -35,6 +35,9 @@ class OpenFaasProvider(AbstractProvider):
         # add optional dict describing nested invocations, if presente
         if invoke_nested != None:
             params['invoke_nested'] = invoke_nested
+        
+        if(throughput_time != 0.0):
+            params['throughput_time'] = throughput_time
 
         function_number = function_endpoint[len(function_endpoint)-1:]
 

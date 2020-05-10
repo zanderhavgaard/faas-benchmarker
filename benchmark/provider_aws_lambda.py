@@ -27,7 +27,6 @@ class AWSLambdaProvider(AbstractProvider):
         dotenv.load_dotenv(dotenv_path=env_file_path)
         self.api_key = os.getenv('api_key')
         self.gateway_url = os.getenv('invoke_url')
-        print(self.api_key, self.gateway_url)
 
     # in the case of AWS Lambda the name actually references
     # the api endpoint where the funcion is attached:
@@ -35,7 +34,8 @@ class AWSLambdaProvider(AbstractProvider):
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: list = None) -> dict:
+                        invoke_nested: list = None,
+                        throughput_time:float = 0.0) -> dict:
 
         # paramters, the only required paramter is the statuscode
         params = {
@@ -49,6 +49,9 @@ class AWSLambdaProvider(AbstractProvider):
         # add optional dict describing nested invocations, if presente
         if invoke_nested != None:
             params['invoke_nested'] = invoke_nested
+        
+        if(throughput_time != 0.0):
+            params['throughput_time'] = throughput_time
 
         # log start time of invocation
         start_time = time.time()

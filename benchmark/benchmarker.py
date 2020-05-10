@@ -63,7 +63,7 @@ class Benchmarker:
         else:
             raise RuntimeError(
                 'Error: Please use an implemented provider, options are: ' +
-                f'{str(self.providers)}')
+                f'{str(providers)}')
 
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients

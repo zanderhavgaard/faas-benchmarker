@@ -12,7 +12,7 @@ from pprint import pprint
 
 class Experiment:
 
-    def __init__(self, name:str, cl_provider:str, cl_client:str, desc:str, invocations:list = None):
+    def __init__(self, name:str, cl_provider:str, cl_client:str, desc:str):
         self.uuid = str(uuid.uuid4())
         self.start_time = time.time()
         self.name = name

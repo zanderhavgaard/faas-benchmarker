@@ -32,7 +32,8 @@ class AzureFunctionsProvider(AbstractProvider):
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: list = None) -> dict:
+                        invoke_nested: list = None,
+                        throughput_time:float = 0.0) -> dict:
 
         function_app_url = os.getenv(f'{function_endpoint}_function_app_url')
         function_key = os.getenv(f'{function_endpoint}_function_key')
@@ -48,6 +49,9 @@ class AzureFunctionsProvider(AbstractProvider):
         # add optional sleep parameter if present
         if sleep != 0.0:
             params['sleep'] = sleep
+        
+        if(throughput_time != 0.0):
+            params['throughput_time'] = throughput_time
 
         # add optional dict describing nested invocations, if presente
         if invoke_nested != None:

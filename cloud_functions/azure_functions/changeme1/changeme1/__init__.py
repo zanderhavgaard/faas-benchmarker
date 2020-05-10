@@ -6,6 +6,8 @@ import requests
 import psutil
 import azure.functions as func
 import traceback
+import random
+import platform
 
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
@@ -23,17 +25,10 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # unique name of this function
     function_name = 'function1'
 
+    # whoami?
+    identifier = f'{function_name}-{invocation_uuid}'
+
     try:
-        # parse request json
-        req_json = json.loads(req.get_body())
-
-        # whoami?
-        identifier = f'{function_name}-{invocation_uuid}'
-
-        # make sure that things are working...
-        if req_json['StatusCode'] != 200:
-            raise StatusCodeException('StatusCode: '+str(req_json['StatusCode']))
-
         # create a dict that will be parsed to json
         body = {
             identifier: {
@@ -43,11 +38,27 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             },
         }
 
+        # parse request json
+        req_json = json.loads(req.get_body())
+
+        
+
+        # make sure that things are working...
+        if req_json['StatusCode'] != 200:
+            raise StatusCodeException('StatusCode: '+str(req_json['StatusCode']))
+
+
         if 'parent' not in req_json:
             # if first in chain mark as root
             body[identifier]['parent'] = 'root'
         else:
             body[identifier]['parent'] = req_json['parent']
+        
+        # set level if root in invocation tree
+        if 'level' not in req_json:
+            body[identifier]['level'] = 0
+        else:
+            body[identifier]['level'] = req_json['level'] + 1
 
         # if request contains a sleep argument, then sleep for that amount
         # and log the amount of time slept
@@ -56,12 +67,34 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['sleep'] = req_json['sleep']
         else:
             body[identifier]['sleep'] = 0.0
+        
+        if 'throughput_time' in req_json:
+            random.seed(req_json['throughput_time'] * 100)
+            process_time_start = time.process_time()
+            throughput_start = time.time()
+            throughput = []
 
-        # set level if root in invocation tree
-        if 'level' not in req_json:
-            body[identifier]['level'] = 0
+            while(time.time()-throughput_start < req_json['throughput_time']):
+                throughput.append(random.random())
+            throughput_process_time = time.process_time() - process_time_start
+
+            body[identifier]['throughput'] = len(throughput)
+            body[identifier]['throughput_time'] = req_json['throughput_time']
+            body[identifier]['throughput_process_time'] = throughput_process_time
+            body[identifier]['random_seed'] = req_json['throughput_time'] * 100
         else:
-            body[identifier]['level'] = req_json['level'] + 1
+            body[identifier]['throughput'] = 0.0
+            body[identifier]['throughput_time'] = None
+            body[identifier]['throughput_process_time'] = None
+            body[identifier]['random_seed'] = None
+
+        
+        # add python version metadata
+        body[identifier]['python_version'] = platform.python_version()
+        # add total memory of pod to metadata
+        body[identifier]['memory'] = psutil.virtual_memory()[0]
+        # log instance identifier
+        body[identifier]['instance_identifier'] = instance_identifier
 
         #  invoke nested functions from arguments
         if 'invoke_nested' in req_json:
@@ -77,12 +110,11 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 for id in nested_response.keys():
                     body[id] = nested_response[id]
 
-        # log instance identifier
-        body[identifier]['instance_identifier'] = instance_identifier
-
         # add timings and return
         body[identifier]['execution_start'] = start_time
         body[identifier]['execution_end'] = time.time()
+        body[identifier]['cpy'] = platform.processor()
+        body[identifier]['process_time'] = time.process_time()
 
         # for azure functions we have to follow the response form
         # that azure provides, so we add an extra key to body that
@@ -117,12 +149,18 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                     "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
+                    "throughput": None,
+                    "throughput_time": None,
+                    "throughput_process_time": None,
+                    "random_seed": None,
                     "python_version": None,
                     "level": None,
                     "memory": None,
                     "instance_identifier": None,
                     "execution_start": start_time,
-                    "execution_end": time.time()
+                    "execution_end": time.time(),
+                    "cpy": platform.processor(),
+                    "process_time": time.process_time()
                 }
         }
         return func.HttpResponse(body=json.dumps(error_body),
@@ -180,6 +218,10 @@ def invoke_nested_function(function_name: str,
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
+                "throughput": None,
+                "throughput_time": None,
+                "throughput_process_time": None,
+                "random_seed": None,
                 "python_version": None,
                 "level": invoke_payload['level'],
                 "memory": None,
@@ -187,7 +229,9 @@ def invoke_nested_function(function_name: str,
                 "execution_start": None,
                 "execution_end": None,
                 "invocation_start": start_time,
-                "invocation_end": end_time
+                "invocation_end": end_time,
+                "cpy": platform.processor(),
+                "process_time": time.process_time()
             }
         }
 

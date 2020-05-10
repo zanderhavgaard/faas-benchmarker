@@ -5,6 +5,7 @@ import platform
 import requests
 import psutil
 import traceback
+import random
 
 
 def handle(req):
@@ -42,7 +43,7 @@ def handle(req):
 
         # make sure that things are working...
         if event['StatusCode'] != 200:
-            raise Exception('StatusCode'+str(event['StatusCode']))
+            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
 
          # set parent (previous invocation) of this invocation
         if 'parent' not in event:
@@ -64,15 +65,36 @@ def handle(req):
             body[identifier]['sleep'] = event['sleep']
         else:
             body[identifier]['sleep'] = 0.0
+        
+        if 'throughput_time' in event:
+            random.seed(event['throughput_time'] * 100)
+            process_time_start = time.process_time()
+            throughput_start = time.time()
+            throughput = []
+
+            while(time.time()-throughput_start < event['throughput_time']):
+                throughput.append(random.random())
+            throughput_process_time = time.process_time() - process_time_start
+
+            body[identifier]['throughput'] = len(throughput)
+            body[identifier]['throughput_time'] = event['throughput_time']
+            body[identifier]['throughput_process_time'] = throughput_process_time
+            body[identifier]['random_seed'] = event['throughput_time'] * 100
+        else:
+            body[identifier]['throughput'] = 0.0
+            body[identifier]['throughput_time'] = None
+            body[identifier]['throughput_process_time'] = None
+            body[identifier]['random_seed'] = None 
 
         # add ip address of container to uniqely differentiate container instances
-        body[identifier]['instance_identifier'] = str(psutil.net_if_addrs()['eth0'][0][1])+'-'+str(platform.node())
+        body[identifier]['instance_identifier'] = str(
+            psutil.net_if_addrs()['eth0'][0][1])+'-'+str(platform.node())
 
         # add total memory of pod to metadata
         body[identifier]['memory'] = psutil.virtual_memory()[0]
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
-       
+
         #  invoke nested functions from arguments
         if 'invoke_nested' in event:
             for invoke in event['invoke_nested']:
@@ -90,6 +112,8 @@ def handle(req):
         # add timings and return
         body[identifier]['execution_start'] = start_time
         body[identifier]['execution_end'] = time.time()
+        body[identifier]['cpy'] = platform.processor()
+        body[identifier]['process_time'] = time.process_time()
 
         # create return dict and parse json bodu
         return json.dumps({
@@ -115,12 +139,18 @@ def handle(req):
                     "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
+                    "throughput": None,
+                    "throughput_time": None,
+                    "throughput_process_time": None,
+                    "random_seed": None,
                     "python_version": None,
                     "level": None,
                     "memory": None,
                     "instance_identifier": None,
                     "execution_start": start_time,
-                    "execution_end": time.time()
+                    "execution_end": time.time(),
+                    "cpy": platform.processor(),
+                    "process_time": time.process_time()
                 }
             }),
             "identifier": identifier
@@ -130,6 +160,8 @@ def handle(req):
 # params:
 # function_name: name of function in to be called at the gateway
 # invoke_payload: dict containing arguments for invoked function
+
+
 def invoke_nested_function(function_name: str,
                            invoke_payload: dict
                            ) -> dict:
@@ -184,6 +216,10 @@ def invoke_nested_function(function_name: str,
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
+                "throughput": None,
+                "throughput_time": None,
+                "throughput_process_time": None,
+                "random_seed": None,
                 "python_version": None,
                 "level": invoke_payload['level'],
                 "memory": None,
@@ -191,7 +227,9 @@ def invoke_nested_function(function_name: str,
                 "execution_start": None,
                 "execution_end": None,
                 "invocation_start": start_time,
-                "invocation_end": end_time
+                "invocation_end": end_time,
+                "cpy": platform.processor(),
+                "process_time": time.process_time()
             }
         }
 
