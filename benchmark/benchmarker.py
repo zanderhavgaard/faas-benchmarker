@@ -63,7 +63,7 @@ class Benchmarker:
         else:
             raise RuntimeError(
                 'Error: Please use an implemented provider, options are: ' +
-                f'{str(self.providers)}')
+                f'{str(providers)}')
 
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients
@@ -95,11 +95,13 @@ class Benchmarker:
     def invoke_function(self,
                         function_endpoint: str,
                         sleep: float = 0.0,
-                        invoke_nested: dict = None) -> None:
+                        invoke_nested: dict = None,
+                        throughput_time:float = 0.0) -> None:
 
         response = self.provider.invoke_function(function_endpoint=function_endpoint,
                                                  sleep=sleep,
-                                                 invoke_nested=invoke_nested)
+                                                 invoke_nested=invoke_nested,
+                                                 throughput_time=throughput_time)
 
         if response is None:
             raise EmptyResponseError(
@@ -113,12 +115,14 @@ class Benchmarker:
                                       function_endpoint: str,
                                       sleep: float = 0.0,
                                       invoke_nested: dict = None,
+                                      throughput_time:float = 0.0,
                                       numb_threads: int = 1
                                       ) -> None:
 
         response_list = self.provider.invoke_function_conccrently(function_endpoint,
                                                                   sleep,
                                                                   invoke_nested,
+                                                                  throughput_time,
                                                                   numb_threads
                                                                   )
 

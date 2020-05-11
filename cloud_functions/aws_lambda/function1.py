@@ -4,6 +4,7 @@ import json
 import uuid
 import platform
 import traceback
+import random
 
 
 def lambda_handler(event: dict, context: dict) -> dict:
@@ -26,10 +27,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
     identifier = f'{function_name}-{invocation_uuid}'
 
     try:
-        # make sure that things are working...
-        if event['StatusCode'] != 200:
-            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
-
         # create a dict that will be parsed to json
         body = {
             identifier: {
@@ -38,6 +35,11 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 "function_name": function_name
             },
         }
+        
+        # make sure that things are working...
+        if event['StatusCode'] != 200:
+            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
+
         # set parent (previous invocation) of this invocation
         if 'parent' not in event:
             # if first in chain mark as root
@@ -59,6 +61,26 @@ def lambda_handler(event: dict, context: dict) -> dict:
         else:
             body[identifier]['sleep'] = 0.0
         
+        if 'throughput_time' in event:
+            random.seed(event['throughput_time'] * 100)
+            process_time_start = time.process_time()
+            throughput_start = time.time()
+            throughput = []
+            
+            while(time.time()-throughput_start < event['throughput_time']):
+                throughput.append(random.random())
+            throughput_process_time = time.process_time() - process_time_start
+
+            body[identifier]['throughput'] = len(throughput)
+            body[identifier]['throughput_time'] = event['throughput_time']
+            body[identifier]['throughput_process_time'] = throughput_process_time
+            body[identifier]['random_seed'] = event['throughput_time'] * 100
+        else:
+            body[identifier]['throughput'] = 0.0
+            body[identifier]['throughput_time'] = None
+            body[identifier]['throughput_process_time'] = None
+            body[identifier]['random_seed'] = None  
+
         # add invocation metadata to response
         if context is None:
             # add dummy data
@@ -95,6 +117,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
         # add timings and return
         body[identifier]['execution_start'] = start_time
         body[identifier]['execution_end'] = time.time()
+        body[identifier]['cpu'] = platform.processor()
+        body[identifier]['process_time'] = time.process_time()
 
         # create return dict and parse json body
         return {
@@ -120,12 +144,18 @@ def lambda_handler(event: dict, context: dict) -> dict:
                     "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
+                    "throughput": None,
+                    "throughput_time": None,
+                    "throughput_process_time": None,
+                    "random_seed": None,
                     "python_version": None,
                     "level": None,
                     "memory": None,
                     "instance_identifier": None,
                     "execution_start": start_time,
-                    "execution_end": time.time()
+                    "execution_end": time.time(),
+                    "cpu": platform.processor(),
+                    "process_time": time.process_time()
                 }
             }),
             "identifier": identifier
@@ -178,6 +208,10 @@ def invoke_lambda(lambda_name: str,
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
+                "throughput": None,
+                "throughput_time": None,
+                "throughput_process_time": None,
+                "random_seed": None,
                 "python_version": None,
                 "level": invoke_payload['level'],
                 "memory": None,
@@ -185,7 +219,9 @@ def invoke_lambda(lambda_name: str,
                 "execution_start": None,
                 "execution_end": None,
                 "invocation_start": start_time,
-                "invocation_end": end_time
+                "invocation_end": end_time,
+                "cpu": platform.processor(),
+                "process_time": time.process_time()
             }
         }
 

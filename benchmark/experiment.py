@@ -12,7 +12,7 @@ from pprint import pprint
 
 class Experiment:
 
-    def __init__(self, name:str, cl_provider:str, cl_client:str, desc:str, invocations:list = None):
+    def __init__(self, name:str, cl_provider:str, cl_client:str, desc:str):
         self.uuid = str(uuid.uuid4())
         self.start_time = time.time()
         self.name = name
@@ -42,7 +42,6 @@ class Experiment:
     
     def get_invocations(self) -> list:
         return reduce(lambda x,y: x+y,self.invocations)
-        # return self.invocations
     
     def get_invocations_original_form(self) -> list:
         return self.invocations
@@ -80,6 +79,7 @@ class Experiment:
                 val_string += """'{0}',""".format(v)
             else:
                 val_string += str(v)+','
+        # print('experiment query!!!!!!','INSERT INTO Experiment ({0}) VALUES ({1})'.format(key_string[:-1],val_string[:-1]))
         return 'INSERT INTO Experiment ({0}) VALUES ({1})'.format(key_string[:-1],val_string[:-1])
     
     def log_experiment(self):
