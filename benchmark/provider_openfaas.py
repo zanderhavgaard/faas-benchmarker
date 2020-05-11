@@ -12,6 +12,9 @@ class OpenFaasProvider(AbstractProvider):
 
     def __init__(self, env_file_path: str) -> None:
 
+        # timeout for invoking function
+        self.request_timeout = 600
+
         # http headers, contains authentication and data type
         self.headers = {
             'Content-Type': 'application/json'
@@ -21,7 +24,7 @@ class OpenFaasProvider(AbstractProvider):
                         function_endpoint: str,
                         sleep: float = 0.0,
                         invoke_nested: list = None,
-                        throughput_time:float = 0.0) -> dict:
+                        throughput_time: float = 0.0) -> dict:
 
         # paramters, the only required paramter is the statuscode
         params = {
@@ -35,7 +38,7 @@ class OpenFaasProvider(AbstractProvider):
         # add optional dict describing nested invocations, if presente
         if invoke_nested != None:
             params['invoke_nested'] = invoke_nested
-        
+
         if(throughput_time != 0.0):
             params['throughput_time'] = throughput_time
 
@@ -52,28 +55,18 @@ class OpenFaasProvider(AbstractProvider):
             response = requests.post(
                 url=invoke_url,
                 headers=self.headers,
-                data=json.dumps(params)
+                data=json.dumps(params),
+                timeout=self.request_timeout
             )
 
             # log the end time of the invocation
             end_time = time.time()
-
-            # TODO remove
-            #  print('provider')
-            #  print(response)
-            #  print(response.content.decode())
-
-            #  import sys
-            #  sys.exit()
 
             # TODO make same change with if else for AWS and azure
             # if succesfull invocation parse response
             if(response.status_code == 200):
 
                 response_json = json.loads(response.content.decode())
-
-                #  import sys
-                #  sys.exit()
 
                 # get the identifier
                 identifier = response_json['identifier']

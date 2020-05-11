@@ -13,6 +13,9 @@ class AzureFunctionsProvider(AbstractProvider):
 
     def __init__(self, env_file_path: str) -> None:
 
+        # timeout for invoking function 
+        self.request_timeout = 600
+
         # load azurw functions specific invocation url and credentials
         self.load_env_vars(env_file_path)
 
@@ -77,7 +80,8 @@ class AzureFunctionsProvider(AbstractProvider):
             response = requests.post(
                 url=invoke_url,
                 headers=self.headers,
-                data=json.dumps(params)
+                data=json.dumps(params),
+                timeout=self.request_timeout
             )
 
             # log the end time of the invocation

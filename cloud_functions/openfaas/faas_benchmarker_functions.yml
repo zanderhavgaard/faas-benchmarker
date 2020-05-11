@@ -10,8 +10,8 @@ functions:
     build_options:
       - dev
     environment:
-      read_timeout: "60s"
-      write_timeout: "60s"
+      read_timeout: "180s"
+      write_timeout: "180s"
       timeout_secs: "5000"
   function2:
     lang: python3
@@ -20,8 +20,8 @@ functions:
     build_options:
       - dev
     environment:
-      read_timeout: "60s"
-      write_timeout: "60s"
+      read_timeout: "180s"
+      write_timeout: "180s"
       timeout_secs: "5000"
   function3:
     lang: python3
@@ -30,6 +30,6 @@ functions:
     build_options:
       - dev
     environment:
-      read_timeout: "60s"
-      write_timeout: "60s"
+      read_timeout: "180s"
+      write_timeout: "180s"
       timeout_secs: "5000"
