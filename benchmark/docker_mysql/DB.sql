@@ -36,10 +36,11 @@ CREATE TABLE IF NOT EXISTS `Invocation` (
   `instance_identifier` varchar(100) NOT NULL,
   `python_version` varchar(50) NOT NULL,
   `memory` BIGINT NOT NULL,
-  `throughput` BIGINT DEFAULT 0.0,
-  `throughput_time` FLOAT DEFAULT 0.0,
-  `throughput_process_time` FLOAT DEFAULT 0.0,
-  `random_seed` INT DEFAULT 0,
+  `throughput` BIGINT DEFAULT NULL,
+  `throughput_time` FLOAT DEFAULT NULL,
+  `throughput_process_time` FLOAT DEFAULT NULL,
+  `throughput_running_time` FLOAT DEFAULT NULL,
+  `random_seed` INT DEFAULT NULL,
   `cpu` varchar(100) NOT NULL,
   `process_time` FLOAT NOT NULL,
   `numb_threads` INT NOT NULL,
@@ -73,6 +74,7 @@ CREATE TABLE IF NOT EXISTS `Error` (
   `throughput` BIGINT DEFAULT NULL,
   `throughput_time` FLOAT DEFAULT NULL,
   `throughput_process_time` FLOAT DEFAULT NULL,
+  `throughput_running_time` FLOAT DEFAULT NULL,
   `random_seed` INT DEFAULT NULL,
   `cpu` varchar(100) DEFAULT NULL,
   `process_time` FLOAT DEFAULT NULL,
@@ -99,4 +101,6 @@ CREATE TABLE IF NOT EXISTS `Coldstart` (
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
+-- test of push
 

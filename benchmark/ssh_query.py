@@ -70,7 +70,8 @@ class SSH_query:
                                     time.sleep(1)
                                     if(x == 2):
                                         # if not successful remove query from list and log error message
-                                        error_list.append( queries.pop(0) )
+                                        q = queries.pop(0)
+                                        error_list.append(q)
                                         self.write_errorlog(qe, 'Sql error with query:', q)
 
                         conn.close()
