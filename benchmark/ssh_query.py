@@ -20,9 +20,7 @@ class SSH_query:
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
-        # self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
-        self.ssh_pkey = paramiko.RSAKey.from_private_key_file(
-            '/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
+        self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
         self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
         self.db_password = 'faas'
@@ -93,7 +91,7 @@ class SSH_query:
                     return False
 
     # set return_type to False if list representation is wanted
-    def retrive_query(self, query:str, return_type:bool=True): 
+    def retrive_query(self, query:str, return_type:bool=True):
         # try up 10 times to establish an ssh tunnel
         for x in range(10):
             try:
@@ -119,7 +117,7 @@ class SSH_query:
 
                             conn.close()
                             tunnel.stop()
-                            
+
                             if(return_type):
                                 return data
                             else:
@@ -142,8 +140,7 @@ class SSH_query:
     # function for writing wroor messages to ErrorLogFile.txt"
     def write_errorlog(self, ex:Exception, description:str, query:str = None):
 
-        # with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
-        with open("/home/thomas/ErrorLogFile.log", "a+") as f:
+        with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
             f.write(description+'\n')
             if(query != None):
                 f.write(query+'\n')
