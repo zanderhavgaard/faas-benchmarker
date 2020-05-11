@@ -1,15 +1,15 @@
 # create linux vm
-resource "azurerm_linux_virtual_machine" "changene-openfaas-worker" {
-  depends_on = [azurerm_network_interface.changene-openfaas-worker-ni]
+resource "azurerm_linux_virtual_machine" "weakest-link-openfaas-worker" {
+  depends_on = [azurerm_network_interface.weakest-link-openfaas-worker-ni]
 
-  name                = "changene-openfaas-worker"
-  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
-  location            = azurerm_resource_group.changene-openfaas-worker-rg.location
+  name                = "weakest-link-openfaas-worker"
+  resource_group_name = azurerm_resource_group.weakest-link-openfaas-worker-rg.name
+  location            = azurerm_resource_group.weakest-link-openfaas-worker-rg.location
   size                = "Standard_B1s"
   admin_username      = "ubuntu"
   disable_password_authentication = true
   network_interface_ids = [
-    azurerm_network_interface.changene-openfaas-worker-ni.id,
+    azurerm_network_interface.weakest-link-openfaas-worker-ni.id,
   ]
 
   admin_ssh_key {
@@ -36,14 +36,14 @@ resource "null_resource" "linux-provisioners" {
   # run the provisioners after the instance has been created
   # and the ip address has been assigned
   depends_on = [
-    azurerm_linux_virtual_machine.changene-openfaas-worker,
-    azurerm_public_ip.changene-openfaas-worker-public-ip
+    azurerm_linux_virtual_machine.weakest-link-openfaas-worker,
+    azurerm_public_ip.weakest-link-openfaas-worker-public-ip
   ]
 
   # setup ssh connection for provisioners
   connection {
     user = "ubuntu"
-    host = azurerm_linux_virtual_machine.changene-openfaas-worker.public_ip_address
+    host = azurerm_linux_virtual_machine.weakest-link-openfaas-worker.public_ip_address
     type = "ssh"
     private_key = file(var.client_pvt_key)
     timeout = "2m"
