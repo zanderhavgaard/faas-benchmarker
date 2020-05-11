@@ -50,14 +50,21 @@ response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}1')
 pprint(response)
 print()
 
-print('invoking with no arguments: ')
-response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}2')
+print('invoking with sleep argument')
+response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}2',
+                                       sleep=sleep_amount)
 pprint(response)
 print()
 
-print('invoking with sleep argument')
+print('invoking with 1 second throughput argument: ')
 response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}3',
-                                       sleep=sleep_amount)
+                                       throughput_time=1.0)
+pprint(response)
+print()
+
+print('invoking with 2 second throughput argument: ')
+response = benchmarker.invoke_function(function_endpoint=f'{experiment_name}3',
+                                       throughput_time=2.0)
 pprint(response)
 print()
 
