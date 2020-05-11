@@ -51,7 +51,9 @@ arkade install openfaas \
     --wait \
     --load-balancer \
     --set "faasIdler.dryRun=false" \
-    --set "faasIdler.inactivityDuration=30m"
+    --set "faasIdler.inactivityDuration=30m" \
+    --set "faasIdler.reconcileInterval=10m"
+
 
 # wait a bit for things to be ready
 sleep 5
