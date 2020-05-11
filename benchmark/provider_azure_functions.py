@@ -143,7 +143,7 @@ class AzureFunctionsProvider(AbstractProvider):
                         'execution_start': None,
                         'execution_end': None,
                         'invocation_start': start_time,
-                        'invocation_end': t,
+                        'invocation_end': end_time,
                     },
                     'root_identifier':'exception-providor_openfaas'+function_endpoint+str(end_time)
                 }
