@@ -34,7 +34,8 @@ def handle(req):
             identifier: {
                 "identifier": identifier,
                 "uuid": invocation_uuid,
-                "function_name": function_name
+                "function_name": function_name,
+                "function_cores": psutil.cpu_count()
             }
         }
 
@@ -141,6 +142,7 @@ def handle(req):
                     "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
+                    "function_cores": psutil.cpu_count(),
                     "throughput": None,
                     "throughput_time": None,
                     "throughput_process_time": None,
@@ -219,6 +221,7 @@ def invoke_nested_function(function_name: str,
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
+                "function_cores": 0,
                 "throughput": None,
                 "throughput_time": None,
                 "throughput_process_time": None,
