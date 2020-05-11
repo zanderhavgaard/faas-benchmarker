@@ -55,7 +55,6 @@ logfile="/home/ubuntu/$timestamp-$experiment_cloud_function_provider-$experiment
 ssh_command="
     nohup bash -c ' \
     bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
-    ; echo 'waiting for openfaas functions to be deployed...' && sleep 120
     ; python3 \$fbrd/experiments/$experiment_name/$experiment_name.py \
     $experiment_name \
     $experiment_cloud_function_provider \
