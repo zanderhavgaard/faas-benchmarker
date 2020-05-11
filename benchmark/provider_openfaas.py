@@ -6,6 +6,7 @@ import os
 from provider_abstract import AbstractProvider
 import traceback
 import sys
+import http
 
 
 class OpenFaasProvider(AbstractProvider):
@@ -51,13 +52,22 @@ class OpenFaasProvider(AbstractProvider):
         start_time = time.time()
 
         try:
-            # invoke the function
-            response = requests.post(
-                url=invoke_url,
-                headers=self.headers,
-                data=json.dumps(params),
-                timeout=self.request_timeout
-            )
+
+            for i in range(5):
+                try:
+                    # invoke the function
+                    response = requests.post(
+                        url=invoke_url,
+                        headers=self.headers,
+                        data=json.dumps(params),
+                        timeout=self.request_timeout
+                    )
+                    break
+                # the invocation might fail if it is a cold start,
+                # seems to be some timeout issue, so in that case we try again
+                except http.client.RemoteDisconnected:
+                    print(f"Caught a RemoteDisconnected error for attempt {i}, retrying invocation ...")
+                    continue
 
             # log the end time of the invocation
             end_time = time.time()
