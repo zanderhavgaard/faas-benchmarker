@@ -52,7 +52,8 @@ class OpenFaasProvider(AbstractProvider):
         start_time = time.time()
 
         try:
-
+            # the invocation might fail if it is a cold start,
+            # seems to be some timeout issue, so in that case we try again
             for i in range(5):
                 try:
                     # invoke the function
@@ -62,11 +63,11 @@ class OpenFaasProvider(AbstractProvider):
                         data=json.dumps(params),
                         timeout=self.request_timeout
                     )
-                    break
-                # the invocation might fail if it is a cold start,
-                # seems to be some timeout issue, so in that case we try again
-                except http.client.RemoteDisconnected:
-                    print(f"Caught a RemoteDisconnected error for attempt {i}, retrying invocation ...")
+                    if response.status_code == 200:
+                        break
+                except Exception as e:
+                    print(f"Caught an error for attempt {i}, retrying invocation ...")
+                    print(e)
                     continue
 
             # log the end time of the invocation
