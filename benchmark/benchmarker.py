@@ -103,6 +103,7 @@ class Benchmarker:
                                                  invoke_nested=invoke_nested,
                                                  throughput_time=throughput_time)
 
+
         if response is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')

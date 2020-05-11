@@ -5,7 +5,7 @@ import uuid
 import platform
 import traceback
 import random
-
+import psutil
 
 def lambda_handler(event: dict, context: dict) -> dict:
     # event contains json parameters
@@ -36,7 +36,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
             identifier: {
                 "identifier": identifier,
                 "uuid": invocation_uuid,
-                "function_name": function_name
+                "function_name": function_name,
+                "function_cores": psutil.cpu_count()
             },
         }
         # set parent (previous invocation) of this invocation
@@ -144,6 +145,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                     "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                     "parent": None,
                     "sleep": None,
+                    "function_cores": psutil.cpu_count(),
                     "throughput": None,
                     "throughput_time": None,
                     "throughput_process_time": None,
@@ -209,6 +211,7 @@ def invoke_lambda(lambda_name: str,
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
+                "function_cores": 0,
                 "throughput": None,
                 "throughput_time": None,
                 "throughput_process_time": None,

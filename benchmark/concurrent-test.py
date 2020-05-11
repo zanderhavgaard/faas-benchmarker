@@ -56,9 +56,10 @@ bench.log_experiment_running_time()
 
 print('experiment',db_interface.get_most_recent_experiment(flag=False))
 print()
-invos = db_interface.get_most_recent_invocations(args='throughput_running_time',flag=False)
+invos = db_interface.get_most_recent_invocations(args='function_cores',flag=False)
 print('length',len(invos[0]))
-print('invocations',invos)
+print('invocations\n',invos)
+
 print()
 print('errors',db_interface.get_most_recent_errors(flag=False))
 # print('numbered',db_interface.get_explicit_number_experiments('uuid,cores',4, False,False))

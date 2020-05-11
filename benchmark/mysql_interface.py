@@ -54,6 +54,9 @@ class SQL_Interface:
         query = 'SELECT {0} from Error order by execution_start {1} limit {2};'.format(args,key_word,number)
         return self.tunnel.retrive_query(query,flag)
     
+    def cpu_efficiency_lats_experiment(self,falg:bool = True):
+        calc:values = self.get_most_recent_invocations()
+    
     
     def get_all_from_Experiment(self,flag:bool=True):
         query ='select * from Experiment;'
