@@ -78,11 +78,13 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 throughput.append(random.random())
             throughput_process_time = time.process_time() - process_time_start
 
+            body[identifier]['throughput_running_time'] = time.time() - throughput_start
             body[identifier]['throughput'] = len(throughput)
             body[identifier]['throughput_time'] = req_json['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = req_json['throughput_time'] * 100
         else:
+            body[identifier]['throughput_running_time'] = None
             body[identifier]['throughput'] = 0.0
             body[identifier]['throughput_time'] = None
             body[identifier]['throughput_process_time'] = None
@@ -152,6 +154,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                     "throughput": None,
                     "throughput_time": None,
                     "throughput_process_time": None,
+                    'throughput_running_time': None,
                     "random_seed": None,
                     "python_version": None,
                     "level": None,
@@ -221,6 +224,7 @@ def invoke_nested_function(function_name: str,
                 "throughput": None,
                 "throughput_time": None,
                 "throughput_process_time": None,
+                'throughput_running_time': None,
                 "random_seed": None,
                 "python_version": None,
                 "level": invoke_payload['level'],
