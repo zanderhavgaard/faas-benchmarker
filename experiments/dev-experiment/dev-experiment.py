@@ -10,17 +10,21 @@ from benchmarker import Benchmarker
 # name of the terraform experiment
 experiment_name = sys.argv[1]
 
+# unique identifier string tying this experiment together with the
+# experiments conducted for the other cloud providers in this round
+experiment_meta_identifier = sys.argv[2]
+
 # name of cloud function provider for this experiment
-provider = sys.argv[2]
+provider = sys.argv[3]
 
 # name of the client provider
-client_provider = sys.argv[3]
+client_provider = sys.argv[4]
 
 # relative path to experiment.env file
-env_file_path = sys.argv[4]
+env_file_path = sys.argv[5]
 
 # dev_mode
-dev_mode = eval(sys.argv[5]) if len(sys.argv) > 5 else False
+dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
 # =====================================================================================
 
@@ -33,6 +37,7 @@ description = f"""
 # =====================================================================================
 # create the benchmarker
 benchmarker = Benchmarker(experiment_name=experiment_name,
+                          experiment_meta_identifier=experiment_meta_identifier,
                           provider=provider,
                           client_provider=client_provider,
                           experiment_description=description,
