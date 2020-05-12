@@ -6,6 +6,8 @@ source "$fbrd/fb_cli/utils.sh"
 
 # the experiment name to test
 experiment_name=$1
+# unique experiment idenfifier for the experiments started in parallel for the different cloud providers
+experiment_meta_identifier=$2
 # the context of the experiment
 experiment_context="$fbrd/experiments/$experiment_name"
 # the experiemnt logic file
@@ -71,12 +73,13 @@ client_user="ubuntu"
 client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
 key_path="$fbrd/secrets/ssh_keys/experiment_servers"
 timestamp=$(date -u +\"%d-%m-%Y_%H-%M-%S\")
-logfile="/home/ubuntu/$timestamp-$experiment_cloud_function_provider-$experiment_name.log"
+logfile="/home/ubuntu/$timestamp-$experiment_meta_identifier-$experiment_cloud_function_provider-$experiment_name.log"
 # $fbrd will expanded on the client, the rest will be expanded locally!
 ssh_command="
     nohup bash -c ' \
     python3 \$fbrd/experiments/$experiment_name/$experiment_name.py \
     $experiment_name \
+    $experiment_meta_identifier \
     $experiment_cloud_function_provider \
     $experiment_client_provider \
     \$fbrd/experiments/$experiment_name/$experiment_name-$experiment_cloud_function_provider.env \

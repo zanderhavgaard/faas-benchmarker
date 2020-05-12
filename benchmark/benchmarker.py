@@ -17,7 +17,14 @@ from pprint import pprint
 
 class Benchmarker:
 
-    def __init__(self, experiment_name: str, provider: str, client_provider: str, experiment_description: str, env_file_path: str, dev_mode: bool = False) -> None:
+    def __init__(self,
+                 experiment_name: str,
+                 experiment_meta_identifier: str,
+                 provider: str,
+                 client_provider: str,
+                 experiment_description: str,
+                 env_file_path: str,
+                 dev_mode: bool = False) -> None:
 
         # do not log anything if running in dev mode
         self.dev_mode = dev_mode
@@ -26,6 +33,7 @@ class Benchmarker:
         self.provider = self.get_provider(
             provider=provider, env_file_path=env_file_path)
 
+        # TODO add experiment_meta_identifier to experiment and log to db
         self.experiment = Experiment(
             experiment_name, provider, client_provider, experiment_description)
 
@@ -36,11 +44,12 @@ class Benchmarker:
         print('=================================================')
         print(f'dev_mode: {self.dev_mode}')
         print('=================================================')
-        print(f'Experiment name:         {experiment_name}')
-        print(f'Using provider:          {provider}')
-        print(f'Using environment file:  {env_file_path}')
+        print(f'Experiment name:            {experiment_name}')
+        print(f'Experiment meta identifier: {experiment_meta_identifier}')
+        print(f'Using provider:             {provider}')
+        print(f'Using environment file:     {env_file_path}')
         print(
-            f'Experiment start time:   {time.ctime(int(self.experiment.get_start_time()))}')
+            f'Experiment start time:      {time.ctime(int(self.experiment.get_start_time()))}')
         print('=================================================')
         print(
             f'Experiment description: {self.experiment.get_experiment_description()}')
@@ -85,7 +94,8 @@ class Benchmarker:
         else:
             print('\n'+'\n')
             invocations_orig = self.experiment.get_invocations_original_form()
-            print('Experiment:',self.experiment.name,'invoked',len(invocations_orig),'times from its provider:',self.experiment.cl_provider)
+            print('Experiment:', self.experiment.name, 'invoked', len(
+                invocations_orig), 'times from its provider:', self.experiment.cl_provider)
             invocations = self.experiment.get_invocations()
             print('EXPERIMENT META DATA')
             print(self.experiment.dev_print())
@@ -93,17 +103,16 @@ class Benchmarker:
             print('SQL query for experiment:')
             print(self.experiment.get_experiment_query_string())
             print()
-            print('Number of functions invoked in total:',len(invocations))
+            print('Number of functions invoked in total:', len(invocations))
             print('--- DATA OF EACH INVOCATION ---')
             for invo in invocations:
                 print()
-                print('INVOCATION META DATA FOR identifier:',invo.identifier)
+                print('INVOCATION META DATA FOR identifier:', invo.identifier)
                 print(invo.dev_print())
                 print()
                 print('SQL query for invocation')
                 print(invo.get_query_string())
                 print('-------------------------------------------')
-
 
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log
@@ -115,13 +124,12 @@ class Benchmarker:
                         function_endpoint: str,
                         sleep: float = 0.0,
                         invoke_nested: dict = None,
-                        throughput_time:float = 0.0) -> None:
+                        throughput_time: float = 0.0) -> None:
 
         response = self.provider.invoke_function(function_endpoint=function_endpoint,
                                                  sleep=sleep,
                                                  invoke_nested=invoke_nested,
                                                  throughput_time=throughput_time)
-
 
         if response is None:
             raise EmptyResponseError(
@@ -135,7 +143,7 @@ class Benchmarker:
                                       function_endpoint: str,
                                       sleep: float = 0.0,
                                       invoke_nested: dict = None,
-                                      throughput_time:float = 0.0,
+                                      throughput_time: float = 0.0,
                                       numb_threads: int = 1
                                       ) -> None:
 
