@@ -83,8 +83,27 @@ class Benchmarker:
             # db = db_interface(self.env_path)
             db.log_experiment(self.experiment)
         else:
-            # print logged stuff for dev
-            pass
+            print('\n'+'\n')
+            invocations_orig = self.experiment.get_invocations_original_form()
+            print('Experiment:',self.experiment.name,'invoked',len(invocations_orig),'times from its provider:',self.experiment.cl_provider)
+            invocations = self.experiment.get_invocations()
+            print('EXPERIMENT META DATA')
+            print(self.experiment.dev_print())
+            print()
+            print('SQL query for experiment:')
+            print(self.experiment.get_experiment_query_string())
+            print()
+            print('Number of functions invoked in total:',len(invocations))
+            print('--- DATA OF EACH INVOCATION ---')
+            for invo in invocations:
+                print()
+                print('INVOCATION META DATA FOR identifier:',invo.identifier)
+                print(invo.dev_print())
+                print()
+                print('SQL query for invocation')
+                print(invo.get_query_string())
+                print('-------------------------------------------')
+
 
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log

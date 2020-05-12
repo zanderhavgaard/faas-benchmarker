@@ -45,7 +45,7 @@ db_interface = SQL_Interface()
 # print()
 # print()
 
-bench = bench('exp3','openfaas','foobar', 'testter','/home/thomas/Msc/faas-benchmarker/.test_env')
+bench = bench('exp3','openfaas','foobar', 'testter','/home/thomas/Msc/faas-benchmarker/.test_env',dev_mode=True)
 bench.invoke_function('function1',0.0,nested,0.3)
 bench.invoke_function('function1',0.0,nested,1.0)
 # bench.invoke_function_conccurrently('function2',throughput_time=0.8,numb_threads=8)
