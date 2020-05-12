@@ -49,7 +49,7 @@ stmsg "Starting to run Experiment: $experiment_name"
 pmsg "Experiment has meta identifier: $experiment_meta_identifier"
 
 run_experiment_aws_lambda
-# run_experiment_azure_functions
-# run_experiment_openfaas
+run_experiment_azure_functions
+run_experiment_openfaas
 
 pmsg "Now waiting for experiments to finish ..."
