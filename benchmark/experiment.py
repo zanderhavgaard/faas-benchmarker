@@ -16,7 +16,7 @@ class Experiment:
         self.uuid = str(uuid.uuid4())
         self.start_time = time.time()
         self.name = name
-        self.cl_providor = cl_provider
+        self.cl_provider = cl_provider
         self.cl_client = cl_client
         self.description = desc
         self.python_version = platform.python_version()
