@@ -1,0 +1,17 @@
+.git
+template
+archive
+secrets
+logs
+Session.vim
+.terraform
+
+ci
+cloud_functions
+dev_env_init
+eks_openfaas_orchestration
+experiment_template
+fb-cli
+fb_cli
+infrastructure
+orchestration
