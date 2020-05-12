@@ -5,8 +5,8 @@ jobs:
     machine: true
     steps:
       - run:
-        name: "Login in to docker hub"
-        command: docker login -u ${DOCKER_LOGIN} -p ${DOCKER_PASSWORD}
+          name: "Login in to docker hub"
+          command: docker login -u ${DOCKER_LOGIN} -p ${DOCKER_PASSWORD}
       - checkout
       - run:
           name: "Build docker image"
@@ -18,8 +18,8 @@ jobs:
 workflows:
   main:
     jobs:
-      - build_and_push_docker
-    filters:
-      branches:
-        only:
-          - feature/dockerized_experiment_clients
+      - build_and_push_docker:
+          filters:
+            branches:
+              only:
+                - feature/dockerized_experiment_clients
