@@ -1,0 +1,15 @@
+FROM archlinux:20200407
+
+RUN pacman -Syyy && pacman --noconfirm -S s3cmd
+
+RUN useradd --create-home --shell /bin/bash arch
+
+COPY s3cfg /home/arch/.s3cfg
+RUN chown -R arch /home/arch
+
+USER arch
+
+RUN mkdir -p /home/arch/shared
+WORKDIR /home/arch/shared
+
+CMD ["bash"]
