@@ -38,8 +38,6 @@ class Invocation:
             delattr(self,'error')
         else:
             self.is_error = False
-            self.execution_total = self.execution_end - self.execution_start
-            self.invocation_total = self.invocation_end - self.invocation_start
     
     def get_query_string(self):
         key_values = self.__dict__

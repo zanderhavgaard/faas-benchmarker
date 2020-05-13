@@ -56,13 +56,13 @@ class Experiment:
     # make Invocation object out of function invocation dict and append to experiment list
     def add_invocation(self, invocations:dict) -> None:
         invocation_list = []
-        root = invocations['root_identifier']
-        del invocations['root_identifier']
+        root = invocations.pop('root_identifier')
 
         for x in invocations.keys():
             invocation_list.append(Invocation(self.uuid,root,invocations[x]))
 
         self.invocations.append(invocation_list)
+        invocations['root_identifier'] = root
 
     # for concurrent invoked function runs that returns a list of invocation dicts
     def add_invocations_list(self,invocations:list) -> None:
