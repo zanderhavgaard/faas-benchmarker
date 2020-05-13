@@ -10,3 +10,8 @@ variable "username" {
   type = string
   default = "ubuntu"
 }
+
+# credentials for digital ocean space for storing backups
+variable "space_name" {}
+variable "space_key" {}
+variable "space_secret_key" {}

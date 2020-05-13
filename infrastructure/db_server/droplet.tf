@@ -48,12 +48,15 @@ resource "null_resource" "root-provisioner" {
       # TODO maybe uncomment
       # "rm -rf /root/.ssh",
       "echo \"figlet 'db-server'\" >> /home/ubuntu/.bashrc",
-      "echo 'alias mysql_connect=\"docker run --rm -it --network host mysql:5.7 mysql -uroot -pfaas -h127.0.0.1 -P3306 Benchmarks\"' >> /home/ubuntu/.bashrc"
+      "echo 'alias mysql_connect=\"docker run --rm -it --network host mysql:5.7 mysql -uroot -pfaas -h127.0.0.1 -P3306 Benchmarks\"' >> /home/ubuntu/.bashrc",
+
+      # add credentials for backup do space
       "echo \"export SPACE_NAME=${var.space_name}\" >> /home/ubuntu/.bashrc",
       "echo \"export SPACE_KEY${var.space_key}\" >> /home/ubuntu/.bashrc",
       "echo \"export SPACE_SECRET_KEY${var.space_secret_key}\" >> /home/ubuntu/.bashrc",
+      # add crontab to run backup
       "echo \"1 1,13 * * * bash /home/ubuntu/.bashrc ; bash /home/ubuntu/faas-benchmarker/infrastructure/db_server_backups/backup.sh\" >> cronfile",
-      "crontab -u ubuntu /home/ubuntu/cronfile"
+      "crontab -u ubuntu /home/ubuntu/cronfile",
 
       # clone repository
       "git clone --quiet https://github.com/zanderhavgaard/faas-benchmarker /home/ubuntu/faas-benchmarker",
