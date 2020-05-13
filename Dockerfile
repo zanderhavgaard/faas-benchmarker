@@ -1,9 +1,4 @@
-# FROM python:3.8.2-slim as builder
 FROM python:3.8.2 as builder
-
-# RUN apt-get update -q \
-        # && apt-get install -y -q build-essential  \
-        # && rm -rf /var/lib/apt/lists/*
 
 RUN useradd \
         --create-home \

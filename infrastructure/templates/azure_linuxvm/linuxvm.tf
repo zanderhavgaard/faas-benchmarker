@@ -24,10 +24,7 @@ resource "azurerm_linux_virtual_machine" "changeme-worker" {
 
   source_image_reference {
     publisher = "Canonical"
-    # offer     = "UbuntuServer"
     offer     = "0001-com-ubuntu-minimal-focal-daily"
-# 0001-com-ubuntu-minimal-focal-daily                 Canonical                                           minimal-20_04-daily-lts                             Canonical:0001-com-ubuntu-minimal-focal-daily:minimal-20_04-daily-lts:20.04.202004221                                             20.04.202004221
-    # sku       = "18.04-LTS"
     sku       = "minimal-20_04-daily-lts"
     version   = "latest"
   }
