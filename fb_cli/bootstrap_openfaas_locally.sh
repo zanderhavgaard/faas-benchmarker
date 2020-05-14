@@ -21,6 +21,7 @@ arkade install openfaas \
     --wait \
     --set "faasIdler.dryRun=false" \
     --set "faasIdler.inactivityDuration=10m"
+    --set "faasIdler.reconcileInterval=5m"
 sleep 5
 
 pmsg "Configuring gateway ..."
