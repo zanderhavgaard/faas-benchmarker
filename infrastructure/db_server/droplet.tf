@@ -1,5 +1,5 @@
 resource "digitalocean_droplet" "db-server" {
-  image = "docker-18-04"
+  image = "ubuntu-20-04-x64"
   name = "db-server"
   region = "fra1"
   size = "s-1vcpu-1gb"
@@ -35,10 +35,10 @@ resource "null_resource" "root-provisioner" {
       # install stuff
       "apt-get update -q",
       "apt-get upgrade -qq",
-      # there might be more updates dependent on the first batch of updates...
-      "apt-get update -q",
-      "apt-get upgrade -qq",
-      "apt-get install -y -qq figlet unzip git",
+      "apt-get install -qq neovim figlet unzip git docker-compose",
+
+      # enbale docker
+      "systemctl enbale --now docker",
 
       # setup non root user
       "useradd --create-home --shell /bin/bash --groups docker ${var.username}",
@@ -49,13 +49,10 @@ resource "null_resource" "root-provisioner" {
       # "rm -rf /root/.ssh",
       "echo \"figlet 'db-server'\" >> /home/ubuntu/.bashrc",
       "echo 'alias mysql_connect=\"docker run --rm -it --network host mysql:5.7 mysql -uroot -pfaas -h127.0.0.1 -P3306 Benchmarks\"' >> /home/ubuntu/.bashrc",
+      "echo 'cd /home/ubuntu/faas-benchmarker && git pull' >> /home/ubuntu/.bashrc",
 
-      # add credentials for backup do space
-      "echo \"export SPACE_NAME=${var.space_name}\" >> /home/ubuntu/.bashrc",
-      "echo \"export SPACE_KEY=${var.space_key}\" >> /home/ubuntu/.bashrc",
-      "echo \"export SPACE_SECRET_KEY=${var.space_secret_key}\" >> /home/ubuntu/.bashrc",
       # add crontab to run backup
-      "echo \"1 1,13 * * * bash /home/ubuntu/.bashrc ; bash /home/ubuntu/faas-benchmarker/infrastructure/db_server_backups/backup.sh\" >> /home/ubuntu/cronfile",
+      "echo \"1 1,13 * * * SPACE_NAME=${var.space_name} SPACE_KEY=${var.space_key} SPACE_SECRET_KEY=${var.space_secret_key} bash /home/ubuntu/faas-benchmarker/infrastructure/db_server_backups/backup.sh\" >> /home/ubuntu/cronfile",
       "crontab -u ubuntu /home/ubuntu/cronfile",
 
       # clone repository
@@ -75,9 +72,6 @@ resource "null_resource" "root-provisioner" {
       "echo ======================================",
       "echo = Done setting up orchstrator server =",
       "echo ======================================",
-
-      # reboot to apply any kernel updates
-      "reboot &",
     ]
   }
 }
