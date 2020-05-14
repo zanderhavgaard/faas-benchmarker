@@ -77,7 +77,7 @@ class SSH_query:
 
                         conn.close()
                         tunnel.stop()
-
+                        # return true or false depending on number of errors, true if at least 50% was successful
                         return len(queries) / 2 >= len(error_list)
 
                     except Exception as ex:

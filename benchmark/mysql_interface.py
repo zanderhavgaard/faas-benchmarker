@@ -116,6 +116,19 @@ class SQL_Interface:
         return self.tunnel.retrive_query(query,flag)
     
 
+    # coldstart experiment specific
+
+    def log_coldtime(self,exp_id:str,
+                    invo_id:str,
+                    minutes:int,
+                    seconds:int,
+                    granularity:int,
+                    cold:bool=True,
+                    final:bool=False):
+
+        query = """INSERT INTO Coldstart (exp_id,invo_id,minutes,seconds,granularity,cold,final) 
+                VALUES ({},{},{},{},{},{},{});""".format(exp_id,invo_id,minutes,seconds,granularity,cold,final) 
+        return self.
 
 
 

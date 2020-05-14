@@ -6,6 +6,7 @@ import time
 from functools import reduce
 from datetime import datetime
 import traceback
+from benchmark.mysql_interface import SQL_Interface as db
 
 # =====================================================================================
 # Read cli arguments from calling scriptimport sys
@@ -76,13 +77,16 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
-uuid = benchmarker.experiment.uuid
+
+experiment_uuid = benchmarker.experiment.uuid
+
 # what function to test on (1-3)
 fx_num = 1
 fx = f'{experiment_name}{fx_num}'
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
-    time.sleep(15*60)
+    time.sleep(15*60) # more??
+
 # sift away errors at runtime and report them later
 errors = []
 #======================================================================================
@@ -143,47 +147,77 @@ try:
     coldtime = initial_cold_start_response['execution_start']-initial_cold_start_response['invocation_start']
     
     # coldtime is adjusted by 5% to avoid coldtime being an outlier
-    benchmark = coldtime * 0.95
+    benchmark = coldtime * 0.90
+
 
     # calculates avg. time for warm function, default is 5 invocations as input
     avg_warmtime = wrapped_calc_avg_by_keys()
 
     if(dev_mode):
         coldtime += 1.0
-        benchmark = coldtime * 0.95
+        benchmark = coldtime * 0.90
         print('coldtime',coldtime)
         print('benchmark',benchmark)
         print('avg_warmtime',avg_warmtime)
 
     # sleep for 60 minutes if coldtime is not cold
-    if(avg_warmtime * 1.10 > coldtime):
-        time.sleep(60.60)
+
+    if(avg_warmtime > benchmark):
+        time.sleep(60 * 60)
 
     # time to sleep in between invocations, start at 5 minutes
     sleep_time = 300
     # increment for each iteration
     increment = sleep_time
+    # granularity of result
+    granularity = 10
     # value for last response latency 
     latest_latency_time = avg_warmtime   
 
-    while( increment > 30 ):
+    def set_cold_values():
+        
+        while( increment > granularity ):
 
+            time.sleep(sleep_time)
+            result_dict = iterator_wrapper(invoke,'invoking function: {0} from cold start experiment'.format(fx))
+            latest_latency_time = result_dict['execution_start'] - result_dict['invocation_start']
+
+            if(latest_latency_time > benchmark):
+                db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, True, False) 
+                increment /= 2
+                sleep_time -= increment
+            else:
+                db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, False, False)
+                sleep_time += increment
+
+    
+    set_cold_values()
+    # variefy that result is valid by using same sleeptime between invocations 5 times
+    for i in range(5):
         time.sleep(sleep_time)
-        res_dict = iterator_wrapper(invoke,'invoking function from experiment')
-        latest_latency_time = res_dict['execution_start'] - res_dict['invocation_start']
+        result_dict = iterator_wrapper(invoke,'invoking function: {0} from validation of cold start experiment'.format(fx))
+        latency_time = result_dict['execution_start'] - result_dict['invocation_start']
+        # if sleeptime did not result in coldstart adjust values and reset iterations
+        if(latency_time < benchmark):
+            db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, False, False)
+            granularity *= 2
+            increment *= 4
+            sleep_time += increment
+            set_cold_values()
+            i = 0
+        else:
+            db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, True, False)
+            
+    # sleep for 60 minutes and validate result
+    time.sleep(60 * 60)
 
-        if(latest_latency_time)
+    result_dict = iterator_wrapper(invoke,'invoking function: {0} from final invocation of cold start experiment'.format(fx))
+    latency_time = result_dict['execution_start'] - result_dict['invocation_start']
+    if(latency_time < benchmark):
+        db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, False, True)
+    else:
+        db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, True, True)
 
-
-
-    # log final result 
-
-    # print('calc',calc_avg_specified_keys())
-    # print('calc2',calc_avg_specified_keys( (create_invocation_list((3,'test')),('execution_end','execution_start') ) ) )
-    # print('wrapped',wrapped_calc_avg_by_keys())
-    # print( 'test',calc_avg_specified_keys([{'execution_start':2.0,'invocation_start':1.0},{'execution_start':3.0,'invocation_start':5.0}],('invocation_start','execution_start') ) )
-
-  
 
 
 
@@ -193,6 +227,7 @@ try:
     # =====================================================================================
 
 except Exception as e:
+    # this will print to logfile
     print('Ending experiment {0} due to fatal runtime error'.format(experiment_name))
     print(str(datetime.now()))
     print('Error message: ',str(e))

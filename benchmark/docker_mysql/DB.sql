@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS `Coldstart` (
   `invo_id` varchar(100) NOT NULL,
   `minutes` INT NOT NULL,
   `seconds` INT DEFAULT 0,
+  `granularity` INT NOT NULL,
   `cold` BOOLEAN DEFAULT TRUE,
   `final` BOOLEAN DEFAULT FALSE,
   PRIMARY KEY (id),
