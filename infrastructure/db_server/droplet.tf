@@ -39,6 +39,7 @@ resource "null_resource" "root-provisioner" {
 
       # enbale docker
       "systemctl enbale --now docker",
+      "sudo usermod -aG docker ubuntu",
 
       # setup non root user
       "useradd --create-home --shell /bin/bash --groups docker ${var.username}",
