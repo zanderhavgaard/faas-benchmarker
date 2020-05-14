@@ -9,6 +9,7 @@ SET time_zone = "+00:00";
 -- Table of all experiments and its meta data
 CREATE TABLE IF NOT EXISTS `Experiment` (
   `id` INT NOT NULL AUTO_INCREMENT,
+  `experiment_meta_identifier` varchar(100) NOT NULL,
   `uuid` varchar(36) NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` varchar(200) NOT NULL,

@@ -34,8 +34,11 @@ class Benchmarker:
             provider=provider, env_file_path=env_file_path)
 
         # TODO add experiment_meta_identifier to experiment and log to db
-        self.experiment = Experiment(
-            experiment_name, provider, client_provider, experiment_description)
+        self.experiment = Experiment(experiment_meta_identifier,
+                                    experiment_name, 
+                                    provider, 
+                                    client_provider, 
+                                    experiment_description)
 
         print('\n=================================================')
         print('FaaS Benchmarker --> Starting Experiment ...')
