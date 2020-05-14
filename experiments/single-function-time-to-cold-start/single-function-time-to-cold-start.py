@@ -141,10 +141,6 @@ try:
    
     initial_cold_start_response = iterator_wrapper(invoke,'initial coldtime')
     coldtime = initial_cold_start_response['execution_start']-initial_cold_start_response['invocation_start']
-
-    if(dev_mode):
-        coldtime += 1.0
-        print('coldtime',coldtime)
     
     # coldtime is adjusted by 5% to avoid coldtime being an outlier
     benchmark = coldtime * 0.95
@@ -152,11 +148,35 @@ try:
     # calculates avg. time for warm function, default is 5 invocations as input
     avg_warmtime = wrapped_calc_avg_by_keys()
 
-    # set start time to sleep
-    sleep_time = 5 *60
-    # value for    
+    if(dev_mode):
+        coldtime += 1.0
+        benchmark = coldtime * 0.95
+        print('coldtime',coldtime)
+        print('benchmark',benchmark)
+        print('avg_warmtime',avg_warmtime)
+
+    # sleep for 60 minutes if coldtime is not cold
+    if(avg_warmtime * 1.10 > coldtime):
+        time.sleep(60.60)
+
+    # time to sleep in between invocations, start at 5 minutes
+    sleep_time = 300
+    # increment for each iteration
+    increment = sleep_time
+    # value for last response latency 
+    latest_latency_time = avg_warmtime   
+
+    while( increment > 30 ):
+
+        time.sleep(sleep_time)
+        res_dict = iterator_wrapper(invoke,'invoking function from experiment')
+        latest_latency_time = res_dict['execution_start'] - res_dict['invocation_start']
+
+        if(latest_latency_time)
 
 
+
+    # log final result 
 
     # print('calc',calc_avg_specified_keys())
     # print('calc2',calc_avg_specified_keys( (create_invocation_list((3,'test')),('execution_end','execution_start') ) ) )
