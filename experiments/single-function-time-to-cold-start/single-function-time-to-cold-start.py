@@ -6,7 +6,7 @@ import time
 from functools import reduce
 from datetime import datetime
 import traceback
-from benchmark.mysql_interface import SQL_Interface as db
+from benchmark.mysql_interface import SQL_Interface 
 
 # =====================================================================================
 # Read cli arguments from calling scriptimport sys
@@ -74,6 +74,9 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           experiment_description=description,
                           env_file_path=env_file_path,
                           dev_mode=dev_mode)
+# =====================================================================================
+# create database interface for logging results
+db = SQL_Interface()
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
@@ -174,6 +177,9 @@ try:
     # value for last response latency 
     latest_latency_time = avg_warmtime   
 
+    if(dev_mode):
+        1+1 # set other variables that can test data flow logic
+
     def set_cold_values():
         
         while( increment > granularity ):
@@ -189,6 +195,11 @@ try:
             else:
                 db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, False, False)
                 sleep_time += increment
+            
+            if(dev_mode and sleep_time > 180):
+                print('sleep_time:',sleep_time)
+                print()
+
 
     
     set_cold_values()
@@ -207,7 +218,7 @@ try:
             i = 0
         else:
             db.log_coldtime(experiment_uuid,result_dict['identifier'],sleep_time / 60, sleep_time % 60, increment, True, False)
-            
+
     # sleep for 60 minutes and validate result
     time.sleep(60 * 60)
 
