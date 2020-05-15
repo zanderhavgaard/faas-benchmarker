@@ -82,10 +82,8 @@ class AWSLambdaProvider(AbstractProvider):
             # if succesfull invocation parse response
             if(response.status_code == 200):
 
-                response_json = json.loads(response.content.decode())
-
-                #  import sys
-                #  sys.exit()
+                #  response_json = json.loads(response.content.decode())
+                response_json = response.json()
 
                 # get the identifier
                 identifier = response_json['identifier']
@@ -105,7 +103,7 @@ class AWSLambdaProvider(AbstractProvider):
 
                 # get rid of key we do not need
                 # TODO see if key can be removed from cloud function instead
-                response_data.pop('identifier')
+                #  response_data.pop('identifier')
 
                 return response_data
 

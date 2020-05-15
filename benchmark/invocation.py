@@ -40,6 +40,8 @@ class Invocation:
             delattr(self, 'error')
         else:
             self.is_error = False
+            self.execution_total = self.execution_end - self.execution_start
+            self.invocation_total = self.invocation_end - self.invocation_start
 
     def get_query_string(self):
         key_values = self.__dict__
@@ -63,14 +65,15 @@ class Invocation:
 
     def write_errorlog(self, error_dict: dict, id: str):
 
-        with open("/home/ubuntu/ErrorLogFile.log", "a+") as f:
-            #  with open("/home/thomas/ErrorLogFile.log","a+") as f:
 
-            f.write('An error occurred in a cloud function invocation'+'\n')
-            f.write('function UUID: '+id+'\n')
-            f.write(str(datetime.now()) + '\n')
-            f.write('type: ' + error_dict['type']+'«\n')
-            f.write('message: '+error_dict['message']+'\n')
-            f.write('trace: '+error_dict['trace']+'\n')
-            f.write("--------------------------\n")
-            f.close()
+with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
+     #  with open("/home/thomas/ErrorLogFile.log","a+") as f:
+
+f.write('An error occurred in a cloud function invocation'+'\n')
+f.write('function UUID: '+id+'\n')
+f.write(str(datetime.now()) + '\n')
+f.write('type: ' + error_dict['type']+'«\n')
+f.write('message: '+error_dict['message']+'\n')
+f.write('trace: '+error_dict['trace']+'\n')
+f.write("--------------------------\n")
+f.close()
