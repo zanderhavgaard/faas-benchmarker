@@ -64,14 +64,17 @@ resource "null_resource" "linux-provisioners" {
       # set some environment variables
       "{ echo -n 'export fbrd=/home/ubuntu/faas-benchmarker\n' ; echo -n 'export PYTHONPATH=$PYTHONPATH:/home/ubuntu/faas-benchmarker/benchmark\n' ; echo -n 'export DB_HOSTNAME=${var.db_server_static_ip}\n' ; cat .bashrc ; } > /home/ubuntu/.bashrc.new",
       "mv .bashrc.new .bashrc",
-      # update and install python
+
+      # install docker and other tools
       "sudo apt-get update -q",
-      "sudo apt-get install -y -qq unzip git python3 python3-dev python3-pip",
+      "sudo apt-get install -y -qq unzip git docker-compose",
+      "sudo systemctl enable --now docker",
+      "sudo usermod -aG docker ubuntu",
+      "sudo docker pull -q faasbenchmarker/client:latest"
+
       # clone repo
       "git clone --quiet https://github.com/zanderhavgaard/faas-benchmarker /home/ubuntu/faas-benchmarker",
-      # install python dependencies
-      "cd /home/ubuntu/faas-benchmarker",
-      "pip3 install -q -r requirements.txt",
+
       # install depenencies for creating the openfaas cluster
       "bash /home/ubuntu/faas-benchmarker/eks_openfaas_orchestration/install_openfaas_orchestration_tools.sh",
       # create directory for aws credentials
