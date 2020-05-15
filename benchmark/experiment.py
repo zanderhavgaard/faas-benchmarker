@@ -12,9 +12,16 @@ from pprint import pprint
 
 class Experiment:
 
-    def __init__(self, name:str, cl_provider:str, cl_client:str, desc:str):
+    def __init__(self, 
+                experiment_meta_identifier:str, 
+                name:str, 
+                cl_provider:str, 
+                cl_client:str, 
+                desc:str):
+
         self.uuid = str(uuid.uuid4())
         self.start_time = time.time()
+        self.experiment_meta_identifier= experiment_meta_identifier
         self.name = name
         self.cl_provider = cl_provider
         self.cl_client = cl_client
@@ -23,7 +30,7 @@ class Experiment:
         self.cores = psutil.cpu_count()
         self.memory = psutil.virtual_memory()[0]
         
-        self.invocations= []
+        self.invocations = []
 
     def get_start_time(self) -> float:
         return self.start_time
@@ -79,7 +86,6 @@ class Experiment:
                 val_string += """'{0}',""".format(v)
             else:
                 val_string += str(v)+','
-        # print('experiment query!!!!!!','INSERT INTO Experiment ({0}) VALUES ({1})'.format(key_string[:-1],val_string[:-1]))
         return 'INSERT INTO Experiment ({0}) VALUES ({1})'.format(key_string[:-1],val_string[:-1])
     
     def log_experiment(self):
