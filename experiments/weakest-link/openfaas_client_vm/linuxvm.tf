@@ -70,7 +70,7 @@ resource "null_resource" "linux-provisioners" {
       "sudo apt-get install -y -qq unzip git docker-compose",
       "sudo systemctl enable --now docker",
       "sudo usermod -aG docker ubuntu",
-      "sudo docker pull -q faasbenchmarker/client:latest"
+      "sudo docker pull -q faasbenchmarker/client:latest",
 
       # clone repo
       "git clone --quiet https://github.com/zanderhavgaard/faas-benchmarker /home/ubuntu/faas-benchmarker",
