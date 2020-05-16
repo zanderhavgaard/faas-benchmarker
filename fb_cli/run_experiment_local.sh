@@ -2,6 +2,8 @@
 
 # the experiment name to test
 experiment_name=$1
+# meta identifier
+experiment_meta_identifier="dev-meta"
 # the context of the experiment
 experiment_context="$fbrd/experiments/$experiment_name"
 # the experiemnt logic file
@@ -17,6 +19,7 @@ dev_mode="True"
 
 python \
   $experiment_python_file \
+  $experiment_meta_identifier \
   $experiment_name \
   $experiment_cloud_function_provider \
   $experiment_client_provider \
