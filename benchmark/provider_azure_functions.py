@@ -102,6 +102,9 @@ class AzureFunctionsProvider(AbstractProvider):
                 response_data[identifier]['invocation_end'] = end_time
                 response_data['root_identifier'] = identifier
 
+                if 'identifier' in response_data:
+                    response_data.pop('identifier')
+
                 return response_data
 
             else:
