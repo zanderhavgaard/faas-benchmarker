@@ -1,5 +1,6 @@
 resource "digitalocean_droplet" "orchestrator" {
-  image = "ubuntu-20-04-x64"
+  image = "ubuntu-19-10-x64"
+  # image = "ubuntu-20-04-x64"
   name = "orchestrator"
   region = "fra1"
   size = "s-1vcpu-1gb"
@@ -63,12 +64,12 @@ resource "null_resource" "root-provisioner" {
       # install stuff
       "apt-get update -q",
       "apt-get upgrade -qq",
-      "apt-get install -y -qq zsh docker-compose neovim figlet unzip git python3 python3-dev python3-pip",
-      "apt-get autoremove -y -qq",
+      "apt-get install -qq zsh fzf neovim figlet unzip git python3 python3-dev python3-pip",
+      "apt-get autoremove -qq",
 
-      # enbale docker
-      "systemctl enbale --now docker",
-      "sudo usermod -aG docker ubuntu",
+      # enable docker
+      # "systemctl enbale --now docker",
+      # "sudo usermod -aG docker ubuntu",
 
       # install terraform v. 0.12.24
       "wget https://releases.hashicorp.com/terraform/0.12.24/terraform_0.12.24_linux_amd64.zip",
