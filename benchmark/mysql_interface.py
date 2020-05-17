@@ -127,23 +127,41 @@ class SQL_Interface:
                     final:bool=False):
 
         query = """INSERT INTO Coldstart (exp_id,invo_id,minutes,seconds,granularity,cold,final) 
-                VALUES ({},{},{},{},{},{},{});""".format(exp_id,invo_id,minutes,seconds,granularity,cold,final) 
-        return self.
+                VALUES ('{}','{}',{},{},{},{},{});""".format(exp_id,invo_id,minutes,seconds,granularity,cold,final) 
+        return self.tunnel.insert_queries([query])
 
+    def get_from_coldtimes(self,args:str='*',flag:bool=True):
+        query = """SELECT {0} FROM Coldstart;""".format(args) 
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res)
 
+    def get_all_final_coldtimes(self,args:str='*',flag:bool=True):
+        query = """SELECT {0} FROM Coldstart WHERE final=True;""".format(args) 
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res)
+    
+    def get_explicit_number_coldstart(self,args:str= '*', number:int=1, flag:bool= False, order:bool= True):
+        key_word = 'desc' if order else 'asc'
+        query = 'SELECT {0} from Coldstart order by id {1} limit {2};'.format(args,key_word,number)
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res)
 
     # ----- DEV FUNCTIONS BELOW
 
-    def delete_data_table_Experiment(self):
-        query = 'truncate Experiment;'
+    def delete_data_table(self,table_name:str):
+        query = 'truncate {table_name};'.format(0)
         return self.tunnel.insert_queries([query])
 
-    def delete_data_table_Invocation(self):
-        query = 'truncate Invocation;'
-        return self.tunnel.insert_queries([query])
+    # def delete_data_table_Invocation(self):
+    #     query = 'truncate Invocation;'
+    #     return self.tunnel.insert_queries([query])
     
-    def delete_data_table_Error(self):
-        query = 'truncate Error;'
-        return self.tunnel.insert_queries([query])
+    # def delete_data_table_Error(self):
+    #     query = 'truncate Error;'
+    #     return self.tunnel.insert_queries([query])
+    
+    # def delete_data_table_Coldstart(self):
+    #     query = 'truncate Coldstart;'
+    #     return self.tunnel.insert_queries([query])
 
 

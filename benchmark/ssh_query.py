@@ -120,7 +120,7 @@ class SSH_query:
                             conn.close()
                             tunnel.stop()
 
-                            return np.array(data)
+                            return data
 
                         except Exception as ex:
                             # log error message if its the third atempt
