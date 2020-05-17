@@ -42,19 +42,17 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         # parse request json
         req_json = json.loads(req.get_body())
 
-        
-
         # make sure that things are working...
         if req_json['StatusCode'] != 200:
-            raise StatusCodeException('StatusCode: '+str(req_json['StatusCode']))
-
+            raise StatusCodeException(
+                'StatusCode: '+str(req_json['StatusCode']))
 
         if 'parent' not in req_json:
             # if first in chain mark as root
             body[identifier]['parent'] = 'root'
         else:
             body[identifier]['parent'] = req_json['parent']
-        
+
         # set level if root in invocation tree
         if 'level' not in req_json:
             body[identifier]['level'] = 0
@@ -68,7 +66,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['sleep'] = req_json['sleep']
         else:
             body[identifier]['sleep'] = 0.0
-        
+
         if 'throughput_time' in req_json:
             random.seed(req_json['throughput_time'] * 100)
             process_time_start = time.process_time()
@@ -79,7 +77,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 throughput.append(random.random())
             throughput_process_time = time.process_time() - process_time_start
 
-            body[identifier]['throughput_running_time'] = time.time() - throughput_start
+            body[identifier]['throughput_running_time'] = time.time() - \
+                throughput_start
             body[identifier]['throughput'] = len(throughput)
             body[identifier]['throughput_time'] = req_json['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
@@ -91,7 +90,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['throughput_process_time'] = None
             body[identifier]['random_seed'] = None
 
-        
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
         # add total memory of pod to metadata
@@ -146,27 +144,27 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         error_body = {
             "identifier": identifier,
             identifier: {
-                    "identifier": identifier,
-                    "uuid": invocation_uuid,
-                    "function_name": function_name,
-                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
-                    "parent": None,
-                    "sleep": None,
-                    "function_cores": psutil.cpu_count(),
-                    "throughput": None,
-                    "throughput_time": None,
-                    "throughput_process_time": None,
-                    'throughput_running_time': None,
-                    "random_seed": None,
-                    "python_version": None,
-                    "level": None,
-                    "memory": None,
-                    "instance_identifier": None,
-                    "execution_start": start_time,
-                    "execution_end": time.time(),
-                    "cpu": platform.processor(),
-                    "process_time": time.process_time()
-                }
+                "identifier": identifier,
+                "uuid": invocation_uuid,
+                "function_name": function_name,
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
+                "parent": None,
+                "sleep": None,
+                "function_cores": psutil.cpu_count(),
+                "throughput": None,
+                "throughput_time": None,
+                "throughput_process_time": None,
+                'throughput_running_time': None,
+                "random_seed": None,
+                "python_version": None,
+                "level": None,
+                "memory": None,
+                "instance_identifier": None,
+                "execution_start": start_time,
+                "execution_end": time.time(),
+                "cpu": platform.processor(),
+                "process_time": time.process_time()
+            }
         }
         return func.HttpResponse(body=json.dumps(error_body),
                                  status_code=200,
@@ -220,7 +218,7 @@ def invoke_nested_function(function_name: str,
                 "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
                 "uuid": None,
                 "function_name": 'function1',
-                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "function_cores": 0,
@@ -243,6 +241,6 @@ def invoke_nested_function(function_name: str,
             }
         }
 
+
 class StatusCodeException(Exception):
     pass
-

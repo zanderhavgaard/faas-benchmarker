@@ -1,9 +1,0 @@
-DB_HOSTNAME=174.138.102.38
-ssh_port=8080
-ssh_username=root
-ssh_pkey_path=/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server
-remote_bind_ip=127.0.0.1
-remote_bind_port=22
-db_user=root
-db_password=faas
-database=Benchmarks

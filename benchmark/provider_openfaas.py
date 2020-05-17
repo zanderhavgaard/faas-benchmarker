@@ -66,7 +66,8 @@ class OpenFaasProvider(AbstractProvider):
                     if response.status_code == 200:
                         break
                 except Exception as e:
-                    print(f"Caught an error for attempt {i}, retrying invocation ...")
+                    print(
+                        f"Caught an error for attempt {i}, retrying invocation ...")
                     print(e)
                     continue
 

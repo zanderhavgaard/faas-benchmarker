@@ -66,7 +66,7 @@ def handle(req):
             body[identifier]['sleep'] = event['sleep']
         else:
             body[identifier]['sleep'] = 0.0
-        
+
         if 'throughput_time' in event:
             random.seed(event['throughput_time'] * 100)
             process_time_start = time.process_time()
@@ -77,7 +77,8 @@ def handle(req):
                 throughput.append(random.random())
             throughput_process_time = time.process_time() - process_time_start
 
-            body[identifier]['throughput_running_time'] = time.time() - throughput_start
+            body[identifier]['throughput_running_time'] = time.time() - \
+                throughput_start
             body[identifier]['throughput'] = len(throughput)
             body[identifier]['throughput_time'] = event['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
@@ -87,7 +88,7 @@ def handle(req):
             body[identifier]['throughput_running_time'] = None
             body[identifier]['throughput_time'] = None
             body[identifier]['throughput_process_time'] = None
-            body[identifier]['random_seed'] = None 
+            body[identifier]['random_seed'] = None
 
         # add ip address of container to uniqely differentiate container instances
         body[identifier]['instance_identifier'] = str(
@@ -139,7 +140,7 @@ def handle(req):
                     "identifier": identifier,
                     "uuid": invocation_uuid,
                     "function_name": function_name,
-                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
+                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                     "parent": None,
                     "sleep": None,
                     "function_cores": psutil.cpu_count(),
@@ -218,7 +219,7 @@ def invoke_nested_function(function_name: str,
                 "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
                 "uuid": None,
                 "function_name": 'function1',
-                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "function_cores": 0,
@@ -239,6 +240,7 @@ def invoke_nested_function(function_name: str,
                 "process_time": time.process_time()
             }
         }
+
 
 class StatusCodeException(Exception):
     pass

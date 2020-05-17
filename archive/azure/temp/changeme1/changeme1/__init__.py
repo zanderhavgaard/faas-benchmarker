@@ -9,6 +9,7 @@ import requests
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
 
+
 def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # req: HTTPRequest provided by azure
 
@@ -82,7 +83,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     body[identifier]['execution_end'] = time.time()
 
     # for azure functions we have to follow the response form
-    # that azure provides, so we add an extra key to body that 
+    # that azure provides, so we add an extra key to body that
     # contains the function identifier
     body['identifier'] = identifier
 
@@ -105,8 +106,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     return response
 
 
-def invoke_nested_function(function_name: str, 
-                           invoke_payload: dict, 
+def invoke_nested_function(function_name: str,
+                           invoke_payload: dict,
                            code: str
                            ) -> dict:
 

@@ -10,7 +10,7 @@ from benchmarker import Benchmarker
 # name of the terraform experiment
 experiment_name = sys.argv[1]
 
-# unique identifier string tying this experiment together with the 
+# unique identifier string tying this experiment together with the
 # experiments conducted for the other cloud providers in this round
 experiment_meta_identifier = sys.argv[2]
 

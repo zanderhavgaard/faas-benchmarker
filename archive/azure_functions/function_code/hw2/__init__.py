@@ -19,6 +19,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"Hello {name}!")
     else:
         return func.HttpResponse(
-             "hw2",
-             status_code=400
+            "hw2",
+            status_code=400
         )
