@@ -139,10 +139,9 @@ class Benchmarker:
                 'Error: Empty response from cloud function invocation.')
 
         identifier = response['root_identifier']
-        response[identifier]['invocation_total'] = response[identifier]['invocation_end'] - \
-            response[identifier]['invocation_start']
-        response[identifier]['execution_total'] = response[identifier]['execution_end'] - \
-            response[identifier]['execution_start']
+        if ('StatusCode-error' not in identifier) and ('exception-providor' not in identifier):
+            response[identifier]['invocation_total'] = response[identifier]['invocation_end'] - response[identifier]['invocation_start']
+            response[identifier]['execution_total'] = response[identifier]['execution_end'] - response[identifier]['execution_start']
 
         self.experiment.add_invocation(response)
 
