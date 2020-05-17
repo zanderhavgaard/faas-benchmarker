@@ -1,14 +1,12 @@
-
 import sys
 import json
+import time
 from pprint import pprint
 from benchmarker import Benchmarker
-import time
 from datetime import datetime
 import traceback
 from mysql_interface import SQL_Interface
 import function_lib as lib
-
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -32,21 +30,23 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
-
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: This experiment tests the time it takes for
-a single function instance to no longer be available due to inactivity.
-The experiment is conducted by first invoking a single function 11 times,
-the first time to make sure that the function instane is created, the the following
-10 times to create a baseline for a 'hot' invocation.
-Then the function is invoked continually with increasing delay between invocations,
-until the function is a cold start for each invocation with that delay.
-This process is then repeated and averaged.
+{experiment_name}: This experiment tests the time it takes for 
+function instances to no longer be available due to inactivity in a multithreaded
+environment.
+The experiment is conducted by first creating a cold time baseline. This is done by i
+nvoking a single function with 12 concurrent requests and average over the results. 
+Then the same function is is invoked 10 times, again with 12 concurrent requests and 
+averaged as a 'warm time' baseline.
+Then the function is invoked with 12 multithreaded requests continually with increasing 
+delay between invocations, until the avg of the requests falls within the cold time 
+baseline.
 """
+
 # =====================================================================================
 # create the benchmarker
 benchmarker = Benchmarker(experiment_name=experiment_name,
@@ -67,7 +67,7 @@ experiment_uuid = benchmarker.experiment.uuid
 
 # number of thread to run
 # change this for concurrent execution
-thread_numb = 1
+thread_numb = 12
 
 # what function to test on (1-3)
 fx_num = 2
