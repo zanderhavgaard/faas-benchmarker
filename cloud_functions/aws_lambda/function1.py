@@ -37,7 +37,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 "function_cores": psutil.cpu_count()
             },
         }
-        
+
         # make sure that things are working...
         if event['StatusCode'] != 200:
             raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
@@ -48,7 +48,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
             body[identifier]['parent'] = 'root'
         else:
             body[identifier]['parent'] = event['parent']
-        
+
         # set level if root in invocation tree
         if 'level' not in event:
             body[identifier]['level'] = 0
@@ -62,18 +62,19 @@ def lambda_handler(event: dict, context: dict) -> dict:
             body[identifier]['sleep'] = event['sleep']
         else:
             body[identifier]['sleep'] = 0.0
-        
+
         if 'throughput_time' in event:
             random.seed(event['throughput_time'] * 100)
             process_time_start = time.process_time()
             throughput_start = time.time()
             throughput = []
-            
+
             while(time.time()-throughput_start < event['throughput_time']):
                 throughput.append(random.random())
             throughput_process_time = time.process_time() - process_time_start
 
-            body[identifier]['throughput_running_time'] = time.time() - throughput_start
+            body[identifier]['throughput_running_time'] = time.time() - \
+                throughput_start
             body[identifier]['throughput'] = len(throughput)
             body[identifier]['throughput_time'] = event['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
@@ -83,7 +84,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
             body[identifier]['throughput_running_time'] = None
             body[identifier]['throughput_time'] = None
             body[identifier]['throughput_process_time'] = None
-            body[identifier]['random_seed'] = None  
+            body[identifier]['random_seed'] = None
 
         # add invocation metadata to response
         if context is None:
@@ -98,7 +99,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
 
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
-        
+
         # invoke nested lambdas from arguments
         if 'invoke_nested' in event:
             # invoke nested will contain a list of dicts specifying how invoke nested functions
@@ -109,14 +110,13 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 invoke['invoke_payload']['parent'] = identifier
                 invoke['invoke_payload']['level'] = body[identifier]['level']
                 nested_response = invoke_lambda(
-                lambda_name=invoke['function_name'],
-                invoke_payload=invoke['invoke_payload'],
-                client=lambda_client,
+                    lambda_name=invoke['function_name'],
+                    invoke_payload=invoke['invoke_payload'],
+                    client=lambda_client,
                 )
                 # add each nested invocation to response body
                 for id in nested_response.keys():
                     body[id] = nested_response[id]
-
 
         # add timings and return
         body[identifier]['execution_start'] = start_time
@@ -145,7 +145,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                     "identifier": identifier,
                     "uuid": invocation_uuid,
                     "function_name": function_name,
-                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
+                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                     "parent": None,
                     "sleep": None,
                     "function_cores": psutil.cpu_count(),
@@ -172,6 +172,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
 # lambda_name: name of function in AWS
 # invoke_payload: dict containing arguments for invoked lambda
 # client: boto3 lambda client, should only be instantiated if needed
+
+
 def invoke_lambda(lambda_name: str,
                   invoke_payload: dict,
                   client: boto3.client
@@ -200,10 +202,9 @@ def invoke_lambda(lambda_name: str,
         # add invocation start/end times
         body[id]['invocation_start'] = start_time
         body[id]['invocation_end'] = end_time
-        
 
         return body
-    
+
     except Exception as e:
         end_time = time.time()
         return {
@@ -211,7 +212,7 @@ def invoke_lambda(lambda_name: str,
                 "identifier": "error-"+lambda_name+'-nested_invocation-'+str(end_time),
                 "uuid": None,
                 "function_name": 'function1',
-                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__ )},
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
                 "function_cores": 0,
@@ -233,10 +234,9 @@ def invoke_lambda(lambda_name: str,
             }
         }
 
+
 class StatusCodeException(Exception):
     pass
-
-
 
 
 # call the method if running locally

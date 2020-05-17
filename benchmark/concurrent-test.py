@@ -9,11 +9,10 @@ from functools import reduce
 # import benchmark.provider_abstract as abstract
 
 
-
 # of = of('/home/thomas/Msc/faas-benchmarker/.test_env')
 # of.test()
 nested = [
-       {
+    {
         "function_name": 'function1',
         "invoke_payload": {
             "StatusCode": 200,
@@ -29,18 +28,20 @@ ssh = SSH_query()
 
 db_interface = SQL_Interface()
 
-t1 =db_interface.log_coldtime('test2','identifier2',10,30,20,True,False)
+t1 = db_interface.log_coldtime('test2', 'identifier2', 10, 30, 20, True, False)
 print(t1)
-t2 =db_interface.log_coldtime('test3','identifier3',100,300,200,True,True)
+t2 = db_interface.log_coldtime(
+    'test3', 'identifier3', 100, 300, 200, True, True)
 print(t2)
 all_cold = db_interface.get_from_coldtimes(flag=False)
-print('all_cold',all_cold)
+print('all_cold', all_cold)
 finals = db_interface.get_all_final_coldtimes(flag=False)
-print('finals',finals)
-last2 = db_interface.get_explicit_number_coldstart(number=2,flag=False)
-print('lat2',last2)
-first2 = last2 = db_interface.get_explicit_number_coldstart(number=2,flag=False,order=False)
-print('first2',first2)
+print('finals', finals)
+last2 = db_interface.get_explicit_number_coldstart(number=2, flag=False)
+print('lat2', last2)
+first2 = last2 = db_interface.get_explicit_number_coldstart(
+    number=2, flag=False, order=False)
+print('first2', first2)
 print(db_interface.delete_data_table_Coldstart())
 
 # db_interface.delete_data_table_Experiment()
@@ -118,7 +119,7 @@ print(db_interface.delete_data_table_Coldstart())
 # print('errors',db_interface.get_all_from_Error(flag=False))
 # print('newest invocations',db_interface.get_most_recent_invocations(flag=False))
 # print()
-# all_experiment_vals = db_interface.get_all_from_Experiment(flag=False) 
+# all_experiment_vals = db_interface.get_all_from_Experiment(flag=False)
 # print('All Experiments',all_experiment_vals)
 # print()
 # all_invocations = db_interface.get_all_from_Invocation(flag=False)
@@ -132,7 +133,3 @@ print(db_interface.delete_data_table_Coldstart())
 # print()
 # experiment_uuid = db_interface.get_most_recent_experiment('uuid',flag=False)
 # print('experiment uuid',experiment_uuid)
-
-
-
-

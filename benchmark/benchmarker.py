@@ -35,10 +35,10 @@ class Benchmarker:
 
         # TODO add experiment_meta_identifier to experiment and log to db
         self.experiment = Experiment(experiment_meta_identifier,
-                                    experiment_name, 
-                                    provider, 
-                                    client_provider, 
-                                    experiment_description)
+                                     experiment_name,
+                                     provider,
+                                     client_provider,
+                                     experiment_description)
 
         print('\n=================================================')
         print('FaaS Benchmarker --> Starting Experiment ...')
@@ -97,7 +97,8 @@ class Benchmarker:
         else:
             print('\n\n')
             invocations_orig = self.experiment.get_invocations_original_form()
-            print('Experiment:', self.experiment.name, 'invoked', len(invocations_orig), 'times from its provider:', self.experiment.cl_provider)
+            print('Experiment:', self.experiment.name, 'invoked', len(
+                invocations_orig), 'times from its provider:', self.experiment.cl_provider)
             invocations = self.experiment.get_invocations()
             print('EXPERIMENT META DATA')
             print(self.experiment.dev_print())
@@ -115,7 +116,6 @@ class Benchmarker:
             #     print('SQL query for invocation')
             #     print(invo.get_query_string())
             #     print('-------------------------------------------')
-
 
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log
@@ -137,10 +137,12 @@ class Benchmarker:
         if response is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
-        
+
         identifier = response['root_identifier']
-        response[identifier]['invocation_total'] = response[identifier]['invocation_end']-response[identifier]['invocation_start']
-        response[identifier]['execution_total'] = response[identifier]['execution_end']-response[identifier]['execution_start']
+        response[identifier]['invocation_total'] = response[identifier]['invocation_end'] - \
+            response[identifier]['invocation_start']
+        response[identifier]['execution_total'] = response[identifier]['execution_end'] - \
+            response[identifier]['execution_start']
 
         self.experiment.add_invocation(response)
 
@@ -160,14 +162,13 @@ class Benchmarker:
                                                                   throughput_time,
                                                                   numb_threads
                                                                   )
-       
 
         if response_list is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
-       
+
         self.experiment.add_invocations_list(response_list)
-        
+
         return response_list
 
     def get_delay_between_experiment_iterations(self):

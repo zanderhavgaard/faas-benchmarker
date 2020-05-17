@@ -34,11 +34,11 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           experiment_description=description,
                           env_file_path=env_file_path)
 
-<<<<<<< HEAD
+<< << << < HEAD
 experiment_name = 'dev-experiment'
-=======
+== == == =
 experiment_name = 'function'
->>>>>>> bd2375c... added old dev_experiment code to archive
+>>>>>> > bd2375c... added old dev_experiment code to archive
 
 # name of function to be invoked
 fx_name = f'{experiment_name}1'

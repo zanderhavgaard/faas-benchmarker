@@ -20,7 +20,8 @@ class SSH_query:
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
-        self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
+        self.ssh_pkey = paramiko.RSAKey.from_private_key_file(
+            '/home/ubuntu/.ssh/id_rsa')
         # self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
         self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
@@ -73,7 +74,8 @@ class SSH_query:
                                         # if not successful remove query from list and log error message
                                         q = queries.pop(0)
                                         error_list.append(q)
-                                        self.write_errorlog(qe, 'Sql error with query:', q)
+                                        self.write_errorlog(
+                                            qe, 'Sql error with query:', q)
 
                         conn.close()
                         tunnel.stop()
@@ -89,11 +91,12 @@ class SSH_query:
             except Exception as e:
                 if(x == 9):
                     # if all 10 atempts failed log error and return False
-                    self.write_errorlog(e, "Caught tunnel exception while inserting")
+                    self.write_errorlog(
+                        e, "Caught tunnel exception while inserting")
                     return False
 
     # set return_type to False if list representation is wanted
-    def retrive_query(self, query:str):
+    def retrive_query(self, query: str):
         # try up 10 times to establish an ssh tunnel
         for x in range(10):
             try:
@@ -127,19 +130,21 @@ class SSH_query:
                             if('conn' in locals()):
                                 conn.close()
                             if(i == 2):
-                                self.write_errorlog(ex, "Exception caught at remote site while retriving data")
+                                self.write_errorlog(
+                                    ex, "Exception caught at remote site while retriving data")
 
             # log error message if tunnel could not be established within 10 atempts
             except Exception as e:
                 if(x == 9):
-                    self.write_errorlog(e, 'Caught tunnel exception while retriving data')
+                    self.write_errorlog(
+                        e, 'Caught tunnel exception while retriving data')
                     return None
 
     # function for writing wroor messages to ErrorLogFile.txt"
-    def write_errorlog(self, ex:Exception, description:str, query:str = None):
+    def write_errorlog(self, ex: Exception, description: str, query: str = None):
 
-        # with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
-        with open("/home/thomas/ErrorLogFile.log","a+") as f:
+        with open("/home/ubuntu/ErrorLogFile.log", "a+") as f:
+            # with open("/home/thomas/ErrorLogFile.log","a+") as f:
             f.write(description+'\n')
             if(query != None):
                 f.write(query+'\n')
