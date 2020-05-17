@@ -22,7 +22,7 @@ class SSH_query:
         # comment below line in and the line below that out for production
         #  self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
         self.ssh_pkey = paramiko.RSAKey.from_private_key_file(
-            '/home/docker/.ssh/id_rsa')
+            '/home/docker/key/id_rsa')
         #  self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
         self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
