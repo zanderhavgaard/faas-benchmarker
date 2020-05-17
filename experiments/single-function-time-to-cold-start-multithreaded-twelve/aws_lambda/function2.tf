@@ -70,4 +70,5 @@ resource "aws_lambda_function" "single-function-time-to-cold-start-multithreaded
   runtime = "python3.7"
   source_code_hash = filesha256(data.archive_file.single-function-time-to-cold-start-multithreaded-twelve2-lambda-code.output_path)
   publish = true
+  layers = [aws_lambda_layer_version.single-function-time-to-cold-start-multithreaded-twelve-lambda-layer.arn]
 }
