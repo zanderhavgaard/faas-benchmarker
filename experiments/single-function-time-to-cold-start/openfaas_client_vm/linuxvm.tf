@@ -1,15 +1,15 @@
 # create linux vm
-resource "azurerm_linux_virtual_machine" "changene-openfaas-worker" {
-  depends_on = [azurerm_network_interface.changene-openfaas-worker-ni]
+resource "azurerm_linux_virtual_machine" "single-function-time-to-cold-start-openfaas-worker" {
+  depends_on = [azurerm_network_interface.single-function-time-to-cold-start-openfaas-worker-ni]
 
-  name                = "changene-openfaas-worker"
-  resource_group_name = azurerm_resource_group.changene-openfaas-worker-rg.name
-  location            = azurerm_resource_group.changene-openfaas-worker-rg.location
+  name                = "single-function-time-to-cold-start-openfaas-worker"
+  resource_group_name = azurerm_resource_group.single-function-time-to-cold-start-openfaas-worker-rg.name
+  location            = azurerm_resource_group.single-function-time-to-cold-start-openfaas-worker-rg.location
   size                = "Standard_B1s"
   admin_username      = "ubuntu"
   disable_password_authentication = true
   network_interface_ids = [
-    azurerm_network_interface.changene-openfaas-worker-ni.id,
+    azurerm_network_interface.single-function-time-to-cold-start-openfaas-worker-ni.id,
   ]
 
   admin_ssh_key {
@@ -36,14 +36,14 @@ resource "null_resource" "linux-provisioners" {
   # run the provisioners after the instance has been created
   # and the ip address has been assigned
   depends_on = [
-    azurerm_linux_virtual_machine.changene-openfaas-worker,
-    azurerm_public_ip.changene-openfaas-worker-public-ip
+    azurerm_linux_virtual_machine.single-function-time-to-cold-start-openfaas-worker,
+    azurerm_public_ip.single-function-time-to-cold-start-openfaas-worker-public-ip
   ]
 
   # setup ssh connection for provisioners
   connection {
     user = "ubuntu"
-    host = azurerm_linux_virtual_machine.changene-openfaas-worker.public_ip_address
+    host = azurerm_linux_virtual_machine.single-function-time-to-cold-start-openfaas-worker.public_ip_address
     type = "ssh"
     private_key = file(var.client_pvt_key)
     timeout = "2m"
@@ -64,14 +64,17 @@ resource "null_resource" "linux-provisioners" {
       # set some environment variables
       "{ echo -n 'export fbrd=/home/ubuntu/faas-benchmarker\n' ; echo -n 'export PYTHONPATH=$PYTHONPATH:/home/ubuntu/faas-benchmarker/benchmark\n' ; echo -n 'export DB_HOSTNAME=${var.db_server_static_ip}\n' ; cat .bashrc ; } > /home/ubuntu/.bashrc.new",
       "mv .bashrc.new .bashrc",
-      # update and install python
+
+      # install docker and other tools
       "sudo apt-get update -q",
-      "sudo apt-get install -y -qq unzip git python3 python3-dev python3-pip",
+      "sudo apt-get install -y -qq unzip git docker-compose",
+      "sudo systemctl enable --now docker",
+      "sudo usermod -aG docker ubuntu",
+      "sudo docker pull -q faasbenchmarker/client:latest",
+
       # clone repo
       "git clone --quiet https://github.com/zanderhavgaard/faas-benchmarker /home/ubuntu/faas-benchmarker",
-      # install python dependencies
-      "cd /home/ubuntu/faas-benchmarker",
-      "pip3 install -q -r requirements.txt",
+
       # install depenencies for creating the openfaas cluster
       "bash /home/ubuntu/faas-benchmarker/eks_openfaas_orchestration/install_openfaas_orchestration_tools.sh",
       # create directory for aws credentials
