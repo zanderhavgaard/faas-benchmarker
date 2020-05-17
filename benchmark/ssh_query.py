@@ -143,14 +143,11 @@ class SSH_query:
 
     # function for writing wroor messages to ErrorLogFile.txt"
     def write_errorlog(self, ex: Exception, description: str, query: str = None):
-
-
-  with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
-            #  with open("/home/thomas/ErrorLogFile.log", "a+") as f:
-  f.write(description+'\n')
-   if(query != None):
-        f.write(query+'\n')
-    f.write(str(datetime.datetime.now()) + '\n')
-    f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
-    f.write("--------------------------\n")
-    f.close()
+        with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
+            f.write(description + '\n')
+            if(query != None):
+                f.write(query + '\n')
+            f.write(str(datetime.datetime.now()) + '\n')
+            f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
+            f.write("--------------------------\n")
+            f.close()
