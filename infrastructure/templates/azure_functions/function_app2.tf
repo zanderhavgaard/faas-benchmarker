@@ -35,7 +35,7 @@ resource "azurerm_function_app" "changeme2" {
 }
 
 # Get the functions key out of the app
-resource "azurerm_template_deployment" "chageme2-function-key" {
+resource "azurerm_template_deployment" "changeme2-function-key" {
   depends_on = [azurerm_function_app.changeme2]
 
   name = "changeme2_get_function_key"
@@ -68,7 +68,7 @@ resource "azurerm_template_deployment" "chageme2-function-key" {
 
 # output some useful variables
 output "changeme2_function_key" {
-  value = "${lookup(azurerm_template_deployment.chageme2-function-key.outputs, "functionkey")}"
+  value = "${lookup(azurerm_template_deployment.changeme2-function-key.outputs, "functionkey")}"
 }
 output "changeme2_function_app_url" {
   value = azurerm_function_app.changeme2.default_hostname

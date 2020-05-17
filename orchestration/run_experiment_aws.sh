@@ -21,7 +21,7 @@ experiment_cloud_function_env="$experiment_context/$experiment_name-aws_lambda.e
 # env vars for the client vm
 experiment_client_env="$experiment_context/$experiment_name-azure_linuxvm.env"
 # where the env file should be placed on the client
-remote_env_file="/home/ubuntu/faas-benchmarker/experiments/$experiment_name/$experiment_name-aws_lambda.env"
+remote_env_file="/home/ubuntu/$experiment_name-aws_lambda.env"
 
 # remote faas-benchmarker directory location
 remote_fbrd="/home/ubuntu/faas-benchmarker"
@@ -74,20 +74,29 @@ client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
 key_path="$fbrd/secrets/ssh_keys/experiment_servers"
 timestamp=$(date -u +\"%d-%m-%Y_%H-%M-%S\")
 logfile="/home/ubuntu/$timestamp-$experiment_meta_identifier-$experiment_cloud_function_provider-$experiment_name.log"
-# $fbrd will expanded on the client, the rest will be expanded locally!
+docker_experiment_code_path="/home/docker/faas-benchmarker/experiments/$experiment_name/$experiment_name.py"
+docker_env_file_path="/home/docker/shared/$experiment_name-$experiment_cloud_function_provider.env"
 ssh_command="
     nohup bash -c ' \
-    python3 \$fbrd/experiments/$experiment_name/$experiment_name.py \
-    $experiment_name \
-    $experiment_meta_identifier \
-    $experiment_cloud_function_provider \
-    $experiment_client_provider \
-    \$fbrd/experiments/$experiment_name/$experiment_name-$experiment_cloud_function_provider.env \
-    > $logfile 2>&1 \
-    ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
-    ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \
-        ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/error_logs/$timestamp-$experiment_client_provider-$experiment_name-ErrorLogFile.log
-    ; touch /home/ubuntu/done
+        docker run \
+            --rm \
+            --mount type=bind,source=\"/home/ubuntu\",target=\"/home/docker/shared\" \
+            --mount type=bind,source=\"/home/ubuntu/.ssh\",target=\"/home/docker/key\" \
+            -e \"DB_HOSTNAME=\$DB_HOSTNAME\" \
+            --network host \
+            faasbenchmarker/client:latest \
+            python \
+            $docker_experiment_code_path \
+            $experiment_name \
+            $experiment_meta_identifier \
+            $experiment_cloud_function_provider \
+            $experiment_client_provider \
+            $docker_env_file_path
+        >> $logfile 2>&1
+        ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
+        ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \
+            ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/error_logs/$timestamp-$experiment_meta_identifier-$experiment_client_provider-$experiment_name-ErrorLogFile.log
+        ; touch /home/ubuntu/done
     ' > /dev/null & "
 
 # start the experiment process on the remote worker server

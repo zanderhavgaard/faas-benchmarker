@@ -46,10 +46,10 @@ class Benchmarker:
         print(f'Python version: {sys.version}')
         print('=================================================')
         print(f'dev_mode: {self.dev_mode}')
-        print('=================================================')
         print(f'Experiment name:            {experiment_name}')
         print(f'Experiment meta identifier: {experiment_meta_identifier}')
         print(f'Using provider:             {provider}')
+        print(f'Using client provider:      {client_provider}')
         print(f'Using environment file:     {env_file_path}')
         print(
             f'Experiment start time:      {time.ctime(int(self.experiment.get_start_time()))}')

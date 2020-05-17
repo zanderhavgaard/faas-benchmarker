@@ -53,22 +53,31 @@ client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
 key_path="$fbrd/secrets/ssh_keys/experiment_servers"
 timestamp=$(date -u +\"%d-%m-%Y_%H-%M-%S\")
 logfile="/home/ubuntu/$timestamp-$experiment_meta_identifier-$experiment_cloud_function_provider-$experiment_name.log"
-# $fbrd will expanded on the client, the rest will be expanded locally!
+docker_experiment_code_path="/home/docker/faas-benchmarker/experiments/$experiment_name/$experiment_name.py"
+docker_env_file_path="openfaas-does-not-need-an-env-file"
 ssh_command="
     nohup bash -c ' \
-    bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
-    ; python3 \$fbrd/experiments/$experiment_name/$experiment_name.py \
-    $experiment_name \
-    $experiment_meta_identifier \
-    $experiment_cloud_function_provider \
-    $experiment_client_provider \
-    'openfaas-does-not-need-an-env-file' \
-    >> $logfile 2>&1
-    ; bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
-    ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
-    ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \
-        ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/error_logs/$timestamp-$experiment_client_provider-$experiment_name-ErrorLogFile.log
-    ; touch /home/ubuntu/done
+        bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
+        ; docker run \
+            --rm \
+            --mount type=bind,source=\"/home/ubuntu\",target=\"/home/docker/shared\" \
+            --mount type=bind,source=\"/home/ubuntu/.ssh\",target=\"/home/docker/key\" \
+            -e \"DB_HOSTNAME=\$DB_HOSTNAME\" \
+            --network host \
+            faasbenchmarker/client:latest \
+            python \
+            $docker_experiment_code_path \
+            $experiment_name \
+            $experiment_meta_identifier \
+            $experiment_cloud_function_provider \
+            $experiment_client_provider \
+            $docker_env_file_path
+        >> $logfile 2>&1
+        ; bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
+        ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
+        ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \
+            ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/error_logs/$timestamp-$experiment_meta_identifier-$experiment_client_provider-$experiment_name-ErrorLogFile.log
+        ; touch /home/ubuntu/done
     ' > /dev/null & "
 
 # start the experiment process on the remote worker server

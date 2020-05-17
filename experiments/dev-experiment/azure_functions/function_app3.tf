@@ -35,7 +35,7 @@ resource "azurerm_function_app" "dev-experiment3" {
 }
 
 # Get the functions key out of the app
-resource "azurerm_template_deployment" "chageme3-function-key" {
+resource "azurerm_template_deployment" "dev-experiment3-function-key" {
   depends_on = [azurerm_function_app.dev-experiment3]
 
   name = "dev-experiment3_get_function_key"
@@ -68,7 +68,7 @@ resource "azurerm_template_deployment" "chageme3-function-key" {
 
 # output some useful variables
 output "dev-experiment3_function_key" {
-  value = "${lookup(azurerm_template_deployment.chageme3-function-key.outputs, "functionkey")}"
+  value = "${lookup(azurerm_template_deployment.dev-experiment3-function-key.outputs, "functionkey")}"
 }
 output "dev-experiment3_function_app_url" {
   value = azurerm_function_app.dev-experiment3.default_hostname

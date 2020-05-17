@@ -70,4 +70,5 @@ resource "aws_lambda_function" "changeme3-python" {
   runtime = "python3.7"
   source_code_hash = filesha256(data.archive_file.changeme3-lambda-code.output_path)
   publish = true
+  layers = [aws_lambda_layer_version.changeme-lambda-layer.arn]
 }

@@ -97,6 +97,14 @@ class AzureFunctionsProvider(AbstractProvider):
                 # get the identifier
                 identifier = response_data['identifier']
 
+                if 'identifier' in response_data:
+                    response_data.pop('identifier')
+
+                # insert thread_id and total number of threads for the sake of format fot database
+                for val in response_data:
+                    response_data[val]['numb_threads'] = 1
+                    response_data[val]['thread_id'] = 1
+
                 # add invocation metadata to response
                 response_data[identifier]['invocation_start'] = start_time
                 response_data[identifier]['invocation_end'] = end_time
