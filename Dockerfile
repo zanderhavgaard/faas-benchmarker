@@ -27,10 +27,12 @@ RUN useradd \
         --shell /bin/bash \
         docker
 
-USER docker
-
 COPY --from=builder /home/docker/faas-benchmarker /home/docker/faas-benchmarker
 COPY --from=builder /home/docker/.local /home/docker/.local
+
+RUN chown -R docker:docker /home/docker
+
+USER docker
 
 ENV fbrd /home/docker/faas-benchmarker
 ENV PATH "$PATH:/home/docker/.local/bin"
