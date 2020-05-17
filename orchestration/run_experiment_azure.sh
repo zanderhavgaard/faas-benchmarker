@@ -93,8 +93,8 @@ ssh_command="
         docker run \
             --rm \
             --mount type=bind,source=\"/home/ubuntu\",target=\"/home/docker/shared\" \
-            --mount type=bind,source=\"/home/ubuntu/.ssh\",target=\"/home/docker/.ssh\" \
-            -e \"DB_HOSTNAME=$DB_HOSTNAME\" \
+            --mount type=bind,source=\"/home/ubuntu/.ssh\",target=\"/home/docker/key\" \
+            -e \"DB_HOSTNAME=\$DB_HOSTNAME\" \
             --network host \
             faasbenchmarker/client:latest \
             python \
@@ -104,7 +104,7 @@ ssh_command="
             $experiment_cloud_function_provider \
             $experiment_client_provider \
             $docker_env_file_path
-        > $logfile 2>&1
+        >> $logfile 2>&1
         ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
         ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \
             ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/error_logs/$timestamp-$experiment_meta_identifier-$experiment_client_provider-$experiment_name-ErrorLogFile.log
