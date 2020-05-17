@@ -106,15 +106,15 @@ class Benchmarker:
             print(self.experiment.get_experiment_query_string())
             print()
             print('Number of functions invoked in total:', len(invocations))
-            print('--- DATA OF EACH INVOCATION ---')
-            for invo in invocations:
-                print()
-                print('INVOCATION META DATA FOR identifier:', invo.identifier)
-                print(invo.dev_print())
-                print()
-                print('SQL query for invocation')
-                print(invo.get_query_string())
-                print('-------------------------------------------')
+            # print('--- DATA OF EACH INVOCATION ---')
+            # for invo in invocations:
+            #     print()
+            #     print('INVOCATION META DATA FOR identifier:', invo.identifier)
+            #     print(invo.dev_print())
+            #     print()
+            #     print('SQL query for invocation')
+            #     print(invo.get_query_string())
+            #     print('-------------------------------------------')
 
 
     def end_experiment(self) -> None:

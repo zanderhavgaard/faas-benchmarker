@@ -63,8 +63,8 @@ class Invocation:
     
     def write_errorlog(self, error_dict:dict, id:str):
 
-        # with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
-         with open("/home/thomas/ErrorLogFile.log","a+") as f:
+        with open("/home/ubuntu/ErrorLogFile.log","a+") as f:
+        #  with open("/home/thomas/ErrorLogFile.log","a+") as f:
 
             f.write('An error occurred in a cloud function invocation'+'\n')
             f.write('function UUID: '+id+'\n')

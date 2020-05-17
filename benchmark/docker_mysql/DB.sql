@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `Experiment` (
   `uuid` varchar(36) NOT NULL,
   `name` varchar(100) NOT NULL,
   `description` varchar(200) NOT NULL,
-  `cl_providor` varchar(100) NOT NULL,
+  `cl_provider` varchar(100) NOT NULL,
   `cl_client` varchar(100) NOT NULL,
   `python_version` varchar(50) NOT NULL,
   `cores` INT NOT NULL,

@@ -15,6 +15,10 @@ def reduce_dict_by_keys(args):
 # def wrappped_reduce_dict_by_keys(x:str,y:str, z:tuble, err=None):
 #     return iterator_wrapper(reduce_dict_by_keys, x, y, z, err) 
 
+def get_dict(data:dict) -> dict:
+    root = data['root_identifier']
+    return data[root]
+
 def iterator_wrapper(func, error_point:str, experiment_name:str, args=None, err_func = None):
         
     try:
@@ -34,6 +38,8 @@ def iterator_wrapper(func, error_point:str, experiment_name:str, args=None, err_
         if err_func != None:
             err_func()
 
+
+# print function for development purpose
 def dev_mode_print(context:str,values:list):
     print('--------------------------------------------')
     print('Context: ',context)
