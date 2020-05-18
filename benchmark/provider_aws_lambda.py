@@ -80,6 +80,7 @@ class AWSLambdaProvider(AbstractProvider):
                     )
                     if response.status_code == 200:
                         break
+                    print(f'Invocation attempt {i} Did not get a 200 statuscode, retrying ...')
                 except Exception as e:
                     print(
                         f"Caught an error for attempt {i}, retrying invocation ...")
@@ -120,11 +121,11 @@ class AWSLambdaProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-providor_openfaas-' + function_endpoint + '-' + str(end_time): {
-                        'identifier': 'StatusCode-error-providor_openfaas' + function_endpoint + '-' + str(end_time),
+                    'StatusCode-error-provider_aws_lambda-' + function_endpoint + '-' + str(end_time): {
+                        'identifier': 'StatusCode-error-provider_aws_lambda' + function_endpoint + '-' + str(end_time),
                         'uuid': None,
                         'function_name': function_endpoint,
-                        'error': {'trace': 'None 200 code in providor_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
+                        'error': {'trace': 'None 200 code in provider_aws_lambda: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
                         'parent': None,
                         'sleep': sleep,
                         'numb_threads': 1,
@@ -138,15 +139,15 @@ class AWSLambdaProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-providor_openfaas' + function_endpoint + '-' + str(end_time)
+                    'root_identifier': 'StatusCode-error-provider_aws_lambda' + function_endpoint + '-' + str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-providor_openfaas-' + function_endpoint + str(end_time): {
-                    'identifier': 'exception-providor_openfaas' + function_endpoint + str(end_time),
+                'exception-provider_aws_lambda-' + function_endpoint + str(end_time): {
+                    'identifier': 'exception-provider_aws_lambda' + function_endpoint + str(end_time),
                     'uuid': None,
                     'function_name': function_endpoint,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
@@ -163,6 +164,6 @@ class AWSLambdaProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time,
                 },
-                'root_identifier': 'exception-providor_openfaas' + function_endpoint + str(end_time)
+                'root_identifier': 'exception-provider_aws_lambda' + function_endpoint + str(end_time)
             }
             return error_dict

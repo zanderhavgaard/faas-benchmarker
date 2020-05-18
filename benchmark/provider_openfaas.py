@@ -43,7 +43,7 @@ class OpenFaasProvider(AbstractProvider):
         if(throughput_time != 0.0):
             params['throughput_time'] = throughput_time
 
-        function_number = function_endpoint[len(function_endpoint)-1:]
+        function_number = function_endpoint[len(function_endpoint) - 1:]
 
         # create url of function to invoke
         invoke_url = f'http://localhost:8080/function/function{function_number}'
@@ -65,6 +65,7 @@ class OpenFaasProvider(AbstractProvider):
                     )
                     if response.status_code == 200:
                         break
+                    print(f'Invocation attempt {i} Did not get a 200 statuscode, retrying ...')
                 except Exception as e:
                     print(
                         f"Caught an error for attempt {i}, retrying invocation ...")
@@ -100,11 +101,11 @@ class OpenFaasProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-providor_openfaas-'+function_endpoint+'-'+str(end_time): {
-                        'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(end_time),
+                    'StatusCode-error-provider_openfaas-' + function_endpoint + '-' + str(end_time): {
+                        'identifier': 'StatusCode-error-provider_openfaas' + function_endpoint + '-' + str(end_time),
                         'uuid': None,
                         'function_name': function_endpoint,
-                        'error': {'trace': 'None 200 code in providor_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
+                        'error': {'trace': 'None 200 code in provider_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
                         'parent': None,
                         'sleep': sleep,
                         'numb_threads': 1,
@@ -118,15 +119,15 @@ class OpenFaasProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(end_time)
+                    'root_identifier': 'StatusCode-error-provider_openfaas' + function_endpoint + '-' + str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-providor_openfaas-'+function_endpoint+str(end_time): {
-                    'identifier': 'exception-providor_openfaas'+function_endpoint+str(end_time),
+                'exception-provider_openfaas-' + function_endpoint + str(end_time): {
+                    'identifier': 'exception-provider_openfaas' + function_endpoint + str(end_time),
                     'uuid': None,
                     'function_name': function_endpoint,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
@@ -143,6 +144,6 @@ class OpenFaasProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time
                 },
-                'root_identifier': 'exception-providor_openfaas'+function_endpoint+str(end_time)
+                'root_identifier': 'exception-provider_openfaas' + function_endpoint + str(end_time)
             }
             return error_dict

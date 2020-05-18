@@ -32,7 +32,7 @@ def iterator_wrapper(func, error_point: str, experiment_name: str, args=None, er
             if(val != None):
                 return val
         raise Exception(
-            'No result for: {0} , might not be any connection to providor'.format(error_point))
+            'No result for: {0} , might not be any connection to provider'.format(error_point))
     except Exception as e:
         print('Ending experiment {0} due to fatal runtime error from iterator_wrapper'.format(
             experiment_name))
