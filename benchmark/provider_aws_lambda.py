@@ -67,13 +67,25 @@ class AWSLambdaProvider(AbstractProvider):
             # log start time of invocation
             start_time = time.time()
 
-            # invoke the function
-            response = requests.post(
-                url=invoke_url,
-                headers=self.headers,
-                data=json.dumps(params),
-                timeout=self.request_timeout
-            )
+            try:
+                # the invocation might fail if it is a cold start,
+                # seems to be some timeout issue, so in that case we try again
+                for i in range(5):
+                    try:
+                        # invoke the function
+                        response = requests.post(
+                            url=invoke_url,
+                            headers=self.headers,
+                            data=json.dumps(params),
+                            timeout=self.request_timeout
+                        )
+                        if response.status_code == 200:
+                            break
+                    except Exception as e:
+                        print(
+                            f"Caught an error for attempt {i}, retrying invocation ...")
+                        print(e)
+                        continue
 
             # log the end time of the invocation
             end_time = time.time()
@@ -109,8 +121,8 @@ class AWSLambdaProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-providor_openfaas-'+function_endpoint+'-'+str(end_time): {
-                        'identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(end_time),
+                    'StatusCode-error-providor_openfaas-' + function_endpoint + '-' + str(end_time): {
+                        'identifier': 'StatusCode-error-providor_openfaas' + function_endpoint + '-' + str(end_time),
                         'uuid': None,
                         'function_name': function_endpoint,
                         'error': {'trace': 'None 200 code in providor_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
@@ -127,15 +139,15 @@ class AWSLambdaProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-providor_openfaas'+function_endpoint+'-'+str(end_time)
+                    'root_identifier': 'StatusCode-error-providor_openfaas' + function_endpoint + '-' + str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-providor_openfaas-'+function_endpoint+str(end_time): {
-                    'identifier': 'exception-providor_openfaas'+function_endpoint+str(end_time),
+                'exception-providor_openfaas-' + function_endpoint + str(end_time): {
+                    'identifier': 'exception-providor_openfaas' + function_endpoint + str(end_time),
                     'uuid': None,
                     'function_name': function_endpoint,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
@@ -152,6 +164,6 @@ class AWSLambdaProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time,
                 },
-                'root_identifier': 'exception-providor_openfaas'+function_endpoint+str(end_time)
+                'root_identifier': 'exception-providor_openfaas' + function_endpoint + str(end_time)
             }
             return error_dict
