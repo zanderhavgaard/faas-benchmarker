@@ -154,4 +154,12 @@ pmsg "Removing experiment environment files ..."
 
 rm "$experiment_cloud_function_env" "$experiment_client_env"
 
-smsg "Done removing environment files."
+pmsg "Done removing environment files."
+
+# ===== remove experiment pid file
+
+pmsg "Removing experiment pidfile"
+
+rm -f "/tmp/$experiment_name-azure_functions.pid"
+
+smsg "Done running experiment orchestration."

@@ -25,7 +25,6 @@ remote_fbrd="/home/ubuntu/faas-benchmarker"
 # the interval to check progress on client in seconds
 check_progress_interval=600
 
-
 # ===== create client vm
 
 cd "$experiment_context/openfaas_client_vm"
@@ -108,4 +107,12 @@ pmsg "Removing experiment environment files ..."
 
 rm "$experiment_client_env"
 
-smsg "Done removing environment files."
+pmsg "Done removing environment files."
+
+# ===== remove experiment pid file
+
+pmsg "Removing experiment pidfile"
+
+rm -f "/tmp/$experiment_name-openfaas.pid"
+
+smsg "Done running experiment orchestration."
