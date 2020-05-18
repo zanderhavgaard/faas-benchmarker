@@ -47,6 +47,12 @@ pmsg "Executing experiment code on remote client vm ..."
 
 cd "$experiment_context"
 
+# we should use a unique name for the cluster each time we run the experiment, as if
+# we run the experiment back-to-back we can get a race-condition where eksctl will report
+# that the cluster name is already taken, as the cluster is still being deleted, so we append
+# a random sha to the experiment name
+openfaas_eks_cluster_name="$experiment_name-$(date +%s | sha256sum | base64 | head -c 10 ; echo)"
+
 client_user="ubuntu"
 client_ip=$(grep -oP "\d+\.\d+\.\d+\.\d+" $experiment_client_env)
 key_path="$fbrd/secrets/ssh_keys/experiment_servers"
@@ -56,7 +62,7 @@ docker_experiment_code_path="/home/docker/faas-benchmarker/experiments/$experime
 docker_env_file_path="openfaas-does-not-need-an-env-file"
 ssh_command="
     nohup bash -c ' \
-        bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
+        bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1
         ; docker run \
             --rm \
             --mount type=bind,source=\"/home/ubuntu\",target=\"/home/docker/shared\" \
@@ -72,7 +78,7 @@ ssh_command="
             $experiment_client_provider \
             $docker_env_file_path
         >> $logfile 2>&1
-        ; bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $experiment_name >> $logfile 2>&1
+        ; bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1
         ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
         ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \
             ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/error_logs/$timestamp-$experiment_meta_identifier-$experiment_client_provider-$experiment_name-ErrorLogFile.log
