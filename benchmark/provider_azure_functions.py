@@ -76,25 +76,24 @@ class AzureFunctionsProvider(AbstractProvider):
             # log start time of invocation
             start_time = time.time()
 
-            try:
-                # the invocation might fail if it is a cold start,
-                # seems to be some timeout issue, so in that case we try again
-                for i in range(5):
-                    try:
-                        # invoke the function
-                        response = requests.post(
-                            url=invoke_url,
-                            headers=self.headers,
-                            data=json.dumps(params),
-                            timeout=self.request_timeout
-                        )
-                        if response.status_code == 200:
-                            break
-                    except Exception as e:
-                        print(
-                            f"Caught an error for attempt {i}, retrying invocation ...")
-                        print(e)
-                        continue
+            # the invocation might fail if it is a cold start,
+            # seems to be some timeout issue, so in that case we try again
+            for i in range(5):
+                try:
+                    # invoke the function
+                    response = requests.post(
+                        url=invoke_url,
+                        headers=self.headers,
+                        data=json.dumps(params),
+                        timeout=self.request_timeout
+                    )
+                    if response.status_code == 200:
+                        break
+                except Exception as e:
+                    print(
+                        f"Caught an error for attempt {i}, retrying invocation ...")
+                    print(e)
+                    continue
 
             # log the end time of the invocation
             end_time = time.time()
