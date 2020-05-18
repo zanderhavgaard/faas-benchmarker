@@ -47,6 +47,7 @@ for fcd in $function_code_dirs; do
     # get the function number
     fx_num=$(echo $fcd | grep -oP "\d")
     exp_function_app_name=$experiment_name$fx_num-python
+    pmsg "Fixing deployment of azure function: $exp_function_app_name"
     cd function_code/$fcd
     func azure functionapp publish $exp_function_app_name
     cd ../..
