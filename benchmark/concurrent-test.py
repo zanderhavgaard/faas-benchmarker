@@ -6,6 +6,8 @@ from invocation import Invocation
 from ssh_query import SSH_query
 from mysql_interface import SQL_Interface
 from functools import reduce
+import pandas as pd
+import numpy as np
 # import benchmark.provider_abstract as abstract
 
 
@@ -16,7 +18,7 @@ nested = [
         "function_name": 'function1',
         "invoke_payload": {
             "StatusCode": 200,
-            "throughput_time": 1.0
+            "sleep": 1.0
         }
     }
 ]
@@ -24,25 +26,54 @@ nested = [
 
 path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test_env'
 
-ssh = SSH_query()
+# ssh = SSH_query()
 
 db_interface = SQL_Interface()
 
-t1 = db_interface.log_coldtime('test2', 'identifier2', 10, 30, 20, True, False)
-print(t1)
-t2 = db_interface.log_coldtime(
-    'test3', 'identifier3', 100, 300, 200, True, True)
-print(t2)
-all_cold = db_interface.get_from_coldtimes(flag=False)
-print('all_cold', all_cold)
-finals = db_interface.get_all_final_coldtimes(flag=False)
-print('finals', finals)
-last2 = db_interface.get_explicit_number_coldstart(number=2, flag=False)
-print('lat2', last2)
-first2 = last2 = db_interface.get_explicit_number_coldstart(
-    number=2, flag=False, order=False)
-print('first2', first2)
-print(db_interface.delete_data_table_Coldstart())
+# db_interface.log_lifetime('experiment_uuid',
+#                             'function_id',
+#                             2,
+#                             4,
+#                             'NULL',
+#                             12,
+#                             False)
+# print(db_interface.get_from_table('Function_lifetime',flag=True))
+# db_interface.log_coldtime('test','test',10,30,20,True,True)
+# db_interface.log_coldtime('test','test',10,30,20,True,False)
+# # print()
+# print(db_interface.get_from_table('Coldstart',flag=False))
+
+# exp_query = """INSERT INTO Experiment (experiment_meta_identifier,uuid,name,description,cl_provider,cl_client,python_version,cores,memory,start_time,end_time,total_time) Values ('meta','uuid','name','desc','openfaas','client','py',2,8,2.0,3.0,1.0);"""
+# db_interface.tunnel.insert_queries([exp_query,"""INSERT INTO Error (exp_id,root_identifier,identifier,function_name,type,trace,message,execution_start,invocation_start) VALUES ('uuid','root','fuckname','name2', 'ValueError','someTrace','message',1,NULL);"""])
+
+# errors = db_interface.get_most_recent_from_table('Error')
+# print(errors)
+# print()
+# df = errors['invocation_start']
+# filtered = list(filter(lambda x: not pd.isna(x),df))
+# print(filtered)
+# print()
+# arr = np.array(df)
+# print(arr)
+
+
+
+
+# t1 = db_interface.log_coldtime('test2', 'identifier2', 10, 30, 20, True, False)
+# print(t1)
+# t2 = db_interface.log_coldtime(
+#     'test3', 'identifier3', 100, 300, 200, True, True)
+# print(t2)
+# all_cold = db_interface.get_from_coldtimes(flag=False)
+# print('all_cold', all_cold)
+# finals = db_interface.get_all_final_coldtimes(flag=False)
+# print('finals', finals)
+# last2 = db_interface.get_explicit_number_coldstart(number=2, flag=False)
+# print('lat2', last2)
+# first2 = last2 = db_interface.get_explicit_number_coldstart(
+#     number=2, flag=False, order=False)
+# print('first2', first2)
+# print(db_interface.delete_data_table_Coldstart())
 
 # db_interface.delete_data_table_Experiment()
 # db_interface.delete_data_table_Invocation()
@@ -60,10 +91,42 @@ print(db_interface.delete_data_table_Coldstart())
 # print()
 # print()
 
-# bench = bench('exp3','openfaas','foobar', 'testter','/home/thomas/Msc/faas-benchmarker/.test_env',dev_mode=True)
-# bench.invoke_function('function1',0.0,nested,0.3)
+bench = bench('exp30','meta','openfaas','foobar', 'testter','/home/thomas/Msc/faas-benchmarker/.test_env')
+bench.invoke_function('function1',invoke_nested=nested)
 # bench.invoke_function('function1',0.0,nested,1.0)
 # # bench.invoke_function_conccurrently('function2',throughput_time=0.8,numb_threads=8)
+# for i in bench.experiment.get_invocations():
+#     print()
+#     print(i.get_query_string())
+#     print()
+# db_interface.log_lifetime('experiment_uuid',
+#                             'function_id',
+#                             2,
+#                             4,
+#                             'NULL',
+#                             12,
+#                             False)
+# print(db_interface.get_from_table('Function_lifetime',flag=True))
+db_interface.log_coldtime(f'{bench.experiment.uuid}','test',8,2,20,True,False)
+db_interface.log_coldtime(f'{bench.experiment.uuid}','test',2,30,20,True,True)
+# print()
+delay = bench.get_delay_between_experiment_iterations()
+print('delay',delay)
+
+bench.end_experiment()
+
+delay2 = bench.get_delay_between_experiment_iterations()
+print('delay2',delay2)
+
+# delay = db_interface.get_delay_between_experiment('openfaas')
+# print(delay)
+# out = db_interface.get_most_recent_experiment(args='uuid,cl_provider',flag=False)
+# # print(out)
+# # out = list(out)
+# print(str(type(out)))
+# print(out[0][1])
+
+
 
 # print()
 # print('UUID: ',bench.experiment.uuid)

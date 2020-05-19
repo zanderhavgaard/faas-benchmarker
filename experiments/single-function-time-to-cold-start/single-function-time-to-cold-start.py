@@ -90,8 +90,8 @@ def invoke():
         return response if 'error' not in response else errors.append(response)
     else:
         # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
-        invocation_list = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(
-            x), benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb))]))
+        invocation_list = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
+        benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb))]))
         # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
         accumulated = lib.accumulate_dicts(invocation_list)
         return accumulated if accumulated != {} else None

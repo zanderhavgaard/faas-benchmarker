@@ -53,3 +53,11 @@ def dev_mode_print(context: str, values: list):
     for i in values:
         print(i)
     print('--------------------------------------------')
+
+def conver_unix_time(self, time: str):
+        datetime.utcfromtimestamp(int(time)).strftime('%Y-%m-%d %H:%M:%S')
+
+def str_replace(text:str, pat:list)-> str:
+    for (c,p) in pat:
+        text = text.replace(c,p)
+    return text
