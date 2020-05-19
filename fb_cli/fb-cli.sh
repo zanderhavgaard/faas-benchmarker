@@ -205,6 +205,19 @@ function runAllExperimentsWrapper {
   runAllExperiments
 }
 
+function listRunningExperiments {
+  experiments=$(listExperiments)
+  for exp in $experiments ; do
+    if ls /tmp/"$exp"-* > /dev/null 2>&1 ; then
+      msg "$exp is running ... pids:"
+      for f in /tmp/$exp-* ; do
+        echo
+        cat "$f"
+      done
+    fi
+  done
+}
+
 # ==================================
 
 function devInteractive {
@@ -281,6 +294,14 @@ function runInteractively {
   select opt in $options; do
     case "$opt" in
 
+      list_experiments)
+        listExperiments
+        ;;
+
+      list_running_experiments)
+        listRunningExperiments
+        ;;
+
       run_experiment)
         runExperimentWrapper
         ;;
@@ -340,10 +361,11 @@ function runInteractively {
 
 function usage {
   msg "Options:"
-  msg "-i | --interactive : run in interactive mode"
-  msg "-d | --dev : run in interactive development mode"
-  msg "-l | --list-experiments : list available experiments"
-  msg "-r | --run-experiment [experiment name] : run experiment with provided [experiment name]"
+  msg "-i  | --interactive : run in interactive mode"
+  msg "-d  | --dev : run in interactive development mode"
+  msg "-l  | --list-experiments : list available experiments"
+  msg "-lr | --list-running-experiments : list experiments that are currently running"
+  msg "-r  | --run-experiment [experiment name] : run experiment with provided [experiment name]"
   msg "\tyou may pass multiple experiments to be run in parallel"
   msg "-ra | --run-all-experiments : run all experiments"
   msg "--generate-report : generate report based from result {not implemented yet}"
@@ -376,6 +398,8 @@ bash "$fbrd/fb_cli/check_env_vars.sh" && exit
 
 # commands that can be issued
 options="
+list_experiments
+list_running_experiments
 run_experiment
 run_all_experiments
 generate_report
@@ -449,6 +473,11 @@ else
 
       -ra | --run-all-experiments)
         runAllExperiments
+        exit
+        ;;
+
+      -lr | --list-running-experiments)
+        listRunningExperiments
         exit
         ;;
 
