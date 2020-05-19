@@ -20,10 +20,8 @@ class SSH_query:
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
-        #  self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/ubuntu/.ssh/id_rsa')
-        self.ssh_pkey = paramiko.RSAKey.from_private_key_file(
-            '/home/docker/key/id_rsa')
-        #  self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
+        self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/docker/key/id_rsa')
+        # self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
         self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
         self.db_password = 'faas'
@@ -137,16 +135,18 @@ class SSH_query:
             # log error message if tunnel could not be established within 10 atempts
             except Exception as e:
                 if(x == 9):
-                    self.write_errorlog(
-                        e, 'Caught tunnel exception while retriving data')
+                    self.write_errorlog(e, 'Caught tunnel exception while retriving data')
                     return None
 
     # function for writing wroor messages to ErrorLogFile.txt"
     def write_errorlog(self, ex: Exception, description: str, query: str = None):
+
+
         with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
-            f.write(description + '\n')
+        # with open("/home/thomas/ErrorLogFile.log", "a+") as f:
+            f.write(description+'\n')
             if(query != None):
-                f.write(query + '\n')
+                    f.write(query+'\n')
             f.write(str(datetime.datetime.now()) + '\n')
             f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
             f.write("--------------------------\n")

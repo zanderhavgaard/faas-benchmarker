@@ -42,6 +42,9 @@ class Experiment:
 
     def get_experiment_description(self) -> str:
         return self.description
+    
+    def get_cl_provider(self) -> str:
+        return self.cl_provider
 
     def dev_print(self) -> None:
         pprint(vars(self))

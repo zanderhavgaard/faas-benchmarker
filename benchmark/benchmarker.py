@@ -32,8 +32,11 @@ class Benchmarker:
         # get function execution provider
         self.provider = self.get_provider(
             provider=provider, env_file_path=env_file_path)
+        
+        # interface to database
+        self.db = db_interface()
 
-        # TODO add experiment_meta_identifier to experiment and log to db
+        # experiment object holds all data for experiment
         self.experiment = Experiment(experiment_meta_identifier,
                                      experiment_name,
                                      provider,
@@ -91,9 +94,7 @@ class Benchmarker:
         # do not log data if running in development mode locally
         if not self.dev_mode:
             # store all data from experiment in database
-            db = db_interface()
-            # db = db_interface(self.env_path)
-            db.log_experiment(self.experiment)
+            self.db.log_experiment(self.experiment)
         else:
             print('\n\n')
             invocations_orig = self.experiment.get_invocations_original_form()
@@ -107,15 +108,15 @@ class Benchmarker:
             print(self.experiment.get_experiment_query_string())
             print()
             print('Number of functions invoked in total:', len(invocations))
-            # print('--- DATA OF EACH INVOCATION ---')
-            # for invo in invocations:
-            #     print()
-            #     print('INVOCATION META DATA FOR identifier:', invo.identifier)
-            #     print(invo.dev_print())
-            #     print()
-            #     print('SQL query for invocation')
-            #     print(invo.get_query_string())
-            #     print('-------------------------------------------')
+            print('--- DATA OF EACH INVOCATION ---')
+            for invo in invocations:
+                print()
+                print('INVOCATION META DATA FOR identifier:', invo.identifier)
+                print(invo.dev_print())
+                print()
+                print('SQL query for invocation')
+                print(invo.get_query_string())
+                print('-------------------------------------------')
 
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log
@@ -171,14 +172,9 @@ class Benchmarker:
         return response_list
 
     def get_delay_between_experiment_iterations(self):
-        # should return the delay between a single function will coldstart in seconds
-
-        # TODO add actual minutes from db, should be different for each provider
-        #  return self.db_interface.get_delay_between_experiment_iterations(self.provider)
-
-        # until we have no data we use the conservative estimate 35 minutes
-        delay = 2100
-        return delay
+        providor = self.experiment.get_cl_provider()
+        delay = self.db.get_delay_between_experiment(providor)
+        return delay if delay != None else 35 * 60
 
 
 # create exception class for empty responses
