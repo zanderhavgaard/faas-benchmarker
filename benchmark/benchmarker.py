@@ -34,7 +34,7 @@ class Benchmarker:
             provider=provider, env_file_path=env_file_path)
         
         # interface to database
-        self.db = db_interface()
+        self.db = db_interface(dev_mode)
 
         # experiment object holds all data for experiment
         self.experiment = Experiment(experiment_meta_identifier,
