@@ -434,7 +434,7 @@ else
         devInteractive
         ;;
 
-      -le | --list-experiments)
+      -l | --list-experiments)
         listExperiments
         exit
         ;;
