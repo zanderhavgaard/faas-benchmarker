@@ -65,10 +65,6 @@ db = SQL_Interface()
 
 experiment_uuid = benchmarker.experiment.uuid
 
-# number of thread to run
-# change this for concurrent execution
-thread_numb = 1
-
 # what function to test on (1-3)
 fx_num = 2
 fx = f'{experiment_name}{fx_num}'
@@ -84,25 +80,16 @@ errors = []
 # invoke function and return the result dict
 # if thread_numb > 1 it will be done concurrently and the result averaged
 def invoke():
-    if(thread_numb == 1):
-        response = lib.get_dict(
-            benchmarker.invoke_function(function_endpoint=fx))
-        return response if 'error' not in response else errors.append(response)
-    else:
-        # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
-        invocation_list = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-        benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb))]))
-        # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
-        accumulated = lib.accumulate_dicts(invocation_list)
-        return accumulated if accumulated != {} else None
+    response = lib.get_dict(
+        benchmarker.invoke_function(function_endpoint=fx))
+    return response if 'error' not in response else errors.append(response)
+
 
 
 # the wrapper ends the experiment if any it can not return a valid value
 def err_func(): return benchmarker.end_experiment()
 
 # convinience for not having to repeat values
-
-
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 

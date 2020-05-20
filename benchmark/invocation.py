@@ -54,8 +54,8 @@ class Invocation:
         return 'INSERT INTO {0} ({1}) VALUES ({2});'.format('Error' if is_error else 'Invocation', keys[:-1], vals[:-1])
 
     def write_errorlog(self, error_dict: dict, id: str):
-        with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
-        # with open("/home/thomas/ErrorLogFile.log","a+") as f:
+        # with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
+        with open("/home/thomas/ErrorLogFile.log","a+") as f:
 
             f.write('An error occurred in a cloud function invocation'+'\n')
             f.write('function UUID: '+id+'\n')
