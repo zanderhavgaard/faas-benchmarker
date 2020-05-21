@@ -32,9 +32,6 @@ class Benchmarker:
         # get function execution provider
         self.provider = self.get_provider(
             provider=provider, env_file_path=env_file_path)
-        
-        # interface to database
-        self.db = db_interface(dev_mode)
 
         # experiment object holds all data for experiment
         self.experiment = Experiment(experiment_meta_identifier,
@@ -91,10 +88,12 @@ class Benchmarker:
               f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
         print('=================================================')
 
+    def dump_data(self):
         # do not log data if running in development mode locally
         if not self.dev_mode:
             # store all data from experiment in database
-            self.db.log_experiment(self.experiment)
+            db = db_interface()
+            db.log_experiment(self.experiment)
         else:
             print('\n\n')
             invocations_orig = self.experiment.get_invocations_original_form()
@@ -121,6 +120,7 @@ class Benchmarker:
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log
         self.log_experiment_running_time()
+        self.dump_data()
 
     # main method to be used by experiment clients
 
@@ -138,6 +138,7 @@ class Benchmarker:
         if response is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
+            
 
         identifier = response['root_identifier']
         if ('StatusCode-error' not in identifier) and ('exception-provider' not in identifier):
@@ -171,10 +172,10 @@ class Benchmarker:
 
         return response_list
 
-    def get_delay_between_experiment_iterations(self):
-        providor = self.experiment.get_cl_provider()
-        delay = self.db.get_delay_between_experiment(providor)
-        return delay if delay != None else 35 * 60
+    # def get_delay_between_experiment_iterations(self):
+    #     provider = self.experiment.get_cl_provider()
+    #     delay = self.db.get_delay_between_experiment(provider)
+    #     return delay if delay != None else 35 * 60
 
 
 # create exception class for empty responses
@@ -183,3 +184,4 @@ class Benchmarker:
 class EmptyResponseError(RuntimeError):
     def __ini__(self, error_msg: str):
         super(error_msg)
+        
