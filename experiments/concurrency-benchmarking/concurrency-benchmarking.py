@@ -37,7 +37,10 @@ dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: This 
+{experiment_name}: This experiment will test how the provider, {provider}, performes in
+a concurrent environment were multiple requests has to be handled simultaneously.
+The experiment is done by invoking an increasing number of cloudfunctions in between a
+sleeping pause defined by the time-to-coldstart experiment.
 """
 
 # =====================================================================================
