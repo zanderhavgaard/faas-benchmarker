@@ -6,6 +6,7 @@ from benchmarker import Benchmarker
 from datetime import datetime
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
+import traceback 
 
 
 

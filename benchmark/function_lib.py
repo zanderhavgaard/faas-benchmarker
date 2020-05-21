@@ -44,7 +44,7 @@ def iterator_wrapper(func, error_point: str, experiment_name: str, args=None, er
         if err_func != None:
             err_func()
 
-# function for writing wroor messages to ErrorLogFile.txt"
+# function for writing error messages to ErrorLogFile.txt"
 def write_errorlog(self, ex:Exception, description:str, dev_mode, query: str = None):
 
     path = '/home/docker/shared/ErrorLogFile.log' if not dev_mode else os.environ['fbrd']+'/secrets/ssh_keys/db_server'
@@ -56,6 +56,8 @@ def write_errorlog(self, ex:Exception, description:str, dev_mode, query: str = N
         f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
         f.write("--------------------------\n")
         f.close()
+    
+
 
 # print function for development purpose
 def dev_mode_print(context: str, values: list):
@@ -65,7 +67,7 @@ def dev_mode_print(context: str, values: list):
         print(i)
     print('--------------------------------------------')
 
-def conver_unix_time(self, time: str):
+def convert_unix_time(self, time: str):
         datetime.utcfromtimestamp(int(time)).strftime('%Y-%m-%d %H:%M:%S')
 
 def str_replace(text:str, pat:list)-> str:

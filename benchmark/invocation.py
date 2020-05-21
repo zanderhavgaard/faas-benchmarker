@@ -37,7 +37,6 @@ class Invocation:
             self.type = lib.str_replace(self.error['type'],[('\'',''),('\"','')]) 
             self.trace = lib.str_replace(self.error['trace'],[('\'',''),('\"','')])
             self.message = lib.str_replace( self.error['message'], [('\'',''),('\"','')])
-            self.write_errorlog(self.error, self.identifier)
             delattr(self, 'error')
         else:
             self.is_error = False
@@ -53,15 +52,4 @@ class Invocation:
                             else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(key_values.items()))
         return 'INSERT INTO {0} ({1}) VALUES ({2});'.format('Error' if is_error else 'Invocation', keys[:-1], vals[:-1])
 
-    def write_errorlog(self, error_dict: dict, id: str):
-        # with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
-        with open("/home/thomas/ErrorLogFile.log","a+") as f:
-
-            f.write('An error occurred in a cloud function invocation'+'\n')
-            f.write('function UUID: '+id+'\n')
-            f.write(str(datetime.now()) + '\n')
-            f.write('type: ' + error_dict['type']+'\n')
-            f.write('message: '+error_dict['message']+'\n')
-            f.write('trace: '+error_dict['trace']+'\n')
-            f.write("--------------------------\n")
-            f.close()
+    
