@@ -25,12 +25,13 @@ class SQL_Interface:
             print()
 
     
-    def get_delay_between_experiment(self,provider:str) -> int:
+    def get_delay_between_experiment(self,provider:str,threaded:bool) -> int:
         query = """SELECT minutes,seconds FROM Coldstart WHERE exp_id in 
         (SELECT uuid FROM Experiment WHERE cl_provider='{0}') AND cold=True AND final=True 
-        ORDER BY id DESC LIMIT 1;""".format(provider)
+        AND multithreaded={1} ORDER BY id DESC LIMIT 1;""".format(provider,threaded)
         res = np.array(self.tunnel.retrive_query(query)).tolist()
-        return None if res == [] else res[0][0]*60+res[0][1]
+        return res[0][0]*60+res[0][1] if res != [] else 16 * 60
+    
 
 
     def get_most_recent_experiment(self, args: str = '*', flag: bool = True) -> list:
@@ -86,14 +87,14 @@ class SQL_Interface:
         # below link for formula
         # https://www.ibm.com/support/knowledgecenter/en/SSVMSD_9.1.4/RTM_faq/rtm_calculating_cpu_efficiency.html
         calc_values = np.array(self.get_most_recent_invocations(
-            'process_time,execution_total,function_cores'))
+            'process_time,execution_total,function_cores')).tolist()
         return [float(x[0])/float(x[1]*x[2]) for x in calc_values]
 
     def cpu_efficiency_for_throughput_per_invocation(self, exp_uuid:str = None):
         exp_id = f"""'{exp_uuid}'""" if exp_uuid != None else '(SELECT uuid from Experiment where id=(select max(id) from Experiment))'
         query = """SELECT throughput_process_time,throughput_running_time,function_cores,throughput_time FROM Invocation 
                    WHERE throughput != 0 AND exp_id={0};""".format(exp_id)
-        data = self.tunnel.retrive_query(query)
+        data = np.array(self.tunnel.retrive_query(query)).tolist()
         return [(float(x[0])/float(x[1]*x[2]), x[3]) for x in data]
 
     def cpu_efficiency_for_throughput_experiment(self, exp_uuid: str = None):
@@ -123,39 +124,86 @@ class SQL_Interface:
                     minutes: int,
                     seconds: int,
                     granularity: int,
+                    multithreaded:bool=False,
                     cold: bool = True,
                     final: bool = False):
 
-        query = """INSERT INTO Coldstart (exp_id,invo_id,minutes,seconds,granularity,cold,final) 
-                VALUES ('{}','{}',{},{},{},{},{});""".format(exp_id, invo_id, minutes, seconds, granularity, cold, final)
+        query = """INSERT INTO Coldstart (exp_id,invo_id,minutes,seconds,granularity,multithreaded,cold,final) 
+                    VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7});""".format(
+                    exp_id, invo_id, minutes, seconds, granularity, multithreaded, cold, final)
         return self.tunnel.insert_queries([query])
 
     def get_from_coldtimes(self, args: str = '*', provider:str='', flag: bool = True):
-        providor_q = """WHERE exp_id IN (SELECT uuid FROM Experiment WHERE cl_provider='{0}')""".format(provider)
-        query = """SELECT {0} FROM Coldstart {1};""".format(args,provider if provider == '' else providor_q)
+        provider_q = """WHERE exp_id IN (SELECT uuid FROM Experiment WHERE cl_provider='{0}')""".format(provider)
+        query = """SELECT {0} FROM Coldstart {1};""".format(args,provider if provider == '' else provider_q)
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
 
     def get_all_final_coldtimes(self, args: str = '*', provider:str = '', flag: bool = True):
-        providor_q = """AND exp_id IN (SELECT uuid FROM Experiment WHERE cl_provider='{0}')""".format(provider)
-        query = """SELECT {0} FROM Coldstart WHERE final=True {1};""".format(args,provider if provider == '' else providor_q)
+        provider_q = """AND exp_id IN (SELECT uuid FROM Experiment WHERE cl_provider='{0}')""".format(provider)
+        query = """SELECT {0} FROM Coldstart WHERE final=True {1};""".format(args,provider if provider == '' else provider_q)
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
 
     def get_explicit_number_coldstart(self, args:str = '*', provider:str = '', number:int = 1, flag:bool = False, order:bool = True):
         key_word = 'desc' if order else 'asc'
-        providor_q = """WHERE exp_id IN (SELECT uuid FROM Experiment WHERE cl_provider='{0}') AND final=True""".format(provider)
-        query = """SELECT {0} from Coldstart {1} order by id {2} limit {3};""".format(args, provider if provider == '' else providor_q, key_word, number)
+        provider_q = """WHERE exp_id IN (SELECT uuid FROM Experiment WHERE cl_provider='{0}') AND final=True""".format(provider)
+        query = """SELECT {0} from Coldstart {1} order by id {2} limit {3};""".format(args, provider if provider == '' else provider_q, key_word, number)
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
     
+    def get_coldtime_benchmark(self,provider:str,uuid:str=None,threaded:bool=False):
+        latest_cold_q = """(SELECT exp_id FROM Coldstart WHERE exp_id IN (SELECT uuid FROM Experiment 
+        WHERE cl_provider='{0}') AND multithreaded={1} ORDER BY id DESC LIMIT 1)""".format(provider,threaded)
+        query = """SELECT execution_start-invocation_start AS latency FROM Invocation WHERE exp_id={0} 
+        ORDER BY id LIMIT 1;""".format(uuid if uuid != None else latest_cold_q)
+        res = np.array(self.tunnel.retrive_query(query)).tolist()
+        return None if res == [] else res[0][0]
+
+    
     # Function lifetime experiment specific
 
-    def log_lifetime(self,exp_id:str, instance_identifier:str, hours:int, minutes:int, sec:int, sleep_time:int, reclaimed:bool) -> bool:
+    def log_lifetime(self,exp_id:str, 
+                    instance_identifier:str, 
+                    hours:int, 
+                    minutes:int, 
+                    sec:int, 
+                    sleep_time:int, 
+                    reclaimed:bool) -> bool:
+
         query = """INSERT INTO Function_lifetime (exp_id,instance_identifier,hours,minutes,seconds,sleep_time,reclaimed) 
         VALUES ('{0}','{1}',{2},{3},{4},{5},{6});""".format(exp_id,instance_identifier,hours,minutes,sec,sleep_time,reclaimed)
         return self.tunnel.insert_queries([query])
     
+
+    # Concurrent-benchmarking experiment specific
+
+    def log_concurrent_result(self,
+                            exp_uuid:str,
+                            fx:str,
+                            thread_numb:int,
+                            sleep_time:float,
+                            errors:int,
+                            throughput_time:float,
+                            throughput:int,
+                            p_time:float,
+                            cores:float,
+                            success_rate:float,
+                            acc_exe_st:float,
+                            acc_exe_end:float,
+                            acc_invo_st:float,
+                            acc_invo_end:float,
+                            acc_exe_total:float,
+                            acc_invo_total:float,
+                            acc_latency:float) -> bool:
+        query = """INSERT INTO Cc_bench (exp_id,function_name,numb_threads,sleep_time,errors,throughput_time,acc_throughput,
+                    acc_process_time,cores,success_rate,acc_execution_start,acc_execution_end,acc_invocation_start,
+                    acc_invocation_end,acc_execution_total,acc_invocation_total,acc_latency) 
+                    VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16})""".format(
+                    exp_uuid,fx,thread_numb,sleep_time,errors,throughput_time,throughput,p_time,cores,success_rate,acc_exe_st,
+                    acc_exe_end,acc_invo_st,acc_invo_end,acc_exe_total,acc_invo_total,acc_latency)
+                    
+        return self.tunnel.insert_queries([query])
 
     
 

@@ -11,18 +11,21 @@ import datetime
 import dotenv
 import traceback
 import time
+import function_lib as lib
 
 
 class SSH_query:
     # set variables for connection to MySql on DB server via ssh tunnel
     def __init__(self, dev_mode: bool = False):
+        self.dev_mode = dev_mode
         self.ssh_address = (os.getenv('DB_HOSTNAME'), 22)
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
         if not dev_mode:
             self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/docker/key/id_rsa')
-        # self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/thomas/Msc/faas-benchmarker/secrets/ssh_keys/db_server')
+        else:
+            self.ssh_pkey = paramiko.RSAKey.from_private_key_file(os.environ['fbrd']+'/secrets/ssh_keys/db_server' )
         self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
         self.db_password = 'faas'
@@ -74,8 +77,7 @@ class SSH_query:
                                         # if not successful remove query from list and log error message
                                         q = queries.pop(0)
                                         error_list.append(q)
-                                        self.write_errorlog(
-                                            qe, 'Sql error with query:', q)
+                                        lib.write_errorlog(qe, 'Sql error with query:',self.dev_mode, q)
 
                         conn.close()
                         tunnel.stop()
@@ -86,13 +88,12 @@ class SSH_query:
                         if('conn' in locals()):
                             conn.close()
                         # log error message if database connection failed
-                        self.write_errorlog(ex, 'MySql connection error')
+                        lib.write_errorlog(ex, 'MySql connection error',self.dev_mode)
 
             except Exception as e:
                 if(x == 9):
                     # if all 10 atempts failed log error and return False
-                    self.write_errorlog(
-                        e, "Caught tunnel exception while inserting")
+                    self.write_errorlog(e, "Caught tunnel exception while inserting",self.dev_mode)
                     return False
 
     # set return_type to False if list representation is wanted
@@ -130,24 +131,11 @@ class SSH_query:
                             if('conn' in locals()):
                                 conn.close()
                             if(i == 2):
-                                self.write_errorlog(
-                                    ex, "Exception caught at remote site while retriving data")
+                                lib.write_errorlog(ex, "Exception caught at remote site while retriving data",self.dev_mode)
+                                return None
 
             # log error message if tunnel could not be established within 10 atempts
             except Exception as e:
                 if(x == 9):
-                    self.write_errorlog(e, 'Caught tunnel exception while retriving data')
+                    lib.write_errorlog(e, 'Caught tunnel exception while retriving data',self.dev_mode)
                     return None
-
-    # function for writing wroor messages to ErrorLogFile.txt"
-    def write_errorlog(self, ex: Exception, description: str, query: str = None):
-
-        with open("/home/docker/shared/ErrorLogFile.log", "a+") as f:
-            # with open("/home/thomas/ErrorLogFile.log", "a+") as f:
-            f.write(description + '\n')
-            if(query != None):
-                f.write(query + '\n')
-            f.write(str(datetime.datetime.now()) + '\n')
-            f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
-            f.write("--------------------------\n")
-            f.close()
