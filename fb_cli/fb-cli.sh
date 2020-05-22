@@ -41,6 +41,8 @@ function startMinikube {
 }
 
 function fixMinikubePortForward {
+  msg "Killing any lingering kubectl processes ..."
+  killall -q kubectl
   msg "Attempting to start port forwarding again ..."
   kubectl port-forward -n openfaas svc/gateway 8080:8080 &
   echo
