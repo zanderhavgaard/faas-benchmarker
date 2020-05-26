@@ -8,8 +8,6 @@ from mysql_interface import SQL_Interface as database
 import function_lib as lib
 import traceback 
 
-
-
 # =====================================================================================
 # Read cli arguments from calling script
 
@@ -58,7 +56,6 @@ db = database(dev_mode)
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
-
 experiment_uuid = benchmarker.experiment.uuid
 
 # meassured time for a function to be cold in a sequantial environment
@@ -68,15 +65,15 @@ coldtime = 11 * 60 if coldtime == None else coldtime
 # meassured time for a function to be cold in a concurrent environment
 # default value set to 13 minutes if the experiment has not been run
 coldtime_threaded = db.get_delay_between_experiment(provider,threaded=True) 
-coldtime_threaded = 13 * 60 if coldtime_threaded == None else coldtime_threaded
+coldtime_threaded = 15 * 60 if coldtime_threaded == None else coldtime_threaded
 
 
 # what function to test on (1-3)
-fx_num = 2
+fx_num = 1
 fx = f'{experiment_name}{fx_num}'
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
-    time.sleep(coldtime)  # more??
+    time.sleep(coldtime)  
 
 # results specific gathered and logged from logic of this experiment
 results = []
@@ -111,6 +108,7 @@ def append_result(dict:dict, err:int, thread_numb:int) -> None:
         'exp_id':experiment_uuid,
         'function_name': fx,
         'numb_threads': thread_numb,
+        'sleep_time': coldtime,
         'errors': err,
         'throughput_time': dict['throughput_time'],
         'acc_throughput': 0 if dict['throughput_time'] == 0.0 else dict['throughput'],
@@ -133,12 +131,12 @@ def run_experiment(thread_numb:int,upper_bound:int):
     global coldtime
     while(thread_numb <= upper_bound):
         for i in range(5):
-            (errors,response) = validate(invoke,f'Invoking with {thread_numb} threads',thread_numb)
+            (err,response) = validate(invoke,f'Invoking with {thread_numb} threads',thread_numb)
             if not dev_mode:
-                append_result(response,errors,thread_numb)
+                append_result(response,err,thread_numb)
                 thread_numb *= 2
             else:
-                lib.dev_mode_print()
+                lib.dev_mode_print(f'Invocation with {thread_numb} threads and {err} errors', response.items())
                 thread_numb += 2
                 if(thread_numb > 14):
                     benchmarker.end_experiment()
@@ -154,16 +152,13 @@ try:
     coldtime = coldtime_threaded
     # run experiment with new coldtime
     run_experiment(8,256)
-
-    # print to logfile
-    print(f'{experiment_name} with UUID: {experiment_uuid} using function{fx_num} ended wtih {len(errors)} errors') 
     
     # =====================================================================================
-    # end of the experiment
+    # end of the experiment, results are logged to database
     benchmarker.end_experiment()
     # =====================================================================================
     # log experiments specific results, hence results not obtainable from the generic Invocation object
-    lib.log_experiment_specifics(experiment_name ,experiment_uuid, db.log_exp_result(results))
+    lib.log_experiment_specifics(experiment_name ,experiment_uuid, len(errors), db.log_exp_result([lib.dict_to_query(x,table) for x in results]))
 
 except Exception as e:
     # this will print to logfile

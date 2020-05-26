@@ -86,7 +86,8 @@ class Benchmarker:
         print(f'Experiment end time: {time.ctime(int(end_time))}')
         print('Experiment running time: ' +
               f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
-        print('=================================================')
+        print('=================================================\n')
+       
 
     def dump_data(self):
         # do not log data if running in development mode locally

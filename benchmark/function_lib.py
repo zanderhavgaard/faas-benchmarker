@@ -84,10 +84,10 @@ def dict_to_query(dict:dict,table:str) -> str:
     (keys,values) = lib.generate_key_value_strings(dict)
     return f"""INSERT INTO {table} ({keys}) VALUES ({values});"""
 
-def log_experiment_specifics(exp_name:str,uuid:str,db_check):
-    print()
+# print metadata about experiment database insertion to logfile 
+def log_experiment_specifics(exp_name:str, uuid:str, err:int, db_check:bool=True):
+   
     print('=======================================================================)')
-    print(f'Experiment: {exp_name} with UUID: {uuid} has ended.')
+    print(f'Experiment: {exp_name} with UUID: {uuid} has ended with {err} errors.')
     print(f'Results from experiments has been succesfully added to database: {db_check}')
-    print('=======================================================================')
-    print()
+    print('=======================================================================\n')

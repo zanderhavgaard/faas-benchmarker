@@ -3,7 +3,7 @@ from ssh_query import SSH_query
 from experiment import Experiment
 from pprint import pprint
 import time
-import function_lib as lib
+# import function_lib as lib
 from functools import reduce
 import pandas as pd
 import numpy as np
@@ -224,7 +224,7 @@ class SQL_Interface:
         return self.tunnel.insert_queries([query])
     
     def log_exp_result(self,results:list) -> bool:
-        self.tunnel.insert_queries([lib.dict_to_query(x) for x in results])
+        return self.tunnel.insert_queries(results)
         
 
     # ----- DEV FUNCTIONS BELOW

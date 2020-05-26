@@ -129,6 +129,7 @@ CREATE TABLE `Cc_bench` (
   `exp_id`varchar(36) NOT NULL,
   `function_name` varchar(50) NOT NULL,
   `numb_threads` INT NOT NULL,
+  `sleep_time` DOUBLE NOT NULL,
   `errors` INT NOT NULL,
   `throughput_time` DOUBLE NOT NULL,
   `acc_throughput` DOUBLE NOT NULL,
