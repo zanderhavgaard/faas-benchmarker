@@ -112,10 +112,9 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 # can take whatever needed arguments but has to return/append a dict
 def append_result(values_to_log) -> None:
     # key HAS to have same name as column in database
-    res = {
+    results.append({
         # key : value
-        }
-    results.append(res)
+        })
 
 # =====================================================================================
 
