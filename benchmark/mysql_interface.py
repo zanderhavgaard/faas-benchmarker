@@ -3,7 +3,6 @@ from ssh_query import SSH_query
 from experiment import Experiment
 from pprint import pprint
 import time
-# import function_lib as lib
 from functools import reduce
 import pandas as pd
 import numpy as np

@@ -82,6 +82,9 @@ if not dev_mode:
 # results specific gathered and logged from logic of this experiment
 results = []
 
+# results specific gathered and logged from logic of this experiment
+results = []
+
 # sift away errors at runtime and report them later
 errors = []
 # ======================================================================================

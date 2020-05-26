@@ -70,5 +70,3 @@ class Invocation:
                             else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(key_values.items()))
         return 'INSERT INTO {0} ({1}) VALUES ({2});{3}'.format('Error' if is_error else 'Invocation', keys[:-1], vals[:-1],monolith)
 
-
-    

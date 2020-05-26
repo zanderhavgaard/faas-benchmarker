@@ -8,7 +8,10 @@ from mysql_interface import SQL_Interface
 from functools import reduce
 import pandas as pd
 import numpy as np
+<<<<<<< HEAD
 import function_lib as lib
+=======
+>>>>>>> refactored db, concurrent experiment, function_lib, Invocation, and maybe some more
 
 # import benchmark.provider_abstract as abstract
 
@@ -101,6 +104,11 @@ res = ssh_query.insert_queries(query)
 print(res)
 # res = bench1.invoke_function_conccurrently('function1',numb_threads=8)
 # print(len(res))
+
+bench1 = bench('exp30','meta','openfaas','foobar', 'testter','/home/thomas/Msc/faas-benchmarker/.test_env',dev_mode=True)
+# bench.invoke_function('function1',invoke_nested=nested)
+res = bench1.invoke_function_conccurrently('function1',numb_threads=8)
+print(len(res))
 
  
 # bench.invoke_function('function1',0.0,nested,1.0)
