@@ -3,12 +3,11 @@ import json
 import time
 from pprint import pprint
 from benchmarker import Benchmarker
-from datetime import datetime
-from mysql_interface import SQL_Interface as database
 import function_lib as lib
-import traceback 
-
-
+from mysql_interface import SQL_Interface as database
+from datetime import datetime
+import traceback
+from functools import reduce
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -32,15 +31,16 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
+
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: This experiment will test how the provider, {provider}, performes in
-a concurrent environment were multiple requests has to be handled simultaneously.
-The experiment is done by invoking an increasing number of cloudfunctions in between a
-sleeping pause defined by the time-to-coldstart experiment.
+{experiment_name}: This experiment will test whether there is a pattern to which instance 
+of a cloud function that will serve request. This is done by invoking a number of functions
+simultaneously, checking that they have different id's, and then invoking one less function
+for every iteration down to 1. 
 """
 
 # =====================================================================================
@@ -61,6 +61,7 @@ db = database(dev_mode)
 
 experiment_uuid = benchmarker.experiment.uuid
 
+
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 11 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
@@ -70,16 +71,15 @@ coldtime = 11 * 60 if coldtime == None else coldtime
 coldtime_threaded = db.get_delay_between_experiment(provider,threaded=True) 
 coldtime_threaded = 13 * 60 if coldtime_threaded == None else coldtime_threaded
 
+# throughput time for invocations
+throughput_time = 0.2
 
 # what function to test on (1-3)
 fx_num = 2
 fx = f'{experiment_name}{fx_num}'
 # sleep for 15 minutes to ensure coldstart
-if not dev_mode:
-    time.sleep(coldtime)  # more??
-
-# results specific gathered and logged from logic of this experiment
-results = []
+# if not dev_mode:
+#     time.sleep(coldtime)  # more??
 
 # sift away errors at runtime and report them later
 errors = []
@@ -87,16 +87,28 @@ errors = []
 # Convienience methods needed for this experiment
 
 # invoke function and return the result dict
-def invoke(thread_numb:int):
+def invoke(th_numb:int):
+    global errors
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocation_list = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=0.3))]))
-    # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
-    accumulated = lib.accumulate_dicts(invocation_list)
+    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=th_numb,throughput_time=throughput_time))]))
     # return error count for this particular invocation and accumulated result
-    return (len(errors)-err_count, accumulated) if accumulated != {} else None
+    return (len(errors)-err_count, invocation_list)
 
+def set_init_values(th_numb:int):
+    global throughput_time  
+    (err,init_responses) = validate(invoke,'initial invocations',th_numb)
+    id_list = get_identifiers(init_responses)
+    if(len(id_list) == set(id_list) or throughput_time >= 1.0):
+        return (err,id_list)
+    else:
+        throughput_time += 0.1 
+        return set_init_values(th_numb)
+
+# get instance identifiers from invocations
+def get_identifiers(dicts:list):
+    return list(filter(None,map(lambda x: x['instance_identifier'] if isinstance(x['instance_identifier'],str) else None,dicts)))
 
 # the wrapper ends the experiment if any it can not return a valid value
 def err_func(): return benchmarker.end_experiment()
@@ -105,65 +117,81 @@ def err_func(): return benchmarker.end_experiment()
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 
-def append_result(dict:dict, err:int, thread_numb:int) -> None:
-    
-    res = {
-        'exp_id':experiment_uuid,
-        'function_name': fx,
-        'numb_threads': thread_numb,
-        'errors': err,
-        'throughput_time': dict['throughput_time'],
-        'acc_throughput': 0 if dict['throughput_time'] == 0.0 else dict['throughput'],
-        'acc_process_time': dict['process_time'], 
-        'cores': dict['cores'],
-        'success_rate': 1-errors/thread_numb,
-        'acc_execution_start': dict['execution_start'],
-        'acc_execution_end': dict['execution_end'],
-        'acc_invocation_start': dict['invocation_start'],
-        'acc_invocation_end': dict['invocation_end'],
-        'acc_execution_total': dict['execution_total'],
-        'acc_invocation_total': dict['invocation_total'],
-        'acc_latency': dict['execution_start'] - dict['invocation_start'] 
-        }
-    results.append(res)
+# results being stored in database
+def insert_into_db(errors:int, th_numb, vals:list, orig:list) -> None:
+
+    diff_from_orig = [x for x in set(vals) if x not in orig]
+
+    unique_instances = len(set(vals))
+    distribution = float(th_numb / unique_instances)
+    error_dist = float(th_numb / errors)
+    identifiers = reduce(lambda x,y: f'{x+y},',['']+vals)[:-1]
+
+    db.log_clfunction_lifecycle(experiment_uuid,
+                                fx,
+                                th_numb,
+                                throughput_time,
+                                errors,
+                                unique_instances,
+                                distribution,
+                                error_dist,
+                                len(diff_from_orig),
+                                identifiers)   
 
 # =====================================================================================
 # The actual logic if the experiment
-def run_experiment(thread_numb:int,upper_bound:int):
-    global coldtime
-    while(thread_numb <= upper_bound):
-        for i in range(5):
-            (errors,response) = validate(invoke,f'Invoking with {thread_numb} threads',thread_numb)
-            if not dev_mode:
-                append_result(response,errors,thread_numb)
-                thread_numb *= 2
-            else:
-                lib.dev_mode_print()
-                thread_numb += 2
-                if(thread_numb > 14):
-                    benchmarker.end_experiment()
-                    sys.exit()
-            time.sleep(coldtime)
-    
+
 try:
 
-    # run experiment with coldstart time meassured for a sequential environment 
-    run_experiment(8,256)
+# runs the logic experiment with a specified number of concurrent requests
+    def run_experiment(th_threads):
+        global throughput_time
+        throughput_time = 0.2
 
-    # set coldtime to meassured time for concurrent environment
-    coldtime = coldtime_threaded
-    # run experiment with new coldtime
-    run_experiment(8,256)
-
-    # print to logfile
-    print(f'{experiment_name} with UUID: {experiment_uuid} using function{fx_num} ended wtih {len(errors)} errors') 
+        (err_count,invocations) = set_init_values(th_threads)
+        orig = invocations
+        if not dev_mode:
+            insert_into_db(err_count,orig,[])
+        else:
+            lib.dev_mode_print(context=f'orig identifiers with {th_threads} threads',
+            values=[('throughput_time',throughput_time)]+orig)
+        
+        for i in range(th_threads):
+            local_thread_numb = th_threads - (i + int(th_threads / 10))
+            print('local_thread_numb',local_thread_numb)
+            for i in range(5):
+                time.sleep(10)
+                (err,ids) = validate(invoke,f'invoking with {local_thread_numb} threads',local_thread_numb)
+                if not dev_mode:
+                    insert_into_db(err,local_thread_numb,get_identifiers(ids),orig)
+                else:
+                    lib.dev_mode_print(context=f'identifiers with {local_thread_numb} threads, iter: {i}',
+                    values=[('throughput_time',throughput_time),('errors: ',err)]+get_identifiers(ids))
     
+
+    run_experiment(10)
+
+    if dev_mode:
+        benchmarker.end_experiment()
+        sys.exit()
+
+    time.sleep(coldtime_threaded)
+
+    run_experiment(20)
+
+    time.sleep(coldtime_threaded)
+
+    run_experiment(40)
+
+        
+    # print to logfile
+    print(f'{experiment_name} with UUID: {experiment_uuid} using function{fx_num} ended wtih {len(errors)} errors')
+        
+         
     # =====================================================================================
     # end of the experiment
     benchmarker.end_experiment()
     # =====================================================================================
-    # log experiments specific results, hence results not obtainable from the generic Invocation object
-    lib.log_experiment_specifics(experiment_name ,experiment_uuid, db.log_exp_result(results))
 
 except Exception as e:
     # this will print to logfile
@@ -171,8 +199,6 @@ except Exception as e:
         experiment_name))
     print(str(datetime.now()))
     print('Error message: ', str(e))
-    print('Trace: {0}'.format(traceback.format_exc()))
+    print(f'Trace: {traceback.format_exc()}')
     print('-----------------------------------------')
     benchmarker.end_experiment()
-    
-    

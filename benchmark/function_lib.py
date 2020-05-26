@@ -1,7 +1,9 @@
 from functools import reduce
 from datetime import datetime
 import traceback
+import function_lib as lib
 import os
+from os.path import expanduser
 
 
 def accumulate_dicts(list_dicts: list):
@@ -24,7 +26,7 @@ def get_dict(data: dict) -> dict:
 
 
 def iterator_wrapper(func, error_point: str, experiment_name: str, args=None, err_func=None):
-
+  
     try:
         for i in range(5):
             val = func(args) if args != None else func()
@@ -45,20 +47,18 @@ def iterator_wrapper(func, error_point: str, experiment_name: str, args=None, er
             err_func()
 
 # function for writing error messages to ErrorLogFile.txt"
-def write_errorlog(self, ex:Exception, description:str, dev_mode, query: str = None):
-
-    path = '/home/docker/shared/ErrorLogFile.log' if not dev_mode else os.environ['fbrd']+'/secrets/ssh_keys/db_server'
+def write_errorlog(ex:Exception, description:str, dev_mode:bool, query: str = None):
+    path = '/home/docker/shared/ErrorLogFile.log' if not dev_mode else expanduser("~")+'/ErrorLogFile.log'
     with open(path, "a+") as f:
         f.write(description+'\n')
-        if(query != None):
-            f.write(query + '\n')
+        # if(query != None):
+        #     f.write(query + '\n')
         f.write(str(datetime.datetime.now()) + '\n')
         f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
         f.write("--------------------------\n")
+        print('CHECK')
         f.close()
     
-
-
 # print function for development purpose
 def dev_mode_print(context: str, values: list):
     print('--------------------------------------------')
@@ -74,3 +74,20 @@ def str_replace(text:str, pat:list)-> str:
     for (c,p) in pat:
         text = text.replace(c,p)
     return text
+
+def generate_key_value_strings(dict:dict):
+    (key_string,value_string) = reduce(lambda x,y: ( f'{x[0]}{y[0]},', f'{x[1]}{y[1]},') if not isinstance(y[1],str) 
+                                    else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(dict.items()))
+    return (key_string[:-1],value_string[:-1])
+
+def dict_to_query(dict:dict,table:str) -> str:
+    (keys,values) = lib.generate_key_value_strings(dict)
+    return f"""INSERT INTO {table} ({keys}) VALUES ({values});"""
+
+def log_experiment_specifics(exp_name:str,uuid:str,db_check):
+    print()
+    print('=======================================================================)')
+    print(f'Experiment: {exp_name} with UUID: {uuid} has ended.')
+    print(f'Results from experiments has been succesfully added to database: {db_check}')
+    print('=======================================================================')
+    print()

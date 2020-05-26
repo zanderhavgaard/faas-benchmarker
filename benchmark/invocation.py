@@ -48,8 +48,7 @@ class Invocation:
         is_error = key_values.pop('is_error')
         list(map(lambda x: x if x[1] != None else key_values.pop(x[0]), key_values.copy().items()))
          
-        (keys,vals) = reduce(lambda x,y: ( f'{x[0]}{y[0]},', f'{x[1]}{y[1]},') if not isinstance(y[1],str) 
-                            else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(key_values.items()))
-        return 'INSERT INTO {0} ({1}) VALUES ({2});'.format('Error' if is_error else 'Invocation', keys[:-1], vals[:-1])
+        (keys,vals) = lib.generate_key_value_strings(key_values)
+        return 'INSERT INTO {0} ({1}) VALUES ({2});'.format('Error' if is_error else 'Invocation', keys, vals)
 
     

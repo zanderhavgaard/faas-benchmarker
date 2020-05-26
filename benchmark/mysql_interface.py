@@ -3,6 +3,7 @@ from ssh_query import SSH_query
 from experiment import Experiment
 from pprint import pprint
 import time
+import function_lib as lib
 from functools import reduce
 import pandas as pd
 import numpy as np
@@ -205,7 +206,26 @@ class SQL_Interface:
                     
         return self.tunnel.insert_queries([query])
 
+    # track-cloudfunctions-lifecycle experiment specific
+    def log_clfunction_lifecycle(self,
+                                exp_uuid:str,
+                                func_name:str,
+                                numb_invokation:int,
+                                throughput_time:float,
+                                errors:int,
+                                unique_instances:int,
+                                distribution:float,
+                                error_dist:float,
+                                diif_from_first:int,
+                                identifiers:str):
+        query = """INSERT INTO Function_lifecycle (exp_id,function_name,numb_invokations,throughput_time,errors,unique_instances,
+        distribution,error_dist,diff_from_first,identifiers) VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},'{9}');""".format(
+        exp_uuid,func_name,numb_invokation,throughput_time,errors,unique_instances,distribution,error_dist,diif_from_first,identifiers)
+        return self.tunnel.insert_queries([query])
     
+    def log_exp_result(self,results:list) -> bool:
+        self.tunnel.insert_queries([lib.dict_to_query(x) for x in results])
+        
 
     # ----- DEV FUNCTIONS BELOW
 

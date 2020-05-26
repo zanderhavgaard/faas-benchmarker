@@ -93,7 +93,7 @@ class SSH_query:
             except Exception as e:
                 if(x == 9):
                     # if all 10 atempts failed log error and return False
-                    self.write_errorlog(e, "Caught tunnel exception while inserting",self.dev_mode)
+                    lib.write_errorlog(e, "Caught tunnel exception while inserting",self.dev_mode)
                     return False
 
     # set return_type to False if list representation is wanted
