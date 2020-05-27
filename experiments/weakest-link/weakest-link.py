@@ -1,8 +1,12 @@
+
 import sys
 import json
 import time
-from pprint import pprint
+from datetime import datetime
+import traceback
 from benchmarker import Benchmarker
+from mysql_interface import SQL_Interface as database
+import function_lib as lib
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -51,63 +55,80 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           env_file_path=env_file_path,
                           dev_mode=dev_mode)
 # =====================================================================================
+# database interface for logging results if needed
+db = database(dev_mode)
+# name of table to insert data into - HAVE TO BE SET!!
+table = None
+# =====================================================================================
+# set meta data for experiment
+# UUID from experiment
+experiment_uuid = benchmarker.experiment.uuid
 
 # how many times we repeat the experiment
-iterations = 5
+iterations = 10
 
 # setup convenient function names
 fx1 = f'{experiment_name}1'
 fx2 = f'{experiment_name}2'
 fx3 = f'{experiment_name}3'
 
-# delay between iteration, in order to wait for all of the functions to become cold
-delay = benchmarker.get_delay_between_experiment_iterations()
+# =====================================================================================
+# meassured time for a function to be cold in a sequantial environment
+# default value set to 15 minutes if the experiment has not been run
+coldtime = db.get_delay_between_experiment(provider,threaded=False) 
+coldtime = 15 * 60 if coldtime == None else coldtime
+# =====================================================================================
 
-for i in range(iterations):
+try:
 
-    print(f'Running experiment iteration {i} ...')
+    for i in range(iterations):
 
-    # invoke function 1 and 2 such that they are hot
-    hot_response1 = benchmarker.invoke_function(function_endpoint=fx1)
-    print('Response from prewarming function 1')
-    pprint(hot_response1)
-    hot_response2 = benchmarker.invoke_function(function_endpoint=fx2)
-    print('Response from prewarming function 2')
-    pprint(hot_response2)
+        print(f'Experiment {experiment_name}, iteration {i} ...')
 
-    # setup nested invocations
-    nested = [
-        {
-            "function_name": f"{experiment_name}2",
-            "invoke_payload": {
-                "StatusCode": 200,
-                "invoke_nested": [
-                    {
-                        "function_name": f"{experiment_name}3",
-                        "invoke_payload": {
-                            "StatusCode": 200,
+        # invoke function 1 and 2 such that they are hot
+        hot_response1 = benchmarker.invoke_function(function_endpoint=fx1)
+        # print('Response from prewarming function 1')
+        # pprint(hot_response1)
+        hot_response2 = benchmarker.invoke_function(function_endpoint=fx2)
+        # print('Response from prewarming function 2')
+        # pprint(hot_response2)
+
+        # setup nested invocations
+        nested = [
+            {
+                "function_name": fx2,
+                "invoke_payload": {
+                    "StatusCode": 200,
+                    "invoke_nested": [
+                        {
+                            "function_name": fx3,
+                            "invoke_payload": {
+                                "StatusCode": 200,
+                            }
                         }
-                    }
-                ]
+                    ]
+                }
             }
-        }
-    ]
+        ]
 
-    # invoke function 1, that will invoke function 2, which will invoke funcion 3
-    # we expect that only function3 will be a cold start, and thus the majority of the response time
-    weakest_link_response = benchmarker.invoke_function(
-        function_endpoint=fx1, invoke_nested=nested)
+        # invoke function 1, that will invoke function 2, which will invoke funcion 3
+        # we expect that only function3 will be a cold start, and thus the majority of the response time
+        nested = benchmarker.invoke_function(
+            function_endpoint=fx1, invoke_nested=nested)
 
-    print('Response from the nested invocation:')
-    pprint(weakest_link_response)
+        time.sleep(coldtime)
+    
 
-    if i < (iterations - 1):
-        print(f'Now waiting {delay} seconds before running next iteration ...')
-        time.sleep(delay)
-    else:
-        print('Done running weakest link experiment.')
+    # =====================================================================================
+    # end of the experiment
+    benchmarker.end_experiment()
+    # =====================================================================================
 
-# =====================================================================================
-# end of the experiment
-benchmarker.end_experiment()
-# =====================================================================================
+except Exception as e:
+    # this will print to logfile
+    print(f'Ending experiment {experiment_name} due to fatal runtime error')
+    print(str(datetime.now()))
+    print('Error message: ', str(e))
+    print('Trace: {0}'.format(traceback.format_exc()))
+    print('-----------------------------------------')
+    benchmarker.end_experiment()
