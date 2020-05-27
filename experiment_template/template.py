@@ -1,3 +1,4 @@
+
 import sys
 import json
 import time
@@ -6,7 +7,6 @@ import traceback
 from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
-
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -50,6 +50,8 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
 # =====================================================================================
 # database interface for logging results if needed
 db = database(dev_mode)
+# name of table to insert data into - HAVE TO BE SET!!
+table = None
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
@@ -126,18 +128,23 @@ try:
 # or concurrently:
 #   validate(invoke, f'invoking {fx} concurrently', 8)
 
+# NOTE use lib.dev_mode_print to print to terminal in dev_mode
+# takes context:str and args:list as arguments -> args are what you want to have printed
+
 
    # =====================================================================================
     # end of the experiment, results are logged to database
     benchmarker.end_experiment()
     # =====================================================================================
     # log experiments specific results, hence results not obtainable from the generic Invocation object
-    lib.log_experiment_specifics(experiment_name ,experiment_uuid, len(errors), db.log_exp_result([lib.dict_to_query(x,table) for x in results]))
+    lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
 
 except Exception as e:
     # this will print to logfile
-    print('Ending experiment {0} due to fatal runtime error'.format(
-        experiment_name))
+    print(f'Ending experiment {experiment_name} due to fatal runtime error')
     print(str(datetime.now()))
     print('Error message: ', str(e))
     print('Trace: {0}'.format(traceback.format_exc()))

@@ -158,8 +158,9 @@ CREATE TABLE `Function_lifecycle` (
   `unique_instances` INT NOT NULL,
   `distribution` DOUBLE NOT NULL,
   `error_dist` DOUBLE NOT NULL,
-  `diff_from_first` INT NOT NULL,
+  `diff_from_orig` INT NOT NULL,
   `identifiers` varchar(700) NOT NULL,
+  `repeats_from_orig` varchar(700) NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;

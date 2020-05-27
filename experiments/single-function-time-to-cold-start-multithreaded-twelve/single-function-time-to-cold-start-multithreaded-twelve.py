@@ -59,15 +59,12 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
 # =====================================================================================
 # create database interface for logging results
 db = SQL_Interface()
+# name of table to insert data into
+table = 'Coldstart'
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
-
 experiment_uuid = benchmarker.experiment.uuid
-
-# number of thread to run
-# change this for concurrent execution
-thread_numb = 12
 
 # what function to test on (1-3)
 fx_num = 2
@@ -76,20 +73,26 @@ fx = f'{experiment_name}{fx_num}'
 if not dev_mode:
     time.sleep(15*60)  # more??
 
+# results specific gathered and logged from logic of this experiment
+results = []
+
 # sift away errors at runtime and report them later
 errors = []
 # ======================================================================================
 # Convienience methods needed for this experiment
 
 # invoke function and return the result dict
-# if thread_numb > 1 it will be done concurrently and the result averaged
-def invoke():
+def invoke(thread_numb:int):
+
+    err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
-    invocation_list = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(
-        x), benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb))]))
+    invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
+    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=th_time))]))
     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
-    accumulated = lib.accumulate_dicts(invocation_list)
-    return accumulated if accumulated != {} else None
+   
+    invocations = lib.accumulate_dicts(invocations)
+    # return error count and result for this particular invocation 
+    return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
 
 
 # the wrapper ends the experiment if any it can not return a valid value
@@ -105,8 +108,26 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 # creates list of invocation dicts.
 # args: tuble(x,y) -> x=length_of_list, y=error_point_string
 create_invocation_list = lambda x=(5, 'create invocation_list'): [
-    validate(invoke, x[1]) for i in range(x[0])]
+    validate(invoke, x[1]) for i in range(x[0]) ]
 
+# parse data that needs to be logged to database.
+def append_result(exp_id,
+                invo_id,
+                minutes,
+                seconds,
+                granularity,
+                multithreaded,
+                cold,final) -> None:
+    results.append({
+        'exp_id': exp_id,
+        'invo_id': invo_id,
+        'minutes': minutes,
+        'seconds': seconds,
+        'granularity': granularity,
+        'multithreaded':multithreaded,
+        'cold': cold,
+        'final': final
+        })
 
 # =====================================================================================
 # The actual logic if the experiment
@@ -150,10 +171,10 @@ try:
             res_dict = validate(invoke, 'initial coldtime reset')
             coldtime = initial_cold_start_response['execution_start'] - initial_cold_start_response['invocation_start']
             benchmark = coldtime * 0.90
-            avg_warmtime = lib.wrappped_reduce_dict_by_keys('avg_warmtime', 
-                                                        experiment_name, 
-                                                        (create_invocation_list(), ('execution_start', 'invocation_start')), 
-                                                        err_func)
+            avg_warmtime = validate(lib.reduce_dict_by_keys, 
+                                'avg_warmtime reset', 
+                                (create_invocation_list((10, 'create invocation_list')), 
+                                ('execution_start', 'invocation_start')))
             if(avg_warmtime > benchmark):
                 check_coldtime(sleep+1200)
 
@@ -205,14 +226,14 @@ try:
                     ('latest_latency_time',latest_latency_time),
                     ])
             else:
-                db.log_coldtime(experiment_uuid,
-                                result_dict['identifier'],
-                                int(sleep_time / 60),
-                                int(sleep_time % 60),
-                                increment,
-                                True,
-                                latest_latency_time > benchmark,
-                                False)
+                append_result(experiment_uuid,
+                            result_dict['identifier'],
+                            int(sleep_time / 60),
+                            int(sleep_time % 60),
+                            increment,
+                            True,
+                            latest_latency_time > benchmark,
+                            False)
 
             if(latest_latency_time > benchmark):
                 increment /= 2
@@ -250,14 +271,14 @@ try:
                 ('Final result', False)
                 ])
         else:
-            db.log_coldtime(experiment_uuid,
-                            result_dict['identifier'],
-                            int(sleep_time / 60),
-                            int(sleep_time % 60),
-                            increment,
-                            True,
-                            latency_time < benchmark,
-                            False)
+            append_result(experiment_uuid,
+                        result_dict['identifier'],
+                        int(sleep_time / 60),
+                        int(sleep_time % 60),
+                        increment,
+                        True,
+                        latency_time < benchmark,
+                        False)
         # if sleeptime did not result in coldstart adjust values and reset iterations
         if(latency_time < benchmark):
             granularity *= 2
@@ -274,7 +295,7 @@ try:
             ('latest_latency_time', latest_latency_time)
         ])
         # if in dev_mode dont sleep 60 minutes to validate result
-        raise Exception('Ending experiment pga dev_mode')
+        raise Exception('Ending experiment because of dev_mode')
 
     # sleep for 60 minutes and validate result
     time.sleep(60 * 60)
@@ -283,25 +304,25 @@ try:
         invoke, 'invoking function: {0} from final invocation of cold start experiment'.format(fx))
     latency_time = result_dict['execution_start'] - result_dict['invocation_start']
     # log final result
-    db.log_coldtime(experiment_uuid,
-                    result_dict['identifier'],
-                    int(sleep_time / 60),
-                    int(sleep_time % 60),
-                    increment,
-                    True,
-                    latency_time < benchmark,
-                    True)
+    append_result(experiment_uuid,
+                result_dict['identifier'],
+                int(sleep_time / 60),
+                int(sleep_time % 60),
+                increment,
+                True,
+                latency_time < benchmark,
+                True)
 
-    # print any potential error to log 
-    print()
-    print('Experiment {0} with id: {1} ended with {2} errors'.format(
-                        experiment_name, experiment_uuid, len(errors)))
-    print()
 
     # =====================================================================================
     # end of the experiment
     benchmarker.end_experiment()
     # =====================================================================================
+     # log experiments specific results, hence results not obtainable from the generic Invocation object
+    lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
 
 except Exception as e:
     # this will print to logfile

@@ -55,19 +55,32 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
 # =====================================================================================
 # create database interface for logging results
 db = SQL_Interface()
+# name of table to insert data into - HAVE TO BE SET!!
+table = 'Function_lifetime'
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
 
 experiment_uuid = benchmarker.experiment.uuid
 
-
 # what function to test on (1-3)
 fx_num = 2
 fx = f'{experiment_name}{fx_num}'
 # sleep for 15 minutes to ensure coldstart
+
+# =====================================================================================
+# meassured time for a function to be cold in a sequantial environment
+# default value set to 15 minutes if the experiment has not been run
+coldtime = db.get_delay_between_experiment(provider,threaded=False) 
+coldtime = 15 * 60 if coldtime == None else coldtime
+# =====================================================================================
+
+# sleep for 15 minutes to ensure coldstart
 if not dev_mode:
-    time.sleep(15*60)  # more??
+    time.sleep(15*60) 
+
+# results specific gathered and logged from logic of this experiment
+results = []
 
 # sift away errors at runtime and report them later
 errors = []
@@ -81,7 +94,6 @@ def invoke():
     return response if 'error' not in response else errors.append(response)
     
 
-
 # the wrapper ends the experiment if any it can not return a valid value
 def err_func(): return benchmarker.end_experiment()
 
@@ -90,6 +102,27 @@ def err_func(): return benchmarker.end_experiment()
 
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
+
+# parse data that needs to be logged to database.
+# can take whatever needed arguments but has to return/append a dict
+def append_result(exp_id,
+                identifier,
+                hours,
+                minutes,
+                seconds,
+                sleep_time,
+                reclaimed
+                ) -> None:
+    # key HAS to have same name as column in database
+    results.append({
+                'exp_id': exp_id,
+                'instance_identifier': identifier,
+                'hours': hours,
+                'minutes': minutes,
+                'seconds': seconds,
+                'sleep_time': sleep_time,
+                'reclaimed': reclaimed
+        })
 
 # =====================================================================================
 # The actual logic if the experiment
@@ -113,14 +146,19 @@ try:
             instance_lifetime = instance_latest - start_time_datetiem
             conv_time = (datetime.min + instance_lifetime).time()
              # log result as False for the platform not reclaiming the instance resource within 24 hours
-            db.log_liftime(experiment_uuid,
-                            function_id,
-                            conv_time.hours,
-                            conv_time.minute,
-                            conv_time.second,
-                            sleep_time,
-                            False)
+            append_result(experiment_uuid,
+                        function_id,
+                        conv_time.hours,
+                        conv_time.minute,
+                        conv_time.second,
+                        sleep_time,
+                        False)
+            # lifetime found, end experiment 
             benchmarker.end_experiment()
+            lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
             sys.exit()
 
         else:
@@ -128,19 +166,22 @@ try:
             time.sleep(sleep_time)
             
     # log result as True for the platform nor reclaiming the instance resource within 24 hours
-    db.log_liftime(experiment_uuid,
-                    function_id,
-                    24,
-                    0,
-                    0,
-                    sleep_time,
-                    True)
+    append_result(experiment_uuid,
+                function_id,
+                24,
+                0,
+                0,
+                sleep_time,
+                True)
          
     # =====================================================================================
     # end of the experiment
     benchmarker.end_experiment()
     # =====================================================================================
-
+    lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
 except Exception as e:
     # this will print to logfile
     print('Ending experiment {0} due to fatal runtime error'.format(
