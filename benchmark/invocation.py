@@ -44,8 +44,8 @@ class Invocation:
             self.invocation_total = self.invocation_end - self.invocation_start
 
     def get_query_string(self):
-        key_values = self.__dict__
-        is_error = key_values.pop('is_error')
+        key_values = self.__dict__.copy()
+        is_error = key_values.pop('is_error') 
         list(map(lambda x: x if x[1] != None else key_values.pop(x[0]), key_values.copy().items()))
          
         (keys,vals) = lib.generate_key_value_strings(key_values)

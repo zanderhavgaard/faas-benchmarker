@@ -16,7 +16,8 @@ class Experiment:
                  name: str,
                  cl_provider: str,
                  cl_client: str,
-                 desc: str):
+                 desc: str,
+                 dev_mode: bool):
 
         self.uuid = str(uuid.uuid4())
         self.start_time = time.time()
@@ -25,26 +26,13 @@ class Experiment:
         self.cl_provider = cl_provider
         self.cl_client = cl_client
         self.description = desc
+        self.dev_mode = dev_mode
         self.python_version = platform.python_version()
         self.cores = psutil.cpu_count()
         self.memory = psutil.virtual_memory()[0]
 
         self.invocations = []
 
-    def get_start_time(self) -> float:
-        return self.start_time
-
-    def get_end_time(self) -> float:
-        return self.end_time
-
-    def get_uuid(self):
-        return self.uuid
-
-    def get_experiment_description(self) -> str:
-        return self.description
-    
-    def get_cl_provider(self) -> str:
-        return self.cl_provider
 
     def dev_print(self) -> None:
         pprint(vars(self))
@@ -88,7 +76,7 @@ class Experiment:
                 val_string += """'{0}',""".format(v)
             else:
                 val_string += str(v)+','
-        return 'INSERT INTO Experiment ({0}) VALUES ({1})'.format(key_string[:-1], val_string[:-1])
+        return 'INSERT INTO Experiment ({0}) VALUES ({1});'.format(key_string[:-1], val_string[:-1])
 
     def log_experiment(self):
         return ([self.get_experiment_query_string()], [i.get_query_string() for i in self.get_invocations()])

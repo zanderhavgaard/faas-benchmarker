@@ -17,11 +17,14 @@ class SQL_Interface:
     def log_experiment(self, experiment) -> None:
         # a tuble of lists, first the query of the experiment, second arbitrary many invocations
         query_strings = experiment.log_experiment()
-        if(self.tunnel.insert_queries(query_strings[0])):
+        print(query_strings[0])
+        suc = self.tunnel.insert_queries(query_strings[0])
+        print('!!!!!!!!!!!!!',suc)
+        if(suc):
             was_successful = self.tunnel.insert_queries(query_strings[1])
             print(
                 '|------------------------- INSERTING EXPERIMENT DATA IN DB -------------------------|')
-            print('Experiment with UUID:', experiment.get_uuid(),
+            print('Experiment with UUID:', experiment.uuid,
                   'successfully inserted data in DB:', was_successful)
             print()
 

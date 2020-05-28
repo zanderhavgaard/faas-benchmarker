@@ -51,13 +51,12 @@ def write_errorlog(ex:Exception, description:str, dev_mode:bool, query: str = No
     path = '/home/docker/shared/ErrorLogFile.log' if not dev_mode else expanduser("~")+'/ErrorLogFile.log'
     with open(path, "a+") as f:
         f.write(description+'\n')
-        # if(query != None):
-        #     f.write(query + '\n')
-        f.write(str(datetime.datetime.now()) + '\n')
+        if(query != None):
+            f.write(query + '\n')
+        f.write(str(datetime.now()) + '\n')
         f.write('type: ' + str(type(ex)) + ' exception: ' + str(ex) + '\n')
         f.write("--------------------------\n")
-        print('CHECK')
-        f.close()
+    return True
     
 # print function for development purpose
 def dev_mode_print(context: str, values: list):
@@ -87,7 +86,7 @@ def dict_to_query(dict:dict,table:str) -> str:
 # print metadata about experiment database insertion to logfile 
 def log_experiment_specifics(exp_name:str, uuid:str, err:int, db_check:bool=True):
    
-    print('=======================================================================)')
+    print('=======================================================================')
     print(f'Experiment: {exp_name} with UUID: {uuid} has ended with {err} errors.')
     print(f'Results from experiments has been succesfully added to database: {db_check}')
     print('=======================================================================\n')

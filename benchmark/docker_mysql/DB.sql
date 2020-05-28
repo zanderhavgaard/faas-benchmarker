@@ -21,9 +21,10 @@ CREATE TABLE `Experiment` (
   `start_time` DOUBLE NOT NULL,
   `end_time` DOUBLE NOT NULL,
   `total_time` DOUBLE NOT NULL,
-  INDEX(uuid),
+  `dev_mode` BOOLEAN DEFAULT FALSE,
+  UNIQUE(uuid),
   PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 -- Table of all invocations and their data, linked to an experiment
 CREATE TABLE `Invocation` (
@@ -55,10 +56,10 @@ CREATE TABLE `Invocation` (
   `invocation_end` DOUBLE NOT NULL,
   `execution_total` DOUBLE NOT NULL,
   `invocation_total` DOUBLE NOT NULL,
-  INDEX(identifier),
+  UNIQUE(identifier),
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 -- table to collect data regarding thrown exceptions
 -- have to use bad practice with possible many NULL values due to unpredictability of exceptions
@@ -94,7 +95,7 @@ CREATE TABLE `Error` (
   `invocation_end` DOUBLE DEFAULT 0.0 NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE `Coldstart` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -109,7 +110,7 @@ CREATE TABLE `Coldstart` (
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE  `Function_lifetime` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -122,7 +123,7 @@ CREATE TABLE  `Function_lifetime` (
   `reclaimed` BOOLEAN DEFAULT TRUE,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE `Cc_bench` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -145,7 +146,7 @@ CREATE TABLE `Cc_bench` (
   `acc_latency` DOUBLE NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 
 CREATE TABLE `Function_lifecycle` (
@@ -163,5 +164,5 @@ CREATE TABLE `Function_lifecycle` (
   `repeats_from_orig` varchar(700) NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 

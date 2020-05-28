@@ -73,6 +73,8 @@ fx = f'{experiment_name}{fx_num}'
 if not dev_mode:
     time.sleep(15*60)  # more??
 
+# number of threads to be used
+threads = 12
 # results specific gathered and logged from logic of this experiment
 results = []
 
@@ -87,7 +89,7 @@ def invoke(thread_numb:int):
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=th_time))]))
+    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=0.2))]))
     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
    
     invocations = lib.accumulate_dicts(invocations)
@@ -101,7 +103,7 @@ def err_func(): return benchmarker.end_experiment()
 # convinience for not having to repeat values
 
 
-def validate(x, y, z=None): return lib.iterator_wrapper(
+def validate(x, y, z=threads): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 
 
