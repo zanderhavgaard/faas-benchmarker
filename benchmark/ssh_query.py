@@ -71,6 +71,7 @@ class SSH_query:
                                 try:
                                     res = cur.execute(queries[0])
                                     # if query is successful then remove it from list
+                                    conn.commit()
                                     queries.pop(0)
                                     break
 
