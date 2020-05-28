@@ -64,6 +64,7 @@ class Invocation:
         key_values = self.__dict__.copy()
         monolith = '' if key_values['function_name'] != 'monolith' else self.create_monolith_query(key_values)
         is_error = key_values.pop('is_error')
+
         list(map(lambda x: x if x[1] != None else key_values.pop(x[0]), key_values.copy().items()))
          
         (keys,vals) = reduce(lambda x,y: ( f'{x[0]}{y[0]},', f'{x[1]}{y[1]},') if not isinstance(y[1],str) 

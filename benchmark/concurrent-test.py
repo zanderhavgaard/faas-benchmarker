@@ -8,10 +8,8 @@ from mysql_interface import SQL_Interface
 from functools import reduce
 import pandas as pd
 import numpy as np
-<<<<<<< HEAD
 import function_lib as lib
-=======
->>>>>>> refactored db, concurrent experiment, function_lib, Invocation, and maybe some more
+
 
 # import benchmark.provider_abstract as abstract
 
@@ -105,10 +103,11 @@ print(res)
 # res = bench1.invoke_function_conccurrently('function1',numb_threads=8)
 # print(len(res))
 
-bench1 = bench('exp30','meta','openfaas','foobar', 'testter','/home/thomas/Msc/faas-benchmarker/.test_env',dev_mode=True)
-# bench.invoke_function('function1',invoke_nested=nested)
-res = bench1.invoke_function_conccurrently('function1',numb_threads=8)
-print(len(res))
+# query = ["""INSERT INTO Invocation (exp_id,root_identifier,identifier,uuid,function_name,function_cores,parent,level,sleep,throughput,instance_identifier,memory,python_version,execution_start,execution_end,cpu,process_time,numb_threads,thread_id,invocation_start,invocation_end,invocation_total,execution_total) VALUES ('6af54ac3-3daf-46bb-8d70-457667bbfd75','function1-0e0ed0bf-fe89-4ba1-8183-0edacf800831','function1-0e0ed0bf-fe89-4ba1-8183-0edacf800831','0e0ed0bf-fe89-4ba1-8183-0edacf800831','function1',2,'root',0,0.0,0.0,'172.17.0.11-function1-5d8bd6dd59-55rqr',2135736320,'3.8.2',1590666604.0984492,1590666604.0987663,'',0.439741674,1,1,1590666599.4196024,1590666604.1299126,4.710310220718384,0.0003170967102050781);"""]
+res = ssh_query.insert_queries(query)
+print(res)
+# res = bench1.invoke_function_conccurrently('function1',numb_threads=8)
+# print(len(res))
 
  
 # bench.invoke_function('function1',0.0,nested,1.0)

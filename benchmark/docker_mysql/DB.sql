@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `Experiment` (
   `dev_mode` BOOLEAN DEFAULT FALSE,
   UNIQUE(uuid),
   PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 -- Table of all invocations and their data, linked to an experiment
 CREATE TABLE IF NOT EXISTS `Invocation` (
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `Error` (
   `invocation_end` DOUBLE DEFAULT 0.0 NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 
 CREATE TABLE IF NOT EXISTS  `Monolith` (
@@ -125,7 +125,7 @@ CREATE TABLE IF NOT EXISTS `Coldstart` (
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS  `Function_lifetime` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -138,7 +138,7 @@ CREATE TABLE IF NOT EXISTS  `Function_lifetime` (
   `reclaimed` BOOLEAN DEFAULT TRUE,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `Cc_bench` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `Cc_bench` (
   `acc_latency` DOUBLE NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 
 CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
