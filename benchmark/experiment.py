@@ -76,7 +76,7 @@ class Experiment:
                 val_string += """'{0}',""".format(v)
             else:
                 val_string += str(v)+','
-        return 'INSERT INTO Experiment ({0}) VALUES ({1});'.format(key_string[:-1], val_string[:-1])
+        return """INSERT INTO Experiment ({0}) VALUES ({1});""".format(key_string[:-1], val_string[:-1])
 
     def log_experiment(self):
         return ([self.get_experiment_query_string()], [i.get_query_string() for i in self.get_invocations()])

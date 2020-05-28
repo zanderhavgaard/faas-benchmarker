@@ -49,6 +49,6 @@ class Invocation:
         list(map(lambda x: x if x[1] != None else key_values.pop(x[0]), key_values.copy().items()))
          
         (keys,vals) = lib.generate_key_value_strings(key_values)
-        return 'INSERT INTO {0} ({1}) VALUES ({2});'.format('Error' if is_error else 'Invocation', keys, vals)
+        return """INSERT INTO {0} ({1}) VALUES ({2});""".format('Error' if is_error else 'Invocation', keys, vals)
 
     
