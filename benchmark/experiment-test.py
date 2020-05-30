@@ -7,6 +7,8 @@ from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
 from pprint import pprint
+import os
+
 
 
 
@@ -51,7 +53,9 @@ coldstart_results = []
 
 coldstart_benchmarker = create_benchmarker('coldstart','coldstart-test')
 
-response1 = lib.get_dict(coldstart_benchmarker.invoke_function('function1'))
+response = coldstart_benchmarker.invoke_function('function1')
+pprint(response)
+response1 = lib.get_dict(response)
 response2 = lib.get_dict(coldstart_benchmarker.invoke_function('function1'))
 
 coldstart_results.append({
@@ -91,6 +95,9 @@ print(coldstart_benchmarker.experiment.get_experiment_query_string())
 print()
 print(lib.dict_to_query(coldstart_results[0],'Coldstart'))
 print(lib.dict_to_query(coldstart_results[1],'Coldstart'))
+print()
+uuids = db.get_most_recent_from_table(table='Coldstart', args='invo_id', flag=False)
+pprint(uuids)
 
 # ======================================================
 # concurrent coldstart experiment test

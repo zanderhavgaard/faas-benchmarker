@@ -15,12 +15,9 @@ class SQL_Interface:
 
     def log_experiment(self, experiment) -> None:
         # a tuble of lists, first the query of the experiment, second arbitrary many invocations
-        query_strings = experiment.log_experiment()
-        print(query_strings[0])
-        suc = self.tunnel.insert_queries(query_strings[0])
-        print('!!!!!!!!!!!!!',suc)
-        if(suc):
-            was_successful = self.tunnel.insert_queries(query_strings[1])
+        (experiment_query, invocation_queries) = experiment.log_experiment()
+        if(self.tunnel.insert_queries(experiment_query)):
+            was_successful = self.tunnel.insert_queries(invocation_queries)
             print(
                 '|------------------------- INSERTING EXPERIMENT DATA IN DB -------------------------|')
             print('Experiment with UUID:', experiment.uuid,
@@ -35,6 +32,11 @@ class SQL_Interface:
         res = np.array(self.tunnel.retrive_query(query)).tolist()
         return res[0][0]*60+res[0][1] if res != [] else 16 * 60
     
+    def get_most_recent_from_table(self, table:str, args: str = '*', flag: bool = True) -> list:
+        query = 'SELECT {0} from {1} where exp_id=(select max(id) from Experiment) ORDER BY id DESC LIMIT 1;'.format(args,table)
+        print('query',query)
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res).tolist()
 
 
     def get_most_recent_experiment(self, args: str = '*', flag: bool = True) -> list:
@@ -42,10 +44,12 @@ class SQL_Interface:
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
 
-    def get_from_table(self, table:str, args: str = '*', flag: bool = False):
+
+    def get_from_table(self, table:str, args: str = '*', flag: bool = True):
         query = 'SELECT {0} from {1};'.format(args,table)
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
+
 
     def get_most_recent_invocations(self, args: str = '*', flag: bool = False):
         query = 'select {0} from Invocation where exp_id=(SELECT uuid from Experiment where id=(select max(id) from Experiment));'.format(
