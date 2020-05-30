@@ -84,8 +84,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 "uuid": invocation_uuid,
                 "function_name": function_name,
                 "function_cores": psutil.cpu_count(),
-                "monolith_seed": seed,
-                "args": req_json['args']
             },
         }
 
@@ -1840,19 +1838,20 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
         # =============================================
         #  DIFF FROM GENERIC FUNCTIONS
-        def get_function():
+         def get_function():
             if req_json['run_function'] == 'random':
                 return functions[random.nextint(0,len(functions)-1)]
             else:
                 function_to_find = req_json['run_function'] 
-                for t in functions:
-                    if t[0] == function_to_find:
-                        return t
-            raise Exception('no function name matching the given input')
+                for f in functions:
+                    if f[0] == function_to_find:
+                        return f
+            raise Exception('no function-name matching the given input')
 
         (function_name,func) = get_function()
         result = func(req_json['args'])
         body[identifier]['function_argument'] = req_json['args']
+        body[identifier]['seed'] = req_json['seed']
         body[identifier]['function_called'] = function_name
         body[identifier]['monolith_result'] = str(result)
 

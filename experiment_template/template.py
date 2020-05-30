@@ -30,6 +30,9 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
+# verbose
+verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
+
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
@@ -46,7 +49,8 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
-                          dev_mode=dev_mode)
+                          dev_mode=dev_mode,
+                          verbose=verbose)
 # =====================================================================================
 # database interface for logging results if needed
 db = database(dev_mode)
@@ -96,7 +100,7 @@ def invoke():
 #     benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=th_time))]))
 #     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
    
-#     # *** if a single accumulated dict is desired as return value comment below line in ***
+#     # *** NOTE if a single accumulated dict is desired as return value comment below line in ***
 #     # invocations = lib.accumulate_dicts(invocations)
 #     # return error count and result for this particular invocation 
 #     return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
