@@ -30,16 +30,15 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
-
-# verbose for more prints
-verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
-
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: <description>
+{experiment_name}: This experiment investigates whether startup time for a cold function
+is affected by the size of the function, in terms of number of lines of code and dependencies.
+This is done by first invoking a standard function and then invoking a larger function with
+8 times the number of code lines and 3 fairly large dependencies more (Arrow,pandas,numpy) 
 """
 
 # =====================================================================================
@@ -50,8 +49,7 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
-                          dev_mode=dev_mode,
-                          verbose=verbose)
+                          dev_mode=dev_mode)
 # =====================================================================================
 # database interface for logging results if needed
 db = database(dev_mode)
@@ -71,6 +69,9 @@ fx = f'{experiment_name}{fx_num}'
 # default value set to 15 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
 coldtime = 15 * 60 if coldtime == None else coldtime
+# concurrent coldtime
+coldtime_concurrent = db.get_delay_between_experiment(provider,threaded=True) 
+coldtime_concurrent = 15 * 60 if coldtime_concurrent == None else coldtime_concurrent
 # =====================================================================================
 
 # sleep for 15 minutes to ensure coldstart
@@ -93,18 +94,18 @@ def invoke():
         benchmarker.invoke_function(function_endpoint=fx))
     return response if 'error' not in response else errors.append(response)
 
-# def invoke(thread_numb:int):
+def invoke_concurrent(thread_numb:int):
 
-#     err_count = len(errors)
-#     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
-#     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-#     benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=th_time))]))
-#     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
+    err_count = len(errors)
+    # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
+    invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
+    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=th_time))]))
+    # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
    
-#     # *** NOTE if a single accumulated dict is desired as return value comment below line in ***
-#     # invocations = lib.accumulate_dicts(invocations)
-#     # return error count and result for this particular invocation 
-#     return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
+    # *** if a single accumulated dict is desired as return value comment below line in ***
+    # invocations = lib.accumulate_dicts(invocations)
+    # return error count and result for this particular invocation 
+    return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
 
 # function to be given to validate function if not successful
 # if other action is desired give other function as body

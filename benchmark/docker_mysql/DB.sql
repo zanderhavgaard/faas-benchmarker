@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `Experiment` (
   `dev_mode` BOOLEAN DEFAULT FALSE,
   UNIQUE(uuid),
   PRIMARY KEY (id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 -- Table of all invocations and their data, linked to an experiment
 CREATE TABLE IF NOT EXISTS `Invocation` (
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `Error` (
   `invocation_end` DOUBLE DEFAULT 0.0 NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 
 CREATE TABLE IF NOT EXISTS  `Monolith` (
@@ -110,22 +110,7 @@ CREATE TABLE IF NOT EXISTS  `Monolith` (
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
-
-
-CREATE TABLE IF NOT EXISTS `Monolith` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `exp_id`varchar(36) NOT NULL,
-  `invo_id` varchar(100) NOT NULL,
-  `seed` INT DEFAULt 0,
-  `function_argument` INT DEFAULT 0,
-  `function_called` varchar(50) NOT NULL,
-  `process_time_matrix` DOUBLE DEFAULT 0.0,
-  `running_time_matrix` DOUBLE DEFAULT 0.0,
-  PRIMARY KEY (id),
-  FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
-  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS `Coldstart` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -140,7 +125,7 @@ CREATE TABLE IF NOT EXISTS `Coldstart` (
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS  `Function_lifetime` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -153,7 +138,7 @@ CREATE TABLE IF NOT EXISTS  `Function_lifetime` (
   `reclaimed` BOOLEAN DEFAULT TRUE,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS `Cc_bench` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -175,7 +160,7 @@ CREATE TABLE IF NOT EXISTS `Cc_bench` (
   `acc_latency` DOUBLE NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 
 CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
