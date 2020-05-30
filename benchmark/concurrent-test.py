@@ -8,6 +8,9 @@ from mysql_interface import SQL_Interface
 from functools import reduce
 import pandas as pd
 import numpy as np
+import function_lib as lib
+
+
 # import benchmark.provider_abstract as abstract
 
 
@@ -28,7 +31,7 @@ path = '/home/thomas/Msc/faas-benchmarker/benchmark/DB_interface/.ssh_query_test
 
 # ssh = SSH_query()
 
-db_interface = SQL_Interface()
+db_interface = SQL_Interface(dev_mode=True)
 
 # db_interface.log_lifetime('experiment_uuid',
 #                             'function_id',
@@ -90,10 +93,23 @@ db_interface = SQL_Interface()
 # print('all experiments',db_interface.get_all_experiments('id',flag=False))
 # print()
 # print()
+ssh_query = SSH_query(dev_mode=True)
+query = ["""INSERT INTO Experiment (uuid,start_time,experiment_meta_identifier,name,cl_provider,cl_client,description,dev_mode,python_version,cores,memory,end_time,total_time) VALUES ('test',4.764794,'meta','coldstart','openfaas','client','coldstart-test',True,'3.6.9',4,8244023296,1590665445.7252052,0.9604110717773438);"""]
 
-bench1 = bench('exp30','meta','openfaas','foobar', 'testter','/home/thomas/Msc/faas-benchmarker/.test_env')
-# bench.invoke_function('function1',invoke_nested=nested)
-bench1.invoke_function_conccurrently('function1',numb_threads=8)
+#  query = ["""INSERT INTO Invocation (exp_id,root_identifier,identifier,uuid,function_name,function_cores,parent,level,sleep,throughput,instance_identifier,memory,python_version,execution_start,execution_end,cpu,process_time,numb_threads,thread_id,invocation_start,invocation_end,invocation_total,execution_total) VALUES ('6af54ac3-3daf-46bb-8d70-457667bbfd75','function1-0e0ed0bf-fe89-4ba1-8183-0edacf800831','function1-0e0ed0bf-fe89-4ba1-8183-0edacf800831','0e0ed0bf-fe89-4ba1-8183-0edacf800831','function1',2,'root',0,0.0,0.0,'172.17.0.11-function1-5d8bd6dd59-55rqr',2135736320,'3.8.2',1590666604.0984492,1590666604.0987663,'',0.439741674,1,1,1590666599.4196024,1590666604.1299126,4.710310220718384,0.0003170967102050781);"""]
+
+res = ssh_query.insert_queries(query)
+print(res)
+# res = bench1.invoke_function_conccurrently('function1',numb_threads=8)
+# print(len(res))
+
+# query = ["""INSERT INTO Invocation (exp_id,root_identifier,identifier,uuid,function_name,function_cores,parent,level,sleep,throughput,instance_identifier,memory,python_version,execution_start,execution_end,cpu,process_time,numb_threads,thread_id,invocation_start,invocation_end,invocation_total,execution_total) VALUES ('6af54ac3-3daf-46bb-8d70-457667bbfd75','function1-0e0ed0bf-fe89-4ba1-8183-0edacf800831','function1-0e0ed0bf-fe89-4ba1-8183-0edacf800831','0e0ed0bf-fe89-4ba1-8183-0edacf800831','function1',2,'root',0,0.0,0.0,'172.17.0.11-function1-5d8bd6dd59-55rqr',2135736320,'3.8.2',1590666604.0984492,1590666604.0987663,'',0.439741674,1,1,1590666599.4196024,1590666604.1299126,4.710310220718384,0.0003170967102050781);"""]
+res = ssh_query.insert_queries(query)
+print(res)
+# res = bench1.invoke_function_conccurrently('function1',numb_threads=8)
+# print(len(res))
+
+ 
 # bench.invoke_function('function1',0.0,nested,1.0)
 # # bench.invoke_function_conccurrently('function2',throughput_time=0.8,numb_threads=8)
 # for i in bench.experiment.get_invocations():
@@ -108,29 +124,63 @@ bench1.invoke_function_conccurrently('function1',numb_threads=8)
 #                             12,
 #                             False)
 # print(db_interface.get_from_table('Function_lifetime',flag=True))
-db_interface.log_coldtime(f'{bench1.experiment.uuid}','test',2,2,20,True,True,True)
+# db_interface.log_coldtime(f'{bench1.experiment.uuid}','test',2,2,20,True,True,True)
 # print()
 
 
-bench1.end_experiment()
+# bench1.end_experiment()
 
-#########################
+# #########################
 
-bench2 = bench('exp31','meta','openfaas','foobar', 'tester','/home/thomas/Msc/faas-benchmarker/.test_env')
-bench2.invoke_function('function3')
-db_interface.log_coldtime(f'{bench2.experiment.uuid}','test',5,30,20,False,True,True)
+# r = db_interface.log_concurrent_result(f'{bench1.experiment.uuid}',
+#                                     'fx1',
+#                                     8,
+#                                     800,
+#                                     2,
+#                                     0.3,
+#                                     5000,
+#                                     1.02,
+#                                     4,
+#                                     1.03,
+#                                     2.0,
+#                                     2.1,
+#                                     2.3,
+#                                     2.4,
+#                                     2.5,
+#                                     2.6,
+#                                     2.7)
+# print(r)
+# db_interface.log_clfunction_lifecycle(f'{bench1.experiment.uuid}',
+#                                 'fx',
+#                                 8,
+#                                 0.2,
+#                                 0,
+#                                 2,
+#                                 1.2,
+#                                 0.0,
+#                                 1,
+#                                 'identifiers') 
 
-bench2.end_experiment()
+# r = db_interface.get_from_table(table='Function_lifecycle',flag=False)
+# print(r)
+# r = db_interface.get_from_table(table='Experiment',flag=False)
+# print(r)
 
-delay = db_interface.get_delay_between_experiment(bench1.experiment.get_cl_provider(),True)
-print()
-# delay2 = db_interface.get_delay_between_experiment(bench.experiment.get_cl_provider(),False)
-# print('delay2',delay2)
+# bench2 = bench('exp31','meta','openfaas','foobar', 'tester','/home/thomas/Msc/faas-benchmarker/.test_env')
+# bench2.invoke_function('function3')
+# db_interface.log_coldtime(f'{bench2.experiment.uuid}','test',5,30,20,False,True,True)
 
-cold_bench1 = db_interface.get_coldtime_benchmark(bench1.experiment.get_cl_provider(),threaded=True)
-print(cold_bench1)
-cold_bench2 = db_interface.get_coldtime_benchmark(bench2.experiment.get_cl_provider())
-print(cold_bench2)
+# bench2.end_experiment()
+
+# delay = db_interface.get_delay_between_experiment(bench1.experiment.get_cl_provider(),True)
+# print()
+# # delay2 = db_interface.get_delay_between_experiment(bench.experiment.get_cl_provider(),False)
+# # print('delay2',delay2)
+
+# cold_bench1 = db_interface.get_coldtime_benchmark(bench1.experiment.get_cl_provider(),threaded=True)
+# print(cold_bench1)
+# cold_bench2 = db_interface.get_coldtime_benchmark(bench2.experiment.get_cl_provider())
+# print(cold_bench2)
 
 # delay = db_interface.get_delay_between_experiment('openfaas')
 # print(delay)

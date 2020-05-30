@@ -1,14 +1,12 @@
+
 import sys
 import json
 import time
-from pprint import pprint
-from benchmarker import Benchmarker
 from datetime import datetime
+import traceback
+from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
-import traceback 
-
-
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -54,16 +52,19 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           dev_mode=dev_mode)
 # =====================================================================================
 # create database interface for logging results
-db = database()
+db = database(dev_mode)
+# name of table to insert data into - HAVE TO BE SET!!
+table = 'Cc_bench'
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
-
 experiment_uuid = benchmarker.experiment.uuid
 
-# number of thread to run
-thread_numb = 8
+# what function to test on (1-3)
+fx_num = 1
+fx = f'{experiment_name}{fx_num}'
 
+# =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 11 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
@@ -71,14 +72,18 @@ coldtime = 11 * 60 if coldtime == None else coldtime
 # meassured time for a function to be cold in a concurrent environment
 # default value set to 13 minutes if the experiment has not been run
 coldtime_threaded = db.get_delay_between_experiment(provider,threaded=True) 
-coldtime_threaded = 13 * 60 if coldtime_threaded == None else coldtime_threaded
+coldtime_threaded = 15 * 60 if coldtime_threaded == None else coldtime_threaded
+# =====================================================================================
 
-# what function to test on (1-3)
-fx_num = 2
-fx = f'{experiment_name}{fx_num}'
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
-    time.sleep(coldtime)  # more??
+    time.sleep(coldtime)  
+
+# results specific gathered and logged from logic of this experiment
+results = []
+
+# results specific gathered and logged from logic of this experiment
+results = []
 
 # sift away errors at runtime and report them later
 errors = []
@@ -86,7 +91,7 @@ errors = []
 # Convienience methods needed for this experiment
 
 # invoke function and return the result dict
-def invoke():
+def invoke(thread_numb:int):
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocation_list = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
@@ -104,80 +109,64 @@ def err_func(): return benchmarker.end_experiment()
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 
-def insert_into_db(dict:dict,errors) -> None:
-    throughput_time = dict['throughput_time']
-    throughput = 0 if throughput_time == 0.0 else dict['throughput']
-    p_time = dict['process_time']
-    cores = dict['cores']
-    success_rate = 1-errors/thread_numb
-    acc_exe_st = dict['execution_start']
-    acc_exe_end = dict['execution_end']
-    acc_invo_st = dict['invocation_start']
-    acc_invo_end = dict['invocation_end']
-    acc_exe_total = dict['execution_total']
-    acc_invo_total = dict['invocation_total']
-    acc_latency = acc_exe_st - acc_invo_st
-
-    db.log_concurrent_result(experiment_uuid,
-                            fx,
-                            thread_numb,
-                            coldtime,
-                            errors,
-                            throughput_time,
-                            throughput,
-                            p_time,
-                            cores,
-                            success_rate,
-                            acc_exe_st,
-                            acc_exe_end,
-                            acc_invo_st,
-                            acc_invo_end,
-                            acc_exe_total,
-                            acc_invo_total,
-                            acc_latency)
+def append_result(dict:dict, err:int, thread_numb:int) -> None:
+    
+    results.append({
+        'exp_id':experiment_uuid,
+        'function_name': fx,
+        'numb_threads': thread_numb,
+        'sleep_time': coldtime,
+        'errors': err,
+        'throughput_time': dict['throughput_time'],
+        'acc_throughput': 0 if dict['throughput_time'] == 0.0 else dict['throughput'],
+        'acc_process_time': dict['process_time'], 
+        'cores': dict['cores'],
+        'success_rate': 1-errors/thread_numb,
+        'acc_execution_start': dict['execution_start'],
+        'acc_execution_end': dict['execution_end'],
+        'acc_invocation_start': dict['invocation_start'],
+        'acc_invocation_end': dict['invocation_end'],
+        'acc_execution_total': dict['execution_total'],
+        'acc_invocation_total': dict['invocation_total'],
+        'acc_latency': dict['execution_start'] - dict['invocation_start'] 
+        })
 
 # =====================================================================================
 # The actual logic if the experiment
-
+def run_experiment(thread_numb:int,upper_bound:int):
+    global coldtime
+    while(thread_numb <= upper_bound):
+        for i in range(5):
+            (err,response) = validate(invoke,f'Invoking with {thread_numb} threads',thread_numb)
+            if not dev_mode:
+                append_result(response,err,thread_numb)
+                thread_numb *= 2
+            else:
+                lib.dev_mode_print(f'Invocation with {thread_numb} threads and {err} errors', response.items())
+                thread_numb += 2
+                if(thread_numb > 14):
+                    raise Exception('Ending experiment due to dev_mode')
+            time.sleep(coldtime)
+    
 try:
 
-    while(thread_numb < 260):
-        for i in range(5):
-            (errors,response) = validate(invoke,f'Invoking with {thread_numb} threads')
-            insert_into_db(response,errors)
-            time.sleep(coldtime)
-        if not dev_mode:
-            thread_numb *= 2
-        else: 
-            thread_numb += 2
-            if(thread_numb > 14):
-                benchmarker.end_experiment()
-    
-    # reset threadnumb to run again with coldtime_threaded
-    thread_numb = 8
+    # run experiment with coldstart time meassured for a sequential environment 
+    run_experiment(8,256)
+
+    # set coldtime to meassured time for concurrent environment
     coldtime = coldtime_threaded
+    # run experiment with new coldtime
+    run_experiment(8,256)
     
-    while(thread_numb <= 256):
-        for i in range(5):
-            (errors,response) = validate(invoke,f'Invoking with {thread_numb} threads')
-            insert_into_db(response,errors)
-            time.sleep(coldtime)
-        if not dev_mode:
-            thread_numb *= 2
-        else: 
-            thread_numb += 2
-            if(thread_numb > 14):
-                benchmarker.end_experiment()
-    
-    # print to logfile
-    print(f'{experiment_name} with UUID: {experiment_uuid} using function{fx_num} ended wtih {len(errors)} errors')
-        
-    
-         
     # =====================================================================================
-    # end of the experiment
+    # end of the experiment, results are logged to database
     benchmarker.end_experiment()
     # =====================================================================================
+    # log experiments specific results, hence results not obtainable from the generic Invocation object
+    lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                db.log_exp_result([lib.dict_to_query(x,table) for x in results]))
 
 except Exception as e:
     # this will print to logfile
@@ -188,3 +177,5 @@ except Exception as e:
     print('Trace: {0}'.format(traceback.format_exc()))
     print('-----------------------------------------')
     benchmarker.end_experiment()
+    
+    

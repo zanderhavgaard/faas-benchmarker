@@ -1,5 +1,5 @@
 
-create database if not exists Benchmarks;
+create database Benchmarks;
 use Benchmarks;
 
 
@@ -21,17 +21,19 @@ CREATE TABLE IF NOT EXISTS `Experiment` (
   `start_time` DOUBLE NOT NULL,
   `end_time` DOUBLE NOT NULL,
   `total_time` DOUBLE NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+  `dev_mode` BOOLEAN DEFAULT FALSE,
+  UNIQUE(uuid),
+  PRIMARY KEY (id)
+) ENGINE=InnoDB;
 
 -- Table of all invocations and their data, linked to an experiment
 CREATE TABLE IF NOT EXISTS `Invocation` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `exp_id`varchar(36) NOT NULL,
+  `exp_id` varchar(36) NOT NULL,
   `root_identifier`varchar(100) NOT NULL,
   `identifier` varchar(100) NOT NULL,
   `function_name` varchar(50) NOT NULL,
-  `uuid` varchar(36) NOT NULL,
+  `uuid` varchar(36),
   `parent` varchar(100) NOT NULL,
   `level` INT NOT NULL,
   `sleep` DOUBLE NOT NULL,
@@ -54,9 +56,10 @@ CREATE TABLE IF NOT EXISTS `Invocation` (
   `invocation_end` DOUBLE NOT NULL,
   `execution_total` DOUBLE NOT NULL,
   `invocation_total` DOUBLE NOT NULL,
-  PRIMARY KEY (`id`),
-  FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+  UNIQUE(identifier),
+  PRIMARY KEY (id),
+  FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- table to collect data regarding thrown exceptions
 -- have to use bad practice with possible many NULL values due to unpredictability of exceptions
@@ -90,8 +93,23 @@ CREATE TABLE IF NOT EXISTS `Error` (
   `execution_end` DOUBLE DEFAULT 0.0 NOT NULL,
   `invocation_start` DOUBLE DEFAULT 0.0 NOT NULL,
   `invocation_end` DOUBLE DEFAULT 0.0 NOT NULL,
-  PRIMARY KEY (`id`),
+  PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS  `Monolith` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `exp_id`varchar(36) NOT NULL,
+  `invo_id` varchar(100) NOT NULL,
+  `seed` INT DEFAULt 0,
+  `function_argument` INT DEFAULT 0,
+  `function_called` varchar(50) NOT NULL,
+  `process_time_matrix` DOUBLE DEFAULT 0.0,
+  `running_time_matrix` DOUBLE DEFAULT 0.0,
+  PRIMARY KEY (id),
+  FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
+  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
 
 
@@ -122,9 +140,9 @@ CREATE TABLE IF NOT EXISTS `Coldstart` (
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
-CREATE TABLE IF NOT EXISTS `Function_lifetime` (
+CREATE TABLE IF NOT EXISTS  `Function_lifetime` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `instance_identifier` varchar(100) NOT NULL,
@@ -135,14 +153,13 @@ CREATE TABLE IF NOT EXISTS `Function_lifetime` (
   `reclaimed` BOOLEAN DEFAULT TRUE,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS `Cc_bench` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `function_name` varchar(50) NOT NULL,
   `numb_threads` INT NOT NULL,
-  `sleep_time` DOUBLE NOT NULL,
   `errors` INT NOT NULL,
   `throughput_time` DOUBLE NOT NULL,
   `acc_throughput` DOUBLE NOT NULL,
@@ -158,4 +175,23 @@ CREATE TABLE IF NOT EXISTS `Cc_bench` (
   `acc_latency` DOUBLE NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
-) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `exp_id`varchar(36) NOT NULL,
+  `function_name` varchar(50) NOT NULL,
+  `numb_invokations` INT NOT NULL,
+  `throughput_time` DOUBLE NOT NULL,
+  `errors` INT NOT NULL,
+  `unique_instances` INT NOT NULL,
+  `distribution` DOUBLE NOT NULL,
+  `error_dist` DOUBLE NOT NULL,
+  `diff_from_orig` INT NOT NULL,
+  `identifiers` varchar(700) NOT NULL,
+  `repeats_from_orig` varchar(700) NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+

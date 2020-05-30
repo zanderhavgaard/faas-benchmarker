@@ -13,6 +13,9 @@ import traceback
 import time
 import function_lib as lib
 
+from os.path import expanduser
+
+
 
 class SSH_query:
     # set variables for connection to MySql on DB server via ssh tunnel
@@ -66,8 +69,9 @@ class SSH_query:
                         for i in range(list_length):
                             for x in range(3):
                                 try:
-                                    cur.execute(queries[0])
+                                    res = cur.execute(queries[0])
                                     # if query is successful then remove it from list
+                                    conn.commit()
                                     queries.pop(0)
                                     break
 
@@ -78,6 +82,7 @@ class SSH_query:
                                         q = queries.pop(0)
                                         error_list.append(q)
                                         lib.write_errorlog(qe, 'Sql error with query:',self.dev_mode, q)
+                                        
 
                         conn.close()
                         tunnel.stop()
@@ -88,12 +93,13 @@ class SSH_query:
                         if('conn' in locals()):
                             conn.close()
                         # log error message if database connection failed
-                        lib.write_errorlog(ex, 'MySql connection error',self.dev_mode)
+                        res = lib.write_errorlog(ex, 'MySql connection error',self.dev_mode)
+                        
 
             except Exception as e:
                 if(x == 9):
                     # if all 10 atempts failed log error and return False
-                    self.write_errorlog(e, "Caught tunnel exception while inserting",self.dev_mode)
+                    lib.write_errorlog(e, "Caught tunnel exception while inserting",self.dev_mode)
                     return False
 
     # set return_type to False if list representation is wanted
@@ -139,3 +145,4 @@ class SSH_query:
                 if(x == 9):
                     lib.write_errorlog(e, 'Caught tunnel exception while retriving data',self.dev_mode)
                     return None
+

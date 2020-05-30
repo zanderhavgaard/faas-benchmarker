@@ -13,7 +13,7 @@ from pprint import pprint
 class AbstractProvider(ABC):
 
     @abstractmethod
-    def invoke_function(self, name: str, sleep=0.0, invoke_nested: list = None):
+    def invoke_function(self, name:str, sleep=0.0, invoke_nested:list = None, throughput_time:float = 0.0):
         pass
 
 
@@ -114,10 +114,9 @@ class AbstractProvider(ABC):
                                     invoke_nested=None,
                                     throughput_time=0.0,
                                     numb_threads:int=1) -> list:
-
         thread_args = (name, sleep, invoke_nested, throughput_time)
         # find number of cpus that work can be delegated to
-        system_cores = mp.cpu_count()
+        system_cores = mp.cpu_count() if mp.cpu_count() < numb_threads else numb_threads
         # find number of threads to assign to each core
         threads_per_core = int(numb_threads / system_cores)
         # find remaining threads if perfect distribution cant be done
@@ -147,29 +146,29 @@ class AbstractProvider(ABC):
                 # pipes to send computed data back
                 recieve_pipe, send_pipe = mp.Pipe(False)
                 # if threads can be distributed evenly add remaining to first process
-                if(remaining_threads != 0 and i == 0):
+                if(remaining_threads > 0 ):
                     t_numb += remaining_threads
                     id_count += remaining_threads
+                    remaining_threads = 0
                 # args for concurrent wrapper method
                 process_args = (thread_args, id_start,
                                 t_numb, numb_threads, mp_barrier, send_pipe)
                 # create and add process to list
-                processes.append(mp.Process(
-                    target=self.delegate_to_core, args=process_args))
+                processes.append(mp.Process(target=self.delegate_to_core, args=process_args))
                 # pup pipe in list to later retrive results
                 recieve_pipes.append(recieve_pipe)
                 # adjust count to give each core/cpu right load and thread id's
                 id_count += threads_per_core
-
+                
             # run processes concurrently
             for p in processes:
                 p.start()
+            
 
             # join processes
             for p in processes:
                 p.join()
-            time.sleep(3)
-
+            
             # computation is parallelized but recieveing computed results is sequential
             for x in recieve_pipes:
                 try:
@@ -192,8 +191,8 @@ class AbstractProvider(ABC):
             return flatten_data_list
 
         except Exception as e:
-            self.print_error('caught exception in invoke_function_conccrently', datetime.now(
-            ), e, thread_args, 'main', numb_threads)
+            self.print_error('caught exception in invoke_function_conccrently', datetime.now(), 
+                                e, thread_args, 'main', numb_threads)
             return reduce(lambda x, y: x+y, data_list)
 
     def print_error(self, desc: str, time, exception: Exception, args, numb_threads: str, total_numb: int) -> None:

@@ -15,12 +15,12 @@ class SQL_Interface:
 
     def log_experiment(self, experiment) -> None:
         # a tuble of lists, first the query of the experiment, second arbitrary many invocations
-        query_strings = experiment.log_experiment()
-        if(self.tunnel.insert_queries(query_strings[0])):
-            was_successful = self.tunnel.insert_queries(query_strings[1])
+        (experiment_query, invocation_queries) = experiment.log_experiment()
+        if(self.tunnel.insert_queries(experiment_query)):
+            was_successful = self.tunnel.insert_queries(invocation_queries)
             print(
                 '|------------------------- INSERTING EXPERIMENT DATA IN DB -------------------------|')
-            print('Experiment with UUID:', experiment.get_uuid(),
+            print('Experiment with UUID:', experiment.uuid,
                   'successfully inserted data in DB:', was_successful)
             print()
 
@@ -32,6 +32,11 @@ class SQL_Interface:
         res = np.array(self.tunnel.retrive_query(query)).tolist()
         return res[0][0]*60+res[0][1] if res != [] else 16 * 60
     
+    def get_most_recent_from_table(self, table:str, args: str = '*', flag: bool = True) -> list:
+        query = 'SELECT {0} from {1} where exp_id=(select max(id) from Experiment) ORDER BY id DESC LIMIT 1;'.format(args,table)
+        print('query',query)
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res).tolist()
 
 
     def get_most_recent_experiment(self, args: str = '*', flag: bool = True) -> list:
@@ -39,10 +44,12 @@ class SQL_Interface:
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
 
-    def get_from_table(self, table:str, args: str = '*', flag: bool = False):
+
+    def get_from_table(self, table:str, args: str = '*', flag: bool = True):
         query = 'SELECT {0} from {1};'.format(args,table)
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
+
 
     def get_most_recent_invocations(self, args: str = '*', flag: bool = False):
         query = 'select {0} from Invocation where exp_id=(SELECT uuid from Experiment where id=(select max(id) from Experiment));'.format(
@@ -205,7 +212,26 @@ class SQL_Interface:
                     
         return self.tunnel.insert_queries([query])
 
+    # track-cloudfunctions-lifecycle experiment specific
+    def log_clfunction_lifecycle(self,
+                                exp_uuid:str,
+                                func_name:str,
+                                numb_invokation:int,
+                                throughput_time:float,
+                                errors:int,
+                                unique_instances:int,
+                                distribution:float,
+                                error_dist:float,
+                                diif_from_first:int,
+                                identifiers:str):
+        query = """INSERT INTO Function_lifecycle (exp_id,function_name,numb_invokations,throughput_time,errors,unique_instances,
+        distribution,error_dist,diff_from_first,identifiers) VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},'{9}');""".format(
+        exp_uuid,func_name,numb_invokation,throughput_time,errors,unique_instances,distribution,error_dist,diif_from_first,identifiers)
+        return self.tunnel.insert_queries([query])
     
+    def log_exp_result(self,results:list) -> bool:
+        return self.tunnel.insert_queries(results)
+        
 
     # ----- DEV FUNCTIONS BELOW
 

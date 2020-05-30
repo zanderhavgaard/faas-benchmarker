@@ -24,10 +24,12 @@ class Benchmarker:
                  client_provider: str,
                  experiment_description: str,
                  env_file_path: str,
-                 dev_mode: bool = False) -> None:
+                 dev_mode: bool = False,
+                 verbose: bool = False) -> None:
 
         # do not log anything if running in dev mode
         self.dev_mode = dev_mode
+        self.verbose = verbose
 
         # get function execution provider
         self.provider = self.get_provider(
@@ -38,7 +40,8 @@ class Benchmarker:
                                      experiment_name,
                                      provider,
                                      client_provider,
-                                     experiment_description)
+                                     experiment_description,
+                                     dev_mode)
 
         print('\n=================================================')
         print('FaaS Benchmarker --> Starting Experiment ...')
@@ -52,10 +55,10 @@ class Benchmarker:
         print(f'Using client provider:      {client_provider}')
         print(f'Using environment file:     {env_file_path}')
         print(
-            f'Experiment start time:      {time.ctime(int(self.experiment.get_start_time()))}')
+            f'Experiment start time:      {time.ctime(int(self.experiment.start_time))}')
         print('=================================================')
         print(
-            f'Experiment description: {self.experiment.get_experiment_description()}')
+            f'Experiment description: {self.experiment.description}')
         print('=================================================\n')
 
     # create cloud function execution provider
@@ -86,15 +89,16 @@ class Benchmarker:
         print(f'Experiment end time: {time.ctime(int(end_time))}')
         print('Experiment running time: ' +
               f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
-        print('=================================================')
+        print('=================================================\n')
+       
 
     def dump_data(self):
-        # do not log data if running in development mode locally
-        if not self.dev_mode:
-            # store all data from experiment in database
-            db = db_interface()
-            db.log_experiment(self.experiment)
-        else:
+        # store all data from experiment in database
+        db = db_interface(self.dev_mode)
+        db.log_experiment(self.experiment)
+        
+
+        if self.dev_mode:
             print('\n\n')
             invocations_orig = self.experiment.get_invocations_original_form()
             print('Experiment:', self.experiment.name, 'invoked', len(
@@ -107,15 +111,16 @@ class Benchmarker:
             print(self.experiment.get_experiment_query_string())
             print()
             print('Number of functions invoked in total:', len(invocations))
-            print('--- DATA OF EACH INVOCATION ---')
-            for invo in invocations:
-                print()
-                print('INVOCATION META DATA FOR identifier:', invo.identifier)
-                print(invo.dev_print())
-                print()
-                print('SQL query for invocation')
-                print(invo.get_query_string())
-                print('-------------------------------------------')
+            if self.verbose:
+                print('--- DATA OF EACH INVOCATION ---')
+                for invo in invocations:
+                    print()
+                    print('INVOCATION META DATA FOR identifier:', invo.identifier)
+                    print(invo.dev_print())
+                    print()
+                    print('SQL query for invocation')
+                    print(invo.get_query_string())
+                    print('-------------------------------------------')
 
     def end_experiment(self) -> None:
         # log the experiment running time, and print to log
@@ -182,6 +187,6 @@ class Benchmarker:
 
 # do something smarter here
 class EmptyResponseError(RuntimeError):
-    def __ini__(self, error_msg: str):
+    def __init__(self, error_msg: str):
         super(error_msg)
         
