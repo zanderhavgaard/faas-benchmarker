@@ -48,7 +48,7 @@ class Invocation:
         keys = 'exp_id,invo_id,seed,function_argument,function_called,monolith_result'
         values = """'{0}','{1}',{2},{3},'{4}','{5}'""".format(
                                                 self.exp_id,
-                                                invo['identifier'],
+                                                invo_dict['identifier'],
                                                 invo_dict.pop('seed'),
                                                 invo_dict.pop('function_argument'),
                                                 invo_dict.pop('function_called'),

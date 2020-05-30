@@ -61,15 +61,19 @@ table = None
 # UUID from experiment
 experiment_uuid = benchmarker.experiment.uuid
 
-# what function to test on (1-3), or 'monolith' 
-fx_num = 1
-fx = f'{experiment_name}{fx_num}'
+function_endpoint = experiment_name
+function = 'function1'
+
 
 # =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 15 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
 coldtime = 15 * 60 if coldtime == None else coldtime
+# threaded coldtime
+coldtime = db.get_delay_between_experiment(provider,threaded=True) 
+coldtime = 15 * 60 if coldtime == None else coldtime
+
 # =====================================================================================
 
 # sleep for 15 minutes to ensure coldstart
@@ -87,23 +91,22 @@ errors = []
 # * comment below function out and other invoke     *
 # * function in if experiment is concurrent invoked *
 # ***************************************************
-def invoke():
+def invoke(args:dict= None):
     response = lib.get_dict(
-        benchmarker.invoke_function(function_endpoint=fx))
+        benchmarker.invoke_function(function_endpoint=function_endpoint, function=function, args=args))
     return response if 'error' not in response else errors.append(response)
 
-# def invoke(thread_numb:int):
+def invoke_concurrently( args ):
 
-#     err_count = len(errors)
-#     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
-#     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-#     benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=th_time))]))
-#     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
+    err_count = len(errors)
+    # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
+    invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
+    benchmarker.invoke_function_conccurrently(function_endpoint=function_endpoint, function=function, args=args[0], numb_threads=args[1]))]))
+    # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
    
-#     # *** NOTE if a single accumulated dict is desired as return value comment below line in ***
-#     # invocations = lib.accumulate_dicts(invocations)
-#     # return error count and result for this particular invocation 
-#     return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
+    # invocations = lib.accumulate_dicts(invocations)
+    # return error count and result for this particular invocation 
+    return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
 
 # function to be given to validate function if not successful
 # if other action is desired give other function as body
@@ -114,26 +117,45 @@ def err_func(): benchmarker.end_experiment()
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 
-# parse data that needs to be logged to database.
-# can take whatever needed arguments but has to return/append a dict
-def append_result(values_to_log) -> None:
-    # key HAS to have same name as column in database
-    results.append({
-        # key : value
-        })
+
 
 # =====================================================================================
 
 try:
 
-# Add the experiment logic here
-# for example invoke function:
-#   response = validate(invoke,f'invoking {fx}')
-# or concurrently:
-#   validate(invoke, f'invoking {fx} concurrently', 8)
+    throughput_times = [0.1,0.2,0.4,0.8,1.2,1.6,2.4]
+    for t in throughput_times:
+        for i in range(5):
+            validate(invoke,f'invoking sequantially with {t} throughput_time', {'throughput_time':t})
+    
+    for t in throughput_times[:-2]:
+        for i in range(5):
+            validate(invoke_concurrently, f'invoking concurrently with {t} throughput_time', ({'throughput_time':t}, 12))
+    
+    # change endpoint to monolith function and invoke throughput in terms of matrix multiplication
 
-# NOTE use lib.dev_mode_print to print to terminal in dev_mode
-# takes context:str and args:list as arguments -> args are what you want to have printed
+    matrix_size = [40,80,120,160,200,240]
+    function = 'monolith'
+    for n in matrix_size:
+        for i in range(5):
+            validate(invoke, 
+                    f'invoking monolith with args {n}', 
+                    {
+                    'seed':i,
+                    'run_function': 'matrix_mult',
+                    'args': n
+                    })
+    
+    for n in matrix_size[:-3]:
+        for i in range(3):
+            validate(invoke_concurrently, 
+                    f'invoking monolith with args {n}', 
+                    ({
+                    'seed':i,
+                    'run_function': 'matrix_mult',
+                    'args': n
+                    }, 12))
+
 
 
    # =====================================================================================
@@ -144,7 +166,7 @@ try:
     lib.log_experiment_specifics(experiment_name,
                                 experiment_uuid, 
                                 len(errors), 
-                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
+                                True)
 
 except Exception as e:
     # this will print to logfile

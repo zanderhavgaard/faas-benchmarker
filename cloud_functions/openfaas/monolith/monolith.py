@@ -82,8 +82,6 @@ def handle(req):
                 "uuid": invocation_uuid,
                 "function_name": function_name,
                 "function_cores": psutil.cpu_count(),
-                "monolith_seed": seed,
-                "args": event['args']
             }
         }
 
@@ -1844,14 +1842,15 @@ def handle(req):
                 return functions[random.nextint(0,len(functions)-1)]
             else:
                 function_to_find = event['run_function'] 
-                for t in functions:
-                    if t[0] == function_to_find:
-                        return t
-            raise Exception('no function name matching the given input')
+                for f in functions:
+                    if f[0] == function_to_find:
+                        return f
+            raise Exception('no function-name matching the given input')
 
         (function_name,func) = get_function()
         result = func(event['args'])
         body[identifier]['function_argument'] = event['args']
+        body[identifier]['seed'] = event['seed']
         body[identifier]['function_called'] = function_name
         body[identifier]['monolith_result'] = str(result)
 
