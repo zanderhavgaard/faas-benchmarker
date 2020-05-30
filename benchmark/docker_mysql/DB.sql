@@ -7,7 +7,7 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
 -- Table of all experiments and its meta data
-CREATE TABLE `Experiment` (
+CREATE TABLE IF NOT EXISTS `Experiment` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `experiment_meta_identifier` varchar(100) NOT NULL,
   `uuid` varchar(36) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE `Experiment` (
 ) ENGINE=InnoDB;
 
 -- Table of all invocations and their data, linked to an experiment
-CREATE TABLE `Invocation` (
+CREATE TABLE IF NOT EXISTS `Invocation` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id` varchar(36) NOT NULL,
   `root_identifier`varchar(100) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE `Invocation` (
 
 -- table to collect data regarding thrown exceptions
 -- have to use bad practice with possible many NULL values due to unpredictability of exceptions
-CREATE TABLE `Error` (
+CREATE TABLE IF NOT EXISTS `Error` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `root_identifier` varchar(100) NOT NULL,
@@ -97,7 +97,22 @@ CREATE TABLE `Error` (
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE `Coldstart` (
+
+CREATE TABLE IF NOT EXISTS  `Monolith` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `exp_id`varchar(36) NOT NULL,
+  `invo_id` varchar(100) NOT NULL,
+  `seed` INT DEFAULt 0,
+  `function_argument` INT DEFAULT 0,
+  `function_called` varchar(50) NOT NULL,
+  `process_time_matrix` DOUBLE DEFAULT 0.0,
+  `running_time_matrix` DOUBLE DEFAULT 0.0,
+  PRIMARY KEY (id),
+  FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
+  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
+CREATE TABLE IF NOT EXISTS `Coldstart` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `invo_id` varchar(100) NOT NULL,
@@ -112,7 +127,7 @@ CREATE TABLE `Coldstart` (
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
 ) ENGINE=InnoDB;
 
-CREATE TABLE  `Function_lifetime` (
+CREATE TABLE IF NOT EXISTS  `Function_lifetime` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `instance_identifier` varchar(100) NOT NULL,
@@ -125,7 +140,7 @@ CREATE TABLE  `Function_lifetime` (
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE `Cc_bench` (
+CREATE TABLE IF NOT EXISTS `Cc_bench` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `function_name` varchar(50) NOT NULL,
@@ -149,7 +164,7 @@ CREATE TABLE `Cc_bench` (
 ) ENGINE=InnoDB;
 
 
-CREATE TABLE `Function_lifecycle` (
+CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `function_name` varchar(50) NOT NULL,

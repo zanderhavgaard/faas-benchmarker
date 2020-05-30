@@ -45,11 +45,14 @@ class Invocation:
     
     def create_monolith_query(self, invo_dict:dict):
         
-        keys = 'seed,function_argument,function_called,monolith_result'
-        values = """{0},{1},'{2}','{3}'""".format(invo_dict.pop('seed'),
-                                                  invo_dict.pop('function_argument'),
-                                                  invo_dict.pop('function_called'),
-                                                  invo_dict.pop('monolith_result'))
+        keys = 'exp_id,invo_id,seed,function_argument,function_called,monolith_result'
+        values = """'{0}','{1}',{2},{3},'{4}','{5}'""".format(
+                                                self.exp_id,
+                                                invo['identifier'],
+                                                invo_dict.pop('seed'),
+                                                invo_dict.pop('function_argument'),
+                                                invo_dict.pop('function_called'),
+                                                invo_dict.pop('monolith_result'))
         if 'process_time_matrix' in dict:
             keys += ',process_time_matrix,running_time_matrix'
             values += """,{0},{1}""".format(invo_dict.pop('process_time_matrix'),invo_dict.pop('running_time_matrix'))
