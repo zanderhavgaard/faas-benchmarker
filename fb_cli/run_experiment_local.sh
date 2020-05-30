@@ -19,8 +19,8 @@ dev_mode="True"
 
 python \
   $experiment_python_file \
-  $experiment_meta_identifier \
   $experiment_name \
+  $experiment_meta_identifier \
   $experiment_cloud_function_provider \
   $experiment_client_provider \
   $experiment_env_file \
