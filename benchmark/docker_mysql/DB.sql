@@ -112,6 +112,21 @@ CREATE TABLE IF NOT EXISTS  `Monolith` (
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
 ) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
 
+
+CREATE TABLE IF NOT EXISTS `Monolith` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `exp_id`varchar(36) NOT NULL,
+  `invo_id` varchar(100) NOT NULL,
+  `seed` INT DEFAULt 0,
+  `function_argument` INT DEFAULT 0,
+  `function_called` varchar(50) NOT NULL,
+  `process_time_matrix` DOUBLE DEFAULT 0.0,
+  `running_time_matrix` DOUBLE DEFAULT 0.0,
+  PRIMARY KEY (id),
+  FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
+  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1;
+
 CREATE TABLE IF NOT EXISTS `Coldstart` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
