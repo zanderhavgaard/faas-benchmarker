@@ -92,7 +92,7 @@ def invoke(thread_numb:int):
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_endpoint=fx, 
+    benchmarker.invoke_function_conccurrently(function_name=fx, 
                                             numb_threads=thread_numb,
                                             args= {'throughput_time':0.2}))]))
     

@@ -86,7 +86,7 @@ errors = []
 # if thread_numb > 1 it will be done concurrently and the result averaged
 def invoke():
     response = lib.get_dict(
-        benchmarker.invoke_function(function_endpoint=fx))
+        benchmarker.invoke_function(function_name=fx))
     return response if 'error' not in response else errors.append(response)
 
 
