@@ -30,6 +30,9 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
+# verbose mode
+verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
+
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
@@ -52,7 +55,8 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
-                          dev_mode=dev_mode)
+                          dev_mode=dev_mode,
+                          verbose=verbose)
 # =====================================================================================
 # database interface for logging results if needed
 db = SQL_Interface(dev_mode)
@@ -64,8 +68,7 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx_num = 2
-fx = f'{experiment_name}{fx_num}'
+fx = 'function2'
 
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
@@ -109,6 +112,7 @@ def append_result(exp_id,
                 granularity,
                 multithreaded,
                 cold,final) -> None:
+
     results.append({
         'exp_id': exp_id,
         'invo_id': invo_id,
@@ -142,12 +146,12 @@ try:
                                 'avg_warmtime', 
                                 (create_invocation_list((10, 'create invocation_list')), 
                                 ('execution_start', 'invocation_start')))
-
-        lib.dev_mode_print('Values before any checks -> coldtime xp', [(
-                                                    'coldtime', coldtime), 
-                                                    ('benchmark', benchmark), 
-                                                    ('avg_warmtime', avg_warmtime)
-                                                    ])
+        if(dev_mode):
+            lib.dev_mode_print('Values before any checks -> coldtime xp', [(
+                                                        'coldtime', coldtime), 
+                                                        ('benchmark', benchmark), 
+                                                        ('avg_warmtime', avg_warmtime)
+                                                        ])
 
     def check_coldtime(sleep: int):
         global benchmark, avg_warmtime, coldtime
@@ -172,7 +176,7 @@ try:
     # sleep for 60 minutes if coldtime is not cold
     check_coldtime(40*60)
 
-    if(dev_mode):
+    if(verbose):
         lib.dev_mode_print('Initial Coldtime ', [
             ('coldtime', coldtime),
             ('benchmark', benchmark),
@@ -188,7 +192,7 @@ try:
     # value for last response latency
     latest_latency_time = avg_warmtime
 
-    if(dev_mode):
+    if(verbose):
         lib.dev_mode_print('pre set_cold_values() coldtime exp', [
             ('sleep_time', sleep_time),
             ('increment', increment),
@@ -205,7 +209,7 @@ try:
             result_dict = validate(invoke,'invoking function: {0} from cold start experiment'.format(fx))
             latest_latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
-            if(dev_mode):
+            if(verbose):
                 lib.dev_mode_print('logging WARM time coldtime exp', [
                     ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
                     ('sleep_time / 60', int(sleep_time / 60)),
@@ -235,7 +239,7 @@ try:
 
     set_cold_values()
 
-    if(dev_mode):
+    if(verbose):
         lib.dev_mode_print('pre set_cold_values() coldtime exp', [
                             ('sleep_time', sleep_time), 
                             ('increment', increment),
@@ -249,7 +253,7 @@ try:
         result_dict = validate(invoke, 'invoking function: {0} from validation of cold start experiment'.format(fx))
         latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
-        if(dev_mode):
+        if(verbose):
             lib.dev_mode_print('logging cold time: {0} -> coldtime exp'.format(latency_time < benchmark), [
                 ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
                 ('sleep_time / 60', int(sleep_time / 60)),
@@ -297,6 +301,7 @@ try:
                 increment,
                 latency_time < benchmark,
                 True)
+
 
     # =====================================================================================
     # end of the experiment

@@ -30,6 +30,9 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
+# verbose mode
+verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
+
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
@@ -55,10 +58,11 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
-                          dev_mode=dev_mode)
+                          dev_mode=dev_mode,
+                          verbose=verbose)
 # =====================================================================================
 # create database interface for logging results
-db = SQL_Interface()
+db = SQL_Interface(dev_mode)
 # name of table to insert data into
 table = 'Coldstart'
 # =====================================================================================
@@ -67,8 +71,7 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx_num = 2
-fx = f'{experiment_name}{fx_num}'
+fx = 'function1'
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
     time.sleep(15*60)  # more??
@@ -89,9 +92,11 @@ def invoke(thread_numb:int):
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=0.2))]))
+    benchmarker.invoke_function_conccurrently(function_endpoint=fx, 
+                                            numb_threads=thread_numb,
+                                            args= {'throughput_time':0.2}))]))
+    
     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
-   
     invocations = lib.accumulate_dicts(invocations)
     # return error count and result for this particular invocation 
     return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
@@ -120,6 +125,7 @@ def append_result(exp_id,
                 granularity,
                 multithreaded,
                 cold,final) -> None:
+
     results.append({
         'exp_id': exp_id,
         'invo_id': invo_id,
@@ -183,7 +189,7 @@ try:
     # sleep for 60 minutes if coldtime is not cold
     check_coldtime(40*60)
 
-    if(dev_mode):
+    if(verbose):
         lib.dev_mode_print('Initial Coldtime ', [
             ('coldtime', coldtime),
             ('benchmark', benchmark),
@@ -199,7 +205,7 @@ try:
     # value for last response latency
     latest_latency_time = avg_warmtime
 
-    if(dev_mode):
+    if(verbose):
         lib.dev_mode_print('pre set_cold_values() coldtime exp', [
             ('sleep_time', sleep_time),
             ('increment', increment),
@@ -217,7 +223,7 @@ try:
                 invoke, 'invoking function: {0} from cold start experiment'.format(fx))
             latest_latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
-            if(dev_mode):
+            if(verbose):
                 lib.dev_mode_print('logging WARM time coldtime exp', [
                     ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
                     ('sleep_time / 60', int(sleep_time / 60)),
@@ -248,7 +254,7 @@ try:
 
     set_cold_values()
 
-    if(dev_mode):
+    if(verbose):
         lib.dev_mode_print('pre set_cold_values() coldtime exp', [
                             ('sleep_time', sleep_time), 
                             ('increment', increment),
@@ -263,7 +269,7 @@ try:
             invoke, 'invoking function: {0} from validation of cold start experiment'.format(fx))
         latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
-        if(dev_mode):
+        if(verbose):
             lib.dev_mode_print('logging cold time: {0} -> coldtime exp'.format(latency_time < benchmark), [
                 ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
                 ('sleep_time / 60', int(sleep_time / 60)),
