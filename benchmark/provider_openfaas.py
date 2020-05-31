@@ -11,7 +11,11 @@ import http
 
 class OpenFaasProvider(AbstractProvider):
 
-    def __init__(self, env_file_path: str) -> None:
+    def __init__(self, experiment_name: str, env_file_path: str) -> None:
+
+        #log some metadata
+        self.experiment_name = experiment_name
+        self.env_file_path = env_file_path
 
         # timeout for invoking function
         self.request_timeout = 600
@@ -22,31 +26,26 @@ class OpenFaasProvider(AbstractProvider):
         }
 
     def invoke_function(self,
-                        function_endpoint: str,
-                        sleep: float = 0.0,
-                        invoke_nested: list = None,
-                        throughput_time: float = 0.0) -> dict:
+                        function_name:str,
+                        function_args:dict = None
+                        ) -> dict:
+
+        # set default value for sleep if not present in function_args
+        if function_args is not None:
+            sleep = function_args["sleep"] if "sleep" in function_args.keys() else 0.0
+        else:
+            sleep = 0.0
 
         # paramters, the only required paramter is the statuscode
-        params = {
-            "StatusCode": 200
-        }
+        if function_args is None:
+            function_args = {"StatusCode":200}
+        else:
+            function_args["StatusCode"] = 200
 
-        # add optional sleep parameter if present
-        if sleep != 0.0:
-            params['sleep'] = sleep
 
-        # add optional dict describing nested invocations, if presente
-        if invoke_nested != None:
-            params['invoke_nested'] = invoke_nested
-
-        if(throughput_time != 0.0):
-            params['throughput_time'] = throughput_time
-
-        function_number = function_endpoint[len(function_endpoint) - 1:]
-
+        # for openfaas we do not need the endpoint, as it is always the same
         # create url of function to invoke
-        invoke_url = f'http://localhost:8080/function/function{function_number}'
+        invoke_url = f'http://localhost:8080/function/{function_name}'
 
         # log start time of invocation
         start_time = time.time()
@@ -60,7 +59,7 @@ class OpenFaasProvider(AbstractProvider):
                     response = requests.post(
                         url=invoke_url,
                         headers=self.headers,
-                        data=json.dumps(params),
+                        data=json.dumps(function_args),
                         timeout=self.request_timeout
                     )
                     if response.status_code == 200:
@@ -101,10 +100,10 @@ class OpenFaasProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-provider_openfaas-' + function_endpoint + '-' + str(end_time): {
-                        'identifier': 'StatusCode-error-provider_openfaas' + function_endpoint + '-' + str(end_time),
+                    'StatusCode-error-provider_openfaas-' + self.experiment_name + '-' + str(end_time): {
+                        'identifier': 'StatusCode-error-provider_openfaas' + self.experiment_name + '-' + str(end_time),
                         'uuid': None,
-                        'function_name': function_endpoint,
+                        'function_name': self.experiment_name,
                         'error': {'trace': 'None 200 code in provider_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
                         'parent': None,
                         'sleep': sleep,
@@ -119,17 +118,17 @@ class OpenFaasProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-provider_openfaas' + function_endpoint + '-' + str(end_time)
+                    'root_identifier': 'StatusCode-error-provider_openfaas' + self.experiment_name + '-' + str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-provider_openfaas-' + function_endpoint + str(end_time): {
-                    'identifier': 'exception-provider_openfaas' + function_endpoint + str(end_time),
+                'exception-provider_openfaas-' + self.experiment_name + str(end_time): {
+                    'identifier': 'exception-provider_openfaas' + self.experiment_name + str(end_time),
                     'uuid': None,
-                    'function_name': function_endpoint,
+                    'function_name': self.experiment_name,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
                     'parent': None,
                     'sleep': sleep,
@@ -144,6 +143,6 @@ class OpenFaasProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time
                 },
-                'root_identifier': 'exception-provider_openfaas' + function_endpoint + str(end_time)
+                'root_identifier': 'exception-provider_openfaas' + self.experiment_name + str(end_time)
             }
             return error_dict

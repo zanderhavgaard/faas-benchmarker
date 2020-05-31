@@ -34,7 +34,7 @@ class Benchmarker:
 
         # get function execution provider
         self.provider = self.get_provider(
-            provider=provider, env_file_path=env_file_path)
+            provider=provider, experiment_name=experiment_name, env_file_path=env_file_path)
 
         # experiment object holds all data for experiment
         self.experiment = Experiment(experiment_meta_identifier,
@@ -64,18 +64,18 @@ class Benchmarker:
 
     # create cloud function execution provider
 
-    def get_provider(self, provider: str, env_file_path: str) -> AbstractProvider:
+    def get_provider(self, provider: str, experiment_name: str, env_file_path: str) -> AbstractProvider:
         # implemented providers
         providers = ['aws_lambda', 'azure_functions', 'openfaas']
 
         # choose provider to invoke cloud function
         if provider in providers:
             if provider == 'aws_lambda':
-                return AWSLambdaProvider(env_file_path=env_file_path)
+                return AWSLambdaProvider(experiment_name=experiment_name, env_file_path=env_file_path)
             elif provider == 'azure_functions':
-                return AzureFunctionsProvider(env_file_path=env_file_path)
+                return AzureFunctionsProvider(experiment_name=experiment_name, env_file_path=env_file_path)
             elif provider == 'openfaas':
-                return OpenFaasProvider(env_file_path=env_file_path)
+                return OpenFaasProvider(experiment_name=experiment_name, env_file_path=env_file_path)
         else:
             raise RuntimeError(
                 'Error: Please use an implemented provider, options are: ' +
@@ -92,13 +92,13 @@ class Benchmarker:
               f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
         print(f'{len(self.experiment.get_invocations)} invocations were made')
         print('=================================================\n')
-       
+
 
     def dump_data(self):
         # store all data from experiment in database
         db = db_interface(self.dev_mode)
         db.log_experiment(self.experiment)
-        
+
 
         if self.dev_mode:
             print('\n\n')
@@ -132,20 +132,19 @@ class Benchmarker:
     # main method to be used by experiment clients
 
     def invoke_function(self,
-                        function_endpoint: str,
-                        sleep: float = 0.0,
-                        invoke_nested: dict = None,
-                        throughput_time: float = 0.0) -> None:
-        self.invocation_count += 1
-        response = self.provider.invoke_function(function_endpoint=function_endpoint,
-                                                 sleep=sleep,
-                                                 invoke_nested=invoke_nested,
-                                                 throughput_time=throughput_time)
+                        function_name: str,
+                        function_args: dict = None,
+                        ) -> None:
+
+        response = self.provider.invoke_function(
+            function_name=function_name,
+            function_args=function_args,
+            )
 
         if response is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
-            
+
 
         identifier = response['root_identifier']
         if ('StatusCode-error' not in identifier) and ('exception-provider' not in identifier):
@@ -191,4 +190,3 @@ class Benchmarker:
 class EmptyResponseError(RuntimeError):
     def __init__(self, error_msg: str):
         super(error_msg)
-        

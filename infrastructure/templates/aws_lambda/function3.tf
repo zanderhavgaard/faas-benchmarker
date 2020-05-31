@@ -10,7 +10,7 @@ data "archive_file" "changeme3-lambda-code" {
 resource "aws_api_gateway_resource" "changeme3-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.changeme-api.id
   parent_id = aws_api_gateway_rest_api.changeme-api.root_resource_id
-  path_part = "changeme3"
+  path_part = aws_lambda_function.changeme3-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "changeme3-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "changeme3-python" {
   filename = data.archive_file.changeme3-lambda-code.output_path
-  function_name = "changeme3"
+  function_name = "changeme-function3"
   role = aws_iam_role.changeme-role.arn
   handler = "function3.lambda_handler"
   runtime = "python3.7"

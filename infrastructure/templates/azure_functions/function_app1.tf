@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "changeme1-function-code" {
   type = "zip"
-  source_dir = "function_code/changeme1"
+  source_dir = "function_code/changeme-function1"
   output_path = "function1.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "changeme1-code" {
 resource "azurerm_function_app" "changeme1" {
   depends_on = [azurerm_storage_blob.changeme1-code]
 
-  name = "changeme1-python"
+  name = "changeme-function1"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.changeme-rg.name
   app_service_plan_id = azurerm_app_service_plan.changeme-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "changeme1-function-key" {
 }
 
 # output some useful variables
-output "changeme1_function_key" {
+output "changeme-function1_function_key" {
   value = "${lookup(azurerm_template_deployment.changeme1-function-key.outputs, "functionkey")}"
 }
-output "changeme1_function_app_url" {
+output "changeme-function1_function_app_url" {
   value = azurerm_function_app.changeme1.default_hostname
 }

@@ -11,7 +11,10 @@ from provider_abstract import AbstractProvider
 
 class AWSLambdaProvider(AbstractProvider):
 
-    def __init__(self, env_file_path: str) -> None:
+    def __init__(self, experiment_name: str, env_file_path: str) -> None:
+
+        # name of experiment to conduct
+        self.experiment_name = experiment_name
 
         # timeout for invoking function
         self.request_timeout = 600
@@ -35,32 +38,29 @@ class AWSLambdaProvider(AbstractProvider):
     # the api endpoint where the funcion is attached:
     #   --> eg: https://..../prod/<name>
     def invoke_function(self,
-                        function_endpoint: str,
-                        sleep: float = 0.0,
-                        invoke_nested: list = None,
-                        throughput_time: float = 0.0) -> dict:
+                        function_name:str,
+                        function_args:dict = None
+                        ) -> dict:
+
+        # set default value for sleep if not present in function_args
+        if function_args is not None:
+            sleep = function_args["sleep"] if "sleep" in function_args.keys() else 0.0
+        else:
+            sleep = 0.0
 
         # paramters, the only required paramter is the statuscode
-        params = {
-            "StatusCode": 200
-        }
+        if function_args is None:
+            function_args = {"StatusCode":200}
+        else:
+            function_args["StatusCode"] = 200
 
-        # add optional sleep parameter if present
-        if sleep != 0.0:
-            params['sleep'] = sleep
+        # create url of function to invoke
+        invoke_url = f'{self.gateway_url}/{self.experiment_name}-{function_name}'
 
-        # add optional dict describing nested invocations, if presente
-        if invoke_nested != None:
-            params['invoke_nested'] = invoke_nested
-
-        if(throughput_time != 0.0):
-            params['throughput_time'] = throughput_time
+        print('url',invoke_url)
 
         # log start time of invocation
         start_time = time.time()
-
-        # create url of function to invoke
-        invoke_url = f'{self.gateway_url}/{function_endpoint}'
 
         try:
 
@@ -75,7 +75,7 @@ class AWSLambdaProvider(AbstractProvider):
                     response = requests.post(
                         url=invoke_url,
                         headers=self.headers,
-                        data=json.dumps(params),
+                        data=json.dumps(function_args),
                         timeout=self.request_timeout
                     )
                     if response.status_code == 200:
@@ -121,10 +121,10 @@ class AWSLambdaProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-provider_aws_lambda-' + function_endpoint + '-' + str(end_time): {
-                        'identifier': 'StatusCode-error-provider_aws_lambda' + function_endpoint + '-' + str(end_time),
+                    'StatusCode-error-provider_aws_lambda-' + self.experiment_name + '-' + str(end_time): {
+                        'identifier': 'StatusCode-error-provider_aws_lambda' + self.experiment_name + '-' + str(end_time),
                         'uuid': None,
-                        'function_name': function_endpoint,
+                        'function_name': self.experiment_name,
                         'error': {'trace': 'None 200 code in provider_aws_lambda: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
                         'parent': None,
                         'sleep': sleep,
@@ -139,17 +139,17 @@ class AWSLambdaProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-provider_aws_lambda' + function_endpoint + '-' + str(end_time)
+                    'root_identifier': 'StatusCode-error-provider_aws_lambda' + self.experiment_name + '-' + str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-provider_aws_lambda-' + function_endpoint + str(end_time): {
-                    'identifier': 'exception-provider_aws_lambda' + function_endpoint + str(end_time),
+                'exception-provider_aws_lambda-' + self.experiment_name + str(end_time): {
+                    'identifier': 'exception-provider_aws_lambda' + self.experiment_name + str(end_time),
                     'uuid': None,
-                    'function_name': function_endpoint,
+                    'function_name': self.experiment_name,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
                     'parent': None,
                     'sleep': sleep,
@@ -164,6 +164,6 @@ class AWSLambdaProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time,
                 },
-                'root_identifier': 'exception-provider_aws_lambda' + function_endpoint + str(end_time)
+                'root_identifier': 'exception-provider_aws_lambda' + self.experiment_name + str(end_time)
             }
             return error_dict

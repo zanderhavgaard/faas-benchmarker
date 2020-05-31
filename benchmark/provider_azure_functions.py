@@ -11,7 +11,10 @@ from provider_abstract import AbstractProvider
 
 class AzureFunctionsProvider(AbstractProvider):
 
-    def __init__(self, env_file_path: str) -> None:
+    def __init__(self, experiment_name: str, env_file_path: str) -> None:
+
+        # name of experiment
+        self.experiment_name = experiment_name
 
         # timeout for invoking function
         self.request_timeout = 600
@@ -28,39 +31,40 @@ class AzureFunctionsProvider(AbstractProvider):
 
     def load_env_vars(self, env_file_path: str) -> None:
         dotenv.load_dotenv(dotenv_path=env_file_path)
+        print('path',env_file_path)
 
-    # for azure functions the function_endpoint refers to the function name
     # the functions are available under
     # https://<funtion_app_name>/api/<function_name>?code=<function_key>
     def invoke_function(self,
-                        function_endpoint: str,
-                        sleep: float = 0.0,
-                        invoke_nested: list = None,
-                        throughput_time: float = 0.0) -> dict:
+                        function_name:str,
+                        function_args:dict = None
+                        ) -> dict:
 
-        function_app_url = os.getenv(f'{function_endpoint}_function_app_url')
-        function_key = os.getenv(f'{function_endpoint}_function_key')
+        function_app_url = os.getenv(f'{self.experiment_name}-{function_name}_function_app_url')
+        function_key = os.getenv(f'{self.experiment_name}-{function_name}_function_key')
 
         if function_app_url is None or function_key is None:
             raise RuntimeError('Could not parse function app url or key.')
 
+        # set default value for sleep if not present in function_args
+        if function_args is not None:
+            sleep = function_args["sleep"] if "sleep" in function_args.keys() else 0.0
+        else:
+            sleep = 0.0
+
         # paramters, the only required paramter is the statuscode
-        params = {
-            "StatusCode": 200
-        }
+        if function_args is None:
+            function_args = {"StatusCode":200}
+        else:
+            function_args["StatusCode"] = 200
 
-        # add optional sleep parameter if present
-        if sleep != 0.0:
-            params['sleep'] = sleep
-
-        if(throughput_time != 0.0):
-            params['throughput_time'] = throughput_time
 
         # add optional dict describing nested invocations, if presente
-        if invoke_nested != None:
-            if(check_for_nested_deadlock(invoke_nested, {function_endpoint})):
-                params['invoke_nested'] = add_function_code_for_nested_invocations(
-                    nested_invocations=invoke_nested
+        if 'invoke_nested' in function_args:
+            inv_nest = function_args['invoke_nested']
+            if(check_for_nested_deadlock(inv_nest, {function_name})):
+                function_args['invoke_nested'] = add_function_code_for_nested_invocations(
+                    nested_invocations=inv_nest
                 )
             else:
                 raise Exception('azure deadlock')
@@ -69,7 +73,7 @@ class AzureFunctionsProvider(AbstractProvider):
         start_time = time.time()
 
         # create url of function to invoke
-        invoke_url = f'https://{function_app_url}/api/{function_endpoint}?code={function_key}'
+        invoke_url = f'https://{function_app_url}/api/{self.experiment_name}-{function_name}?code={function_key}'
 
         try:
 
@@ -84,7 +88,7 @@ class AzureFunctionsProvider(AbstractProvider):
                     response = requests.post(
                         url=invoke_url,
                         headers=self.headers,
-                        data=json.dumps(params),
+                        data=json.dumps(function_args),
                         timeout=self.request_timeout
                     )
                     if response.status_code == 200:
@@ -126,10 +130,10 @@ class AzureFunctionsProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-provider_azure_functions-' + function_endpoint + '-' + str(end_time): {
-                        'identifier': 'StatusCode-error-provider_azure_functions' + function_endpoint + '-' + str(end_time),
+                    'StatusCode-error-provider_azure_functions-' + self.experiment_name + '-' + str(end_time): {
+                        'identifier': 'StatusCode-error-provider_azure_functions' + self.experiment_name + '-' + str(end_time),
                         'uuid': None,
-                        'function_name': function_endpoint,
+                        'function_name': self.experiment_name,
                         'error': {'trace': 'None 200 code in provider_azure_functions: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
                         'parent': None,
                         'sleep': sleep,
@@ -144,17 +148,17 @@ class AzureFunctionsProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-provider_azure_functions' + function_endpoint + '-' + str(end_time)
+                    'root_identifier': 'StatusCode-error-provider_azure_functions' + self.experiment_name + '-' + str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-provider_azure_functions-' + function_endpoint + str(end_time): {
-                    'identifier': 'exception-provider_azure_functions' + function_endpoint + str(end_time),
+                'exception-provider_azure_functions-' + self.experiment_name + str(end_time): {
+                    'identifier': 'exception-provider_azure_functions' + self.experiment_name + str(end_time),
                     'uuid': None,
-                    'function_name': function_endpoint,
+                    'function_name': self.experiment_name,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
                     'parent': None,
                     'sleep': sleep,
@@ -169,7 +173,7 @@ class AzureFunctionsProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time,
                 },
-                'root_identifier': 'exception-provider_azure_functions' + function_endpoint + str(end_time)
+                'root_identifier': 'exception-provider_azure_functions' + self.experiment_name + str(end_time)
             }
             return error_dict
 
