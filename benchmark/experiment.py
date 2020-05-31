@@ -60,9 +60,10 @@ class Experiment:
             self.add_invocation(i)
 
     # end experiment, log time and return some data to benchmarker
-    def end_experiment(self):
+    def end_experiment(self, invocation_count:int):
         self.end_time = time.time()
         self.total_time = self.end_time - self.start_time
+        self.invocation_count = invocation_count
         return (self.end_time, self.total_time)
 
     def get_experiment_query_string(self) -> str:

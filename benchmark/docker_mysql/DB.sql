@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `Experiment` (
   `python_version` varchar(50) NOT NULL,
   `cores` INT NOT NULL,
   `memory` BIGINT NOT NULL,
+  `invocation_count` INT NOT NULL,
   `start_time` DOUBLE NOT NULL,
   `end_time` DOUBLE NOT NULL,
   `total_time` DOUBLE NOT NULL,
