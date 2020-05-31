@@ -30,6 +30,7 @@ class Benchmarker:
         # do not log anything if running in dev mode
         self.dev_mode = dev_mode
         self.verbose = verbose
+        self.invocation_count = 0
 
         # get function execution provider
         self.provider = self.get_provider(
@@ -83,12 +84,13 @@ class Benchmarker:
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients
     def log_experiment_running_time(self) -> None:
-        (end_time, total_time) = self.experiment.end_experiment()
+        (end_time, total_time) = self.experiment.end_experiment(self.invocation_count)
         # experiment_running_time = end_time - self.start_time
         print('=================================================')
         print(f'Experiment end time: {time.ctime(int(end_time))}')
         print('Experiment running time: ' +
               f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
+        print(f'{len(self.experiment.get_invocations)} invocations were made')
         print('=================================================\n')
        
 
@@ -134,7 +136,7 @@ class Benchmarker:
                         sleep: float = 0.0,
                         invoke_nested: dict = None,
                         throughput_time: float = 0.0) -> None:
-
+        self.invocation_count += 1
         response = self.provider.invoke_function(function_endpoint=function_endpoint,
                                                  sleep=sleep,
                                                  invoke_nested=invoke_nested,
@@ -161,7 +163,7 @@ class Benchmarker:
                                       throughput_time: float = 0.0,
                                       numb_threads: int = 1
                                       ) -> None:
-
+        self.invocation_count += numb_threads
         response_list = self.provider.invoke_function_conccrently(function_endpoint,
                                                                   sleep,
                                                                   invoke_nested,

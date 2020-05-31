@@ -90,3 +90,58 @@ def log_experiment_specifics(exp_name:str, uuid:str, err:int, db_check:bool=True
     print(f'Experiment: {exp_name} with UUID: {uuid} has ended with {err} errors.')
     print(f'Results from experiments has been succesfully added to database: {db_check}')
     print('=======================================================================\n')
+
+# ============================================================================================
+# scenario testing
+
+def baseline(time:int, 
+            sleep_time:int, 
+            functions:list, 
+            args:list, 
+            special_func= None,
+            special_args= None,
+            dist:float= None,
+            ):
+
+    starttime = time.time()
+    invocation_count = 0
+    while(time > time.time() - starttime ):
+        if(dist != None and invocation_count % dist == dist-1 and special_func != None):
+            special_func(special_args)
+        else:
+            functions[invocation_count % len(functions)](args[invocation_count % len(args)])
+        invocation_count += 1
+        time.sleep(sleep_time)
+
+def invocation_pattern(iterations:int, 
+                        functions:list, 
+                        args:list,  
+                        sleep_time:int = None):
+
+    for i in range(iterations):
+        for idx,func in enumerate(functions):
+            func(args[idx % len(args)])
+
+# aux functions
+def exponential_list(start:int, n:int, reverse:bool=False):
+    result = [start]
+    for i in range(n):
+        result.appen(result[i]*2)
+    return result if not reverse else result[::-1]
+
+def increment_list(start:int, increment:int, n:int, reverse:bool=False):
+    result = [start]
+    for i in range(n):
+        result.appen(result[i]+increment)
+    return result if not reverse else result[::-1]
+
+def range_list(low_bound:int, increment:int, upper_bound:int, reverse:bool=False):
+    result = [low_bound]
+    count = low_bound
+    while(True):
+        count += increment
+        if(count > upper_bound):
+            break
+        else:
+            result.append(count)    
+    return result if not reverse else result[::-1]
