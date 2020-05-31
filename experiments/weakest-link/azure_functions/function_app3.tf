@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "weakest-link3-function-code" {
   type = "zip"
-  source_dir = "function_code/weakest-link3"
+  source_dir = "function_code/weakest-link-function3"
   output_path = "function3.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "weakest-link3-code" {
 resource "azurerm_function_app" "weakest-link3" {
   depends_on = [azurerm_storage_blob.weakest-link3-code]
 
-  name = "weakest-link3-python"
+  name = "weakest-link-function3"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.weakest-link-rg.name
   app_service_plan_id = azurerm_app_service_plan.weakest-link-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "weakest-link3-function-key" {
 }
 
 # output some useful variables
-output "weakest-link3_function_key" {
+output "weakest-link-function3_function_key" {
   value = "${lookup(azurerm_template_deployment.weakest-link3-function-key.outputs, "functionkey")}"
 }
-output "weakest-link3_function_app_url" {
+output "weakest-link-function3_function_app_url" {
   value = azurerm_function_app.weakest-link3.default_hostname
 }

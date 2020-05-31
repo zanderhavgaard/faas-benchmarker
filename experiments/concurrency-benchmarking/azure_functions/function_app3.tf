@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "concurrency-benchmarking3-function-code" {
   type = "zip"
-  source_dir = "function_code/concurrency-benchmarking3"
+  source_dir = "function_code/concurrency-benchmarking-function3"
   output_path = "function3.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "concurrency-benchmarking3-code" {
 resource "azurerm_function_app" "concurrency-benchmarking3" {
   depends_on = [azurerm_storage_blob.concurrency-benchmarking3-code]
 
-  name = "concurrency-benchmarking3-python"
+  name = "concurrency-benchmarking-function3"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.concurrency-benchmarking-rg.name
   app_service_plan_id = azurerm_app_service_plan.concurrency-benchmarking-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "concurrency-benchmarking3-function-key" 
 }
 
 # output some useful variables
-output "concurrency-benchmarking3_function_key" {
+output "concurrency-benchmarking-function3_function_key" {
   value = "${lookup(azurerm_template_deployment.concurrency-benchmarking3-function-key.outputs, "functionkey")}"
 }
-output "concurrency-benchmarking3_function_app_url" {
+output "concurrency-benchmarking-function3_function_app_url" {
   value = azurerm_function_app.concurrency-benchmarking3.default_hostname
 }

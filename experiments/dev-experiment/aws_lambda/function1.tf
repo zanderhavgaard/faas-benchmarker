@@ -10,7 +10,7 @@ data "archive_file" "dev-experiment1-lambda-code" {
 resource "aws_api_gateway_resource" "dev-experiment1-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.dev-experiment-api.id
   parent_id = aws_api_gateway_rest_api.dev-experiment-api.root_resource_id
-  path_part = "dev-experiment1"
+  path_part = aws_lambda_function.dev-experiment1-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "dev-experiment1-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "dev-experiment1-python" {
   filename = data.archive_file.dev-experiment1-lambda-code.output_path
-  function_name = "dev-experiment1"
+  function_name = "dev-experiment-function1"
   role = aws_iam_role.dev-experiment-role.arn
   handler = "function1.lambda_handler"
   runtime = "python3.7"

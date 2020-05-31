@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "dev-experiment1-function-code" {
   type = "zip"
-  source_dir = "function_code/dev-experiment1"
+  source_dir = "function_code/dev-experiment-function1"
   output_path = "function1.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "dev-experiment1-code" {
 resource "azurerm_function_app" "dev-experiment1" {
   depends_on = [azurerm_storage_blob.dev-experiment1-code]
 
-  name = "dev-experiment1-python"
+  name = "dev-experiment-function1"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.dev-experiment-rg.name
   app_service_plan_id = azurerm_app_service_plan.dev-experiment-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "dev-experiment1-function-key" {
 }
 
 # output some useful variables
-output "dev-experiment1_function_key" {
+output "dev-experiment-function1_function_key" {
   value = "${lookup(azurerm_template_deployment.dev-experiment1-function-key.outputs, "functionkey")}"
 }
-output "dev-experiment1_function_app_url" {
+output "dev-experiment-function1_function_app_url" {
   value = azurerm_function_app.dev-experiment1.default_hostname
 }
