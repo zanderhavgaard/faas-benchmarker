@@ -10,7 +10,7 @@ data "archive_file" "track-cloudfunctions-lifecycle2-lambda-code" {
 resource "aws_api_gateway_resource" "track-cloudfunctions-lifecycle2-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.track-cloudfunctions-lifecycle-api.id
   parent_id = aws_api_gateway_rest_api.track-cloudfunctions-lifecycle-api.root_resource_id
-  path_part = "track-cloudfunctions-lifecycle2"
+  path_part = aws_lambda_function.track-cloudfunctions-lifecycle2-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "track-cloudfunctions-lifecycle2-apigw-permissi
 # create lambda function
 resource "aws_lambda_function" "track-cloudfunctions-lifecycle2-python" {
   filename = data.archive_file.track-cloudfunctions-lifecycle2-lambda-code.output_path
-  function_name = "track-cloudfunctions-lifecycle2"
+  function_name = "track-cloudfunctions-lifecycle-function2"
   role = aws_iam_role.track-cloudfunctions-lifecycle-role.arn
   handler = "function2.lambda_handler"
   runtime = "python3.7"

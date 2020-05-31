@@ -10,7 +10,7 @@ data "archive_file" "concurrency-benchmarking1-lambda-code" {
 resource "aws_api_gateway_resource" "concurrency-benchmarking1-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.concurrency-benchmarking-api.id
   parent_id = aws_api_gateway_rest_api.concurrency-benchmarking-api.root_resource_id
-  path_part = "concurrency-benchmarking1"
+  path_part = aws_lambda_function.concurrency-benchmarking1-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "concurrency-benchmarking1-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "concurrency-benchmarking1-python" {
   filename = data.archive_file.concurrency-benchmarking1-lambda-code.output_path
-  function_name = "concurrency-benchmarking1"
+  function_name = "concurrency-benchmarking-function1"
   role = aws_iam_role.concurrency-benchmarking-role.arn
   handler = "function1.lambda_handler"
   runtime = "python3.7"

@@ -10,7 +10,7 @@ data "archive_file" "function-lifetime1-lambda-code" {
 resource "aws_api_gateway_resource" "function-lifetime1-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.function-lifetime-api.id
   parent_id = aws_api_gateway_rest_api.function-lifetime-api.root_resource_id
-  path_part = "function-lifetime1"
+  path_part = aws_lambda_function.function-lifetime1-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "function-lifetime1-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "function-lifetime1-python" {
   filename = data.archive_file.function-lifetime1-lambda-code.output_path
-  function_name = "function-lifetime1"
+  function_name = "function-lifetime-function1"
   role = aws_iam_role.function-lifetime-role.arn
   handler = "function1.lambda_handler"
   runtime = "python3.7"

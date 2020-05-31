@@ -10,7 +10,7 @@ data "archive_file" "single-function-time-to-cold-start-multithreaded-twelve3-la
 resource "aws_api_gateway_resource" "single-function-time-to-cold-start-multithreaded-twelve3-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.single-function-time-to-cold-start-multithreaded-twelve-api.id
   parent_id = aws_api_gateway_rest_api.single-function-time-to-cold-start-multithreaded-twelve-api.root_resource_id
-  path_part = "single-function-time-to-cold-start-multithreaded-twelve3"
+  path_part = aws_lambda_function.single-function-time-to-cold-start-multithreaded-twelve3-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "single-function-time-to-cold-start-multithread
 # create lambda function
 resource "aws_lambda_function" "single-function-time-to-cold-start-multithreaded-twelve3-python" {
   filename = data.archive_file.single-function-time-to-cold-start-multithreaded-twelve3-lambda-code.output_path
-  function_name = "single-function-time-to-cold-start-multithreaded-twelve3"
+  function_name = "single-function-time-to-cold-start-multithreaded-twelve-function3"
   role = aws_iam_role.single-function-time-to-cold-start-multithreaded-twelve-role.arn
   handler = "function3.lambda_handler"
   runtime = "python3.7"

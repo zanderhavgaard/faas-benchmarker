@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "single-function-time-to-cold-start-multithreaded-twelve1-function-code" {
   type = "zip"
-  source_dir = "function_code/single-function-time-to-cold-start-multithreaded-twelve1"
+  source_dir = "function_code/single-function-time-to-cold-start-multithreaded-twelve-function1"
   output_path = "function1.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "single-function-time-to-cold-start-multithreade
 resource "azurerm_function_app" "single-function-time-to-cold-start-multithreaded-twelve1" {
   depends_on = [azurerm_storage_blob.single-function-time-to-cold-start-multithreaded-twelve1-code]
 
-  name = "single-function-time-to-cold-start-multithreaded-twelve1-python"
+  name = "single-function-time-to-cold-start-multithreaded-twelve-function1"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.single-function-time-to-cold-start-multithreaded-twelve-rg.name
   app_service_plan_id = azurerm_app_service_plan.single-function-time-to-cold-start-multithreaded-twelve-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "single-function-time-to-cold-start-multi
 }
 
 # output some useful variables
-output "single-function-time-to-cold-start-multithreaded-twelve1_function_key" {
+output "single-function-time-to-cold-start-multithreaded-twelve-function1_function_key" {
   value = "${lookup(azurerm_template_deployment.single-function-time-to-cold-start-multithreaded-twelve1-function-key.outputs, "functionkey")}"
 }
-output "single-function-time-to-cold-start-multithreaded-twelve1_function_app_url" {
+output "single-function-time-to-cold-start-multithreaded-twelve-function1_function_app_url" {
   value = azurerm_function_app.single-function-time-to-cold-start-multithreaded-twelve1.default_hostname
 }
