@@ -23,7 +23,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # be cached, as well for identifying unique invocations
     invocation_uuid = str(uuid.uuid4())
     # unique name of this function
-    function_name = 'function1'
+    function_name = 'function3'
 
     # whoami?
     identifier = f'{function_name}-{invocation_uuid}'
@@ -84,8 +84,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = req_json['throughput_time'] * 100
         else:
-            body[identifier]['throughput'] = 0.0
             body[identifier]['throughput_running_time'] = None
+            body[identifier]['throughput'] = 0.0
             body[identifier]['throughput_time'] = None
             body[identifier]['throughput_process_time'] = None
             body[identifier]['random_seed'] = None
@@ -187,7 +187,7 @@ def invoke_nested_function(function_name: str,
             'Content-Type': 'application/json'
         }
 
-        function_app_name = f'https://{function_name}-python.azurewebsites.net'
+        function_app_name = f'https://{function_name}.azurewebsites.net'
 
         invocation_url = f'{function_app_name}/api/{function_name}?code={code}'
 
@@ -221,6 +221,7 @@ def invoke_nested_function(function_name: str,
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
+                "function_cores": 0,
                 "function_cores": 0,
                 "throughput": None,
                 "throughput_time": None,

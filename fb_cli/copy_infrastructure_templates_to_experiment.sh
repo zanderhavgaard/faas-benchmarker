@@ -26,7 +26,6 @@ experiment_context="$fbrd/experiments/$experiment_name"
 # ====================================
 
 pmsg "Copying AWS Lambda template ..."
-# cp -r $template_path/aws_lambda $experiment_context/aws_lambda
 copyTemplate "aws_lambda"
 
 pmsg "Applying experiment name to AWS Lambda template ..."
@@ -49,9 +48,8 @@ pmsg "Applying experiment name to copied function source code ..."
 
 function_code_dirs=$(ls $experiment_context/azure_functions/function_code/)
 for fcd in $function_code_dirs; do
-    # get the function number
-    fx_num=${fcd:8:1}
-    exp_filename=$experiment_name$fx_num
+    fx_name=${fcd:9:100}
+    exp_filename=$experiment_name-$fx_name
     # rename file and directory names to experiment name
     mv $experiment_context/azure_functions/function_code/$fcd/$fcd \
       $experiment_context/azure_functions/function_code/$fcd/$exp_filename

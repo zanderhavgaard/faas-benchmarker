@@ -13,7 +13,11 @@ from pprint import pprint
 class AbstractProvider(ABC):
 
     @abstractmethod
-    def invoke_function(self, name:str, sleep=0.0, invoke_nested:list = None, throughput_time:float = 0.0):
+    def invoke_function(
+            self,
+            function_name: str,
+            function_args:dict = None,
+            ) -> dict:
         pass
 
 
@@ -160,16 +164,16 @@ class AbstractProvider(ABC):
                 recieve_pipes.append(recieve_pipe)
                 # adjust count to give each core/cpu right load and thread id's
                 id_count += threads_per_core
-                
+
             # run processes concurrently
             for p in processes:
                 p.start()
-            
+
 
             # join processes
             for p in processes:
                 p.join()
-            
+
             # computation is parallelized but recieveing computed results is sequential
             for x in recieve_pipes:
                 try:
@@ -192,7 +196,7 @@ class AbstractProvider(ABC):
             return flatten_data_list
 
         except Exception as e:
-            self.print_error('caught exception in invoke_function_conccrently', datetime.now(), 
+            self.print_error('caught exception in invoke_function_conccrently', datetime.now(),
                                 e, thread_args, 'main', numb_threads)
             return reduce(lambda x, y: x+y, data_list)
 
