@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "function-lifetime1-function-code" {
   type = "zip"
-  source_dir = "function_code/function-lifetime1"
+  source_dir = "function_code/function-lifetime-function1"
   output_path = "function1.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "function-lifetime1-code" {
 resource "azurerm_function_app" "function-lifetime1" {
   depends_on = [azurerm_storage_blob.function-lifetime1-code]
 
-  name = "function-lifetime1-python"
+  name = "function-lifetime-function1"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.function-lifetime-rg.name
   app_service_plan_id = azurerm_app_service_plan.function-lifetime-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "function-lifetime1-function-key" {
 }
 
 # output some useful variables
-output "function-lifetime1_function_key" {
+output "function-lifetime-function1_function_key" {
   value = "${lookup(azurerm_template_deployment.function-lifetime1-function-key.outputs, "functionkey")}"
 }
-output "function-lifetime1_function_app_url" {
+output "function-lifetime-function1_function_app_url" {
   value = azurerm_function_app.function-lifetime1.default_hostname
 }

@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "track-cloudfunctions-lifecycle1-function-code" {
   type = "zip"
-  source_dir = "function_code/track-cloudfunctions-lifecycle1"
+  source_dir = "function_code/track-cloudfunctions-lifecycle-function1"
   output_path = "function1.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "track-cloudfunctions-lifecycle1-code" {
 resource "azurerm_function_app" "track-cloudfunctions-lifecycle1" {
   depends_on = [azurerm_storage_blob.track-cloudfunctions-lifecycle1-code]
 
-  name = "track-cloudfunctions-lifecycle1-python"
+  name = "track-cloudfunctions-lifecycle-function1"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.track-cloudfunctions-lifecycle-rg.name
   app_service_plan_id = azurerm_app_service_plan.track-cloudfunctions-lifecycle-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "track-cloudfunctions-lifecycle1-function
 }
 
 # output some useful variables
-output "track-cloudfunctions-lifecycle1_function_key" {
+output "track-cloudfunctions-lifecycle-function1_function_key" {
   value = "${lookup(azurerm_template_deployment.track-cloudfunctions-lifecycle1-function-key.outputs, "functionkey")}"
 }
-output "track-cloudfunctions-lifecycle1_function_app_url" {
+output "track-cloudfunctions-lifecycle-function1_function_app_url" {
   value = azurerm_function_app.track-cloudfunctions-lifecycle1.default_hostname
 }

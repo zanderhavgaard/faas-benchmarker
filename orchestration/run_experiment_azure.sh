@@ -42,6 +42,7 @@ terraform apply -auto-approve
 pmsg "Fixing broken terraform azure function code deployment ..."
 
 # reupload function code but with dependencies....
+# TODO update for monolith
 function_code_dirs=$(ls function_code/)
 for fcd in $function_code_dirs; do
     # get the function number
