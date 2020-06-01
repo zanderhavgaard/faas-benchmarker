@@ -441,4 +441,4 @@ def db_interface_sanity_check():
 sequential_sanity_check()
 concurrent_sanity_check()
 test_monolith()
-db_interface_sanity_check()
+#  db_interface_sanity_check()
