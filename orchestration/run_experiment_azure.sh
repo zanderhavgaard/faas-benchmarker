@@ -49,7 +49,9 @@ for fcd in $function_code_dirs; do
     func azure functionapp publish $fcd
 done
 
-pmsg "Outputting variables to $experiment_name-awslambda.env ..."
+cd "$experiment_context/azure_functions"
+
+pmsg "Outputting variables to $experiment_name-azure_functions.env ..."
 terraform output > "$experiment_cloud_function_env"
 
 smsg "Done creating cloud functions."
