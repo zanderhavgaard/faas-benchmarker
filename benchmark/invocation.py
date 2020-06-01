@@ -53,7 +53,7 @@ class Invocation:
                                                 invo_dict.pop('function_argument'),
                                                 invo_dict.pop('function_called'),
                                                 invo_dict.pop('monolith_result'))
-        if 'process_time_matrix' in dict:
+        if 'process_time_matrix' in invo_dict:
             keys += ',process_time_matrix,running_time_matrix'
             values += """,{0},{1}""".format(invo_dict.pop('process_time_matrix'),invo_dict.pop('running_time_matrix'))
 

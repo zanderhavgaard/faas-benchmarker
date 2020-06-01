@@ -5,6 +5,7 @@ from pprint import pprint
 from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
+import uuid
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -315,15 +316,129 @@ def test_monolith():
         d = lib.get_dict(response)
         if 'error' in d:
             pprint(d)
+    
+    # =====================================================================================
+    # end of the experiment
+    benchmarker.end_experiment()
+    # =====================================================================================
 
 # ============================================================
-# EXPERIMENT LOGIC
 
+def db_interface_sanity_check():
+
+    print('\nRunning database test')
+
+    db = database(True)
+    benchmarker = create_benchmarker('test db interface', 'monolith feature test')
+    print('invoking with sleep: ')
+    response = benchmarker.invoke_function(function_name='function1',function_args={'sleep':0.2})
+    pprint(response)
+    print()
+    print('invoking with sleep=str (error): ')
+    response_error = benchmarker.invoke_function(function_name='function1',function_args={'sleep':'0.2'})
+    pprint(response_error)
+    print()
+
+    # =====================================================================================
+    # end of the experiment
+    benchmarker.end_experiment()
+    # =====================================================================================
+    print('coldtime check')
+    db.log_coldtime(benchmarker.experiment.uuid,
+                    lib.get_dict(response)['identifier'],
+                    10,
+                    10,
+                    30,
+                    False,
+                    True,
+                    False)
     
+    db.log_coldtime(benchmarker.experiment.uuid,
+                    lib.get_dict(response)['identifier'],
+                    10,
+                    10,
+                    30,
+                    True,
+                    True,
+                    True)
+    
+    cold_res = db.get_from_table(table='Coldtime')
+    print('Coldtime table results')
+    print(cold_res)
+    print()
+
+    print('lifetime check')
+    db.log_lifetime(benchmarker.experiment.uuid, 
+                    lib.get_dict(response)['identifier'], 
+                    10, 
+                    25, 
+                    12, 
+                    12, 
+                    True)
+    
+    lifetime_res = db.get_from_table(table='Function_lifetime')
+    print('Function_lifetime table results')
+    print(lifetime_res)
+    print()
+
+    print('concurrent check')
+    db.log_concurrent_result(
+                            benchmarker.experiment.uuid,
+                            'function1',
+                            8,
+                            12,
+                            1,
+                            1.1,
+                            100,
+                            0.5,
+                            4,
+                            0.9,
+                            1.2,
+                            2.2,
+                            3.3,
+                            3.4,
+                            4.4,
+                            5.5,
+                            6.6) 
+    
+    concurrent_res = db.get_from_table(table='Cc_bench')
+    print('concurrent table results')
+    print(concurrent_res)
+    print()
+
+    print('lifecycle check')
+    db.log_clfunction_lifecycle(
+                                benchmarker.experiment.uuid,
+                                'function1',
+                                8,
+                                1.2,
+                                1,
+                                2,
+                                1.2,
+                                2.2,
+                                2,
+                                'some ids')
+    
+    Function_lifecycle_res = db.get_from_table(table='Function_lifecycle')
+    print('Function_lifecycle table results')
+    print(Function_lifecycle_res)
+    print()
+
+
+    print('Invocation check')
+    print(db.get_from_table(table='Invocation',args='identifier'))
+    print()
+    print('Error check')
+    print(db.get_from_table(table='Error',args='identifier'))
+    print()
+    print('Monolith check')
+    print(db.get_from_table(table='Monolith',args='identifier'))
+    print()
+
 
 # ============================================================
 # run the tests - comment out to leave out
 sequential_sanity_check()
 concurrent_sanity_check()
 test_monolith()
-
+db_interface_sanity_check()
