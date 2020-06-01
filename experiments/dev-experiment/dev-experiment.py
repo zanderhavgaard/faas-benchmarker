@@ -323,7 +323,7 @@ def test_monolith():
 
 # ============================================================
 # run the tests - comment out to leave out
-#  sequential_sanity_check()
-#  concurrent_sanity_check()
+sequential_sanity_check()
+concurrent_sanity_check()
 test_monolith()
 
