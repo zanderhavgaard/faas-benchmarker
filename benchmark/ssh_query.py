@@ -25,10 +25,10 @@ class SSH_query:
         # comment below lines out if you do not want to use default variable names
         self.ssh_username = 'ubuntu'
         # comment below line in and the line below that out for production
-        if not dev_mode:
-            self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/docker/key/id_rsa')
-        else:
+        if dev_mode:
             self.ssh_pkey = paramiko.RSAKey.from_private_key_file(os.environ['fbrd']+'/secrets/ssh_keys/db_server' )
+        else:
+            self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/docker/key/id_rsa')
         self.remote_bind_address = ('127.0.0.1', 3306)
         self.db_user = 'root'
         self.db_password = 'faas'

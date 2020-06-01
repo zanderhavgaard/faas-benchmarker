@@ -90,6 +90,8 @@ timestamp=$(date -u +\"%d-%m-%Y_%H-%M-%S\")
 logfile="/home/ubuntu/$timestamp-$experiment_meta_identifier-$experiment_cloud_function_provider-$experiment_name.log"
 docker_experiment_code_path="/home/docker/faas-benchmarker/experiments/$experiment_name/$experiment_name.py"
 docker_env_file_path="/home/docker/shared/$experiment_name-$experiment_cloud_function_provider.env"
+dev_mode="False"
+verbose="False"
 ssh_command="
     nohup bash -c ' \
         docker run \
@@ -105,7 +107,9 @@ ssh_command="
             $experiment_meta_identifier \
             $experiment_cloud_function_provider \
             $experiment_client_provider \
-            $docker_env_file_path
+            $docker_env_file_path \
+            $dev_mode \
+            $verbose
         >> $logfile 2>&1
         ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
         ; [ -f \"/home/ubuntu/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/ubuntu/ErrorLogFile.log \

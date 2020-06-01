@@ -60,6 +60,8 @@ timestamp=$(date -u +\"%d-%m-%Y_%H-%M-%S\")
 logfile="/home/ubuntu/$timestamp-$experiment_meta_identifier-$experiment_cloud_function_provider-$experiment_name.log"
 docker_experiment_code_path="/home/docker/faas-benchmarker/experiments/$experiment_name/$experiment_name.py"
 docker_env_file_path="openfaas-does-not-need-an-env-file"
+dev_mode="False"
+verbose="False"
 ssh_command="
     nohup bash -c ' \
         bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1
@@ -76,7 +78,9 @@ ssh_command="
             $experiment_meta_identifier \
             $experiment_cloud_function_provider \
             $experiment_client_provider \
-            $docker_env_file_path
+            $docker_env_file_path \
+            $dev_mode \
+            $verbose
         >> $logfile 2>&1
         ; bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1
         ; scp -o StrictHostKeyChecking=no $logfile ubuntu@\$DB_HOSTNAME:/home/ubuntu/logs/experiments/
