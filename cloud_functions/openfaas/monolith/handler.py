@@ -1,3 +1,4 @@
+
 import time
 import uuid
 import json
@@ -60,7 +61,7 @@ def handle(req):
             ('levelOrder', lambda x: levelOrder(make_tree(TreeNode(random.randint(0,10)),x))),
             ('maxDepth', lambda x: maxDepth(make_tree(TreeNode(random.randint(0,10)),x))),
             ('levelOrderBottom', lambda x: levelOrderBottom(make_tree(TreeNode(random.randint(0,10)),x))),
-            ('sortedArrayToBST', lambda x: sortedArrayToBST(n for n in range(x))),
+            ('sortedArrayToBST', lambda x: sortedArrayToBST([n for n in range(x)])),
             ('zigzagLevelOrder', lambda x: zigzagLevelOrder(make_tree(TreeNode(random.randint(0,10)),x))),
             ('sortedListToBST', lambda x: sortedListToBST(makeListNode(x))),
             ('isBalanced', lambda x: isBalanced(make_tree(TreeNode(random.randint(0,10)),x))),
@@ -173,7 +174,7 @@ def handle(req):
             return result
         
         def fib():
-            n = random.randint(20)
+            n = random.randint(0,20)
             return ((1+sqrt(5))**n-(1-sqrt(5))**n)/(2**n*sqrt(5))
         
         class TreeNode(object):
@@ -1802,8 +1803,8 @@ def handle(req):
         
         # invoke Arrow2 class to ensure it is not left out by a smart compiler
         def use_arrow():
-            utc = Arrow2().utcnow()
-            now = Arrow2().now()
+            utc = Arrow2.utcnow()
+            now = Arrow2.now()
             return f'{utc} | {now}'
         
         # invoke functions from two fairly large libraries 
@@ -1839,7 +1840,7 @@ def handle(req):
         
         def get_function():
             if event['run_function'] == 'random':
-                return functions[random.nextint(0,len(functions)-1)]
+                return functions[random.randint(0,len(functions)-1)]
             else:
                 function_to_find = event['run_function'] 
                 for f in functions:
@@ -1925,12 +1926,10 @@ def handle(req):
                 'Content-Type': 'application/json'
             }
 
-            #  function_url = f'{function_name}'
-            # TODO change
             function_url = 'gateway.openfaas:8080'
-            function_number = function_name[len(function_name)-1:]
-
-            invocation_url = f'http://{function_url}/function/function{function_number}'
+            # strip expreiment name from function_name
+            function_name = function_name.split('-').pop()
+            invocation_url = f'http://{function_url}/function/{function_name}'
 
             response = requests.post(
                 url=invocation_url,
