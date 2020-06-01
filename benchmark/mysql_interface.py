@@ -34,7 +34,6 @@ class SQL_Interface:
     
     def get_most_recent_from_table(self, table:str, args: str = '*', flag: bool = True) -> list:
         query = 'SELECT {0} from {1} where exp_id=(select max(id) from Experiment) ORDER BY id DESC LIMIT 1;'.format(args,table)
-        print('query',query)
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
 
@@ -123,6 +122,7 @@ class SQL_Interface:
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
 
+    # ========================================================================================================
     # coldstart experiment specific
 
     def log_coldtime(self, 

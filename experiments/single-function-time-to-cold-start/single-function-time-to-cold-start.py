@@ -219,14 +219,14 @@ try:
                     ('Final result', False),
                     ('latest_latency_time',latest_latency_time),
                     ])
-            else:
-                append_result(experiment_uuid,
-                            result_dict['identifier'],
-                            int(sleep_time / 60),
-                            int(sleep_time % 60),
-                            increment,
-                            latest_latency_time > benchmark,
-                            False)
+            
+            append_result(experiment_uuid,
+                        result_dict['identifier'],
+                        int(sleep_time / 60),
+                        int(sleep_time % 60),
+                        increment,
+                        latest_latency_time > benchmark,
+                        False)
 
             if(latest_latency_time > benchmark):
                 increment /= 2
@@ -259,17 +259,17 @@ try:
                 ('sleep_time / 60', int(sleep_time / 60)),
                 ('sleep_time % 60', int(sleep_time % 60)),
                 ('increment', increment),
-                ('coldtime', latency_time < benchmark),
+                ('coldtime', latency_time > benchmark),
                 ('Final result', False)
                 ])
-        else:
-            append_result(experiment_uuid,
-                        result_dict['identifier'],
-                        int(sleep_time / 60),
-                        int(sleep_time % 60),
-                        increment,
-                        latency_time < benchmark,
-                        False)
+        
+        append_result(experiment_uuid,
+                    result_dict['identifier'],
+                    int(sleep_time / 60),
+                    int(sleep_time % 60),
+                    increment,
+                    latency_time > benchmark,
+                    False)
         # if sleeptime did not result in coldstart adjust values and reset iterations
         if(latency_time < benchmark):
             granularity *= 2
