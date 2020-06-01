@@ -181,12 +181,10 @@ def invoke_nested_function(function_name: str,
             'Content-Type': 'application/json'
         }
 
-        #  function_url = f'{function_name}'
-        # TODO change
         function_url = 'gateway.openfaas:8080'
-        function_number = function_name[len(function_name)-1:]
-
-        invocation_url = f'http://{function_url}/function/function{function_number}'
+        # strip expreiment name from function_name
+        function_name = function_name.split('-').pop()
+        invocation_url = f'http://{function_url}/function/{function_name}'
 
         response = requests.post(
             url=invocation_url,
