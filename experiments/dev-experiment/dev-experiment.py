@@ -274,13 +274,13 @@ def test_monolith():
         'run_function': 'random',
         'seed': 2,
         }
-    response = benchmarker.invoke_function(function_name='monolith',args=args)
+    response = benchmarker.invoke_function(function_name='monolith',function_args=args)
     pprint(response)
     print()
 
 
     args['run_function'] = 'matrix_mult'
-    response = benchmarker.invoke_function(function_name='monolith',args=args)
+    response = benchmarker.invoke_function(function_name='monolith',function_args=args)
     pprint(response)
     print()
 
@@ -311,7 +311,7 @@ def test_monolith():
     ]
     for f in f_list:
         args['run_function'] = f
-        response = benchmarker.invoke_function(function_name='monolith',args=args)
+        response = benchmarker.invoke_function(function_name='monolith',function_args=args)
         d = lib.get_dict(response)
         if 'error' in d:
             pprint(d)
@@ -323,7 +323,7 @@ def test_monolith():
 
 # ============================================================
 # run the tests - comment out to leave out
-# sequential_sanity_check()
-concurrent_sanity_check()
-# test_monolith()
+#  sequential_sanity_check()
+#  concurrent_sanity_check()
+test_monolith()
 

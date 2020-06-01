@@ -1840,7 +1840,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         #  DIFF FROM GENERIC FUNCTIONS
          def get_function():
             if req_json['run_function'] == 'random':
-                return functions[random.nextint(0,len(functions)-1)]
+                return functions[random.randint(0,len(functions)-1)]
             else:
                 function_to_find = req_json['run_function'] 
                 for f in functions:

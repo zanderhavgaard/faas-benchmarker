@@ -23,6 +23,16 @@ functions:
       read_timeout: "180s"
       write_timeout: "180s"
       timeout_secs: "5000"
+  function3:
+    lang: python3
+    handler: ./function3
+    image: faasbenchmarker/function3:latest
+    build_options:
+      - dev
+    environment:
+      read_timeout: "180s"
+      write_timeout: "180s"
+      timeout_secs: "5000"
   monolith:
     lang: python3
     handler: ./monolith
