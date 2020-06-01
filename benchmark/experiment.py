@@ -63,21 +63,17 @@ class Experiment:
     def end_experiment(self, invocation_count:int):
         self.end_time = time.time()
         self.total_time = self.end_time - self.start_time
-        self.invocation_count = invocation_count
+        if invocation_count != 0:
+            self.invocation_count = invocation_count
         return (self.end_time, self.total_time)
 
     def get_experiment_query_string(self) -> str:
         self_dict = self.__dict__.copy()
         self_dict.pop('invocations')
-        key_string = ''
-        val_string = ''
-        for k, v in self_dict.items():
-            key_string += k+','
-            if(isinstance(v, str)):
-                val_string += """'{0}',""".format(v)
-            else:
-                val_string += str(v)+','
-        return """INSERT INTO Experiment ({0}) VALUES ({1});""".format(key_string[:-1], val_string[:-1])
+   
+        (keys,vals) = reduce(lambda x,y: ( f'{x[0]}{y[0]},', f'{x[1]}{y[1]},') if not isinstance(y[1],str) 
+                            else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(self_dict.items()))
+        return 'INSERT INTO Experiment ({0}) VALUES ({1});'.format(keys[:-1], vals[:-1])
 
     def log_experiment(self):
         return ([self.get_experiment_query_string()], [i.get_query_string() for i in self.get_invocations()])

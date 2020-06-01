@@ -8,6 +8,7 @@ from concurrent import futures
 import time
 from datetime import datetime
 from pprint import pprint
+import traceback
 
 
 class AbstractProvider(ABC):
@@ -32,12 +33,14 @@ class AbstractProvider(ABC):
 # auxiliary method for running X number of threads on a core/cpu
 
 
-    def delegate_to_core(self, invo_args,
-                         th_count: int,
-                         numb_threads: int,
-                         total_numb_threads: int,
-                         process_barrier: mp.Barrier,
-                         pipe: mp.Pipe) -> list:
+    def delegate_to_core(self, 
+                        function_name:str,
+                        th_count: int,
+                        numb_threads: int,
+                        total_numb_threads: int,
+                        process_barrier: mp.Barrier,
+                        pipe: mp.Pipe,
+                        invo_args:dict=None,) -> list:
 
         # results to be returned
         responses = []
@@ -60,8 +63,7 @@ class AbstractProvider(ABC):
                 barrier.wait()
                 try:
                     # call cloud function
-                    future = executor.submit(
-                        self.invoke_function, invo_args[0], invo_args[1], invo_args[2])
+                    future = executor.submit(self.invoke_function, function_name, invo_args)
                     result = future.result()
                     for identifier in result.keys():
                         if(identifier != 'root_identifier'):
@@ -73,11 +75,11 @@ class AbstractProvider(ABC):
                         responses.append(result)
                     # wait for all threads to have delivered responses
                     barrier.wait()
-                except Exception as te:
+                except Exception as xe:
                     # collect exception for later print to log
                     with lock:
-                        exceptions.append(('caught exception in thread_wrapper', datetime.now(
-                        ), te, f'one of {th_count}-{th_count+numb_threads-1}'))
+                        exceptions.append(('caught exception in thread_wrapper', datetime.now(), 
+                                            xe, f'one of {th_count}-{th_count+numb_threads-1}'))
 
             # build threads and append to threads list
             for i in range(numb_threads):
@@ -92,7 +94,7 @@ class AbstractProvider(ABC):
                 t.start()
             # join threads, hence all results will have been appended to responses
             for x in threads:
-                t.join()
+                x.join()
 
             # return agregated responses
             pipe.send((responses, exceptions))
@@ -108,18 +110,15 @@ class AbstractProvider(ABC):
             except Exception as ex:
                 # super edge-case that pipe.send() or pipe.close() throws and exception! if so, we print to log.
                 # exception here might cause main process to deadlock as it will wait for process running on same core
-                self.print_error('caught exception in delegate_to_core', datetime.now(
-                ), e, invo_args, f'on of {th_count}-{th_count+numb_threads-1}', total_numb_threads)
+                self.print_error('caught exception in delegate_to_core', datetime.now(), e, 
+                                invo_args, f'on of {th_count}-{th_count+numb_threads-1}', total_numb_threads)
 
     # method for orchastrating threads to processes/cpu's and returning results
-    # TODO refactor to include throughput
-    def invoke_function_conccrently(self, name: str,
-                                    sleep=0.0,
-                                    invoke_nested=None,
-                                    throughput_time=0.0,
-                                    numb_threads:int=1) -> list:
+    def invoke_function_conccrently(self, function_name: str,
+                                    numb_threads:int=1,
+                                    function_args:dict= None) -> list:
         
-        thread_args = (name, sleep, invoke_nested, throughput_time)
+        thread_args = function_args
         # find number of cpus that work can be delegated to
         system_cores = mp.cpu_count() if mp.cpu_count() < numb_threads else numb_threads
         # find number of threads to assign to each core
@@ -156,8 +155,7 @@ class AbstractProvider(ABC):
                     id_count += remaining_threads
                     remaining_threads = 0
                 # args for concurrent wrapper method
-                process_args = (thread_args, id_start,
-                                t_numb, numb_threads, mp_barrier, send_pipe)
+                process_args = (function_name, id_start, t_numb, numb_threads, mp_barrier, send_pipe, thread_args)
                 # create and add process to list
                 processes.append(mp.Process(target=self.delegate_to_core, args=process_args))
                 # pup pipe in list to later retrive results
@@ -190,8 +188,7 @@ class AbstractProvider(ABC):
             flatten_exception_list = reduce(lambda x, y: x+y, exception_list)
             # print all exception, if any, to log
             for e in flatten_exception_list:
-                self.print_error(e[0], e[1], e[2],
-                                 thread_args, e[3], numb_threads)
+                self.print_error(e[0], e[1], e[2],thread_args, e[3], numb_threads)
 
             return flatten_data_list
 

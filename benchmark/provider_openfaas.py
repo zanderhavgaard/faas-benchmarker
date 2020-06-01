@@ -29,12 +29,12 @@ class OpenFaasProvider(AbstractProvider):
                         function_name:str,
                         function_args:dict = None
                         ) -> dict:
-
+        
         # set default value for sleep if not present in function_args
-        if function_args is not None:
-            sleep = function_args["sleep"] if "sleep" in function_args.keys() else 0.0
-        else:
-            sleep = 0.0
+        # if function_args is not None:
+        #     sleep = function_args["sleep"] if "sleep" in function_args.keys() else 0.0
+        # else:
+        #     sleep = 0.0
 
         # paramters, the only required paramter is the statuscode
         if function_args is None:
@@ -106,7 +106,7 @@ class OpenFaasProvider(AbstractProvider):
                         'function_name': self.experiment_name,
                         'error': {'trace': 'None 200 code in provider_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
                         'parent': None,
-                        'sleep': sleep,
+                        'sleep': 0.0,
                         'numb_threads': 1,
                         'thread_id': 1,
                         'python_version': None,
@@ -118,20 +118,20 @@ class OpenFaasProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-provider_openfaas' + self.experiment_name + '-' + str(end_time)
+                    'root_identifier': 'StatusCode-error-provider_openfaas-' + self.experiment_name + '-' + str(end_time)
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-provider_openfaas-' + self.experiment_name + str(end_time): {
+                'exception-provider_openfaas-' + f'{self.experiment_name}-{end_time}': {
                     'identifier': 'exception-provider_openfaas' + self.experiment_name + str(end_time),
                     'uuid': None,
                     'function_name': self.experiment_name,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
                     'parent': None,
-                    'sleep': sleep,
+                    'sleep': 0.0,
                     'numb_threads': 1,
                     'thread_id': 1,
                     'python_version': None,
@@ -143,6 +143,6 @@ class OpenFaasProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time
                 },
-                'root_identifier': 'exception-provider_openfaas' + self.experiment_name + str(end_time)
+                'root_identifier': 'exception-provider_openfaas' + f'{self.experiment_name}-{end_time}'
             }
             return error_dict
