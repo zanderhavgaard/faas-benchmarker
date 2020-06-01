@@ -438,7 +438,7 @@ def db_interface_sanity_check():
 
 # ============================================================
 # run the tests - comment out to leave out
-# sequential_sanity_check()
-# concurrent_sanity_check()
+sequential_sanity_check()
+concurrent_sanity_check()
 test_monolith()
 # db_interface_sanity_check()
