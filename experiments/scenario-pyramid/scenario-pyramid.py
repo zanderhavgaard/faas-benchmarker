@@ -39,7 +39,8 @@ verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: <description>
+{experiment_name}: This experiment is a simple test of how the platform deals with 
+steady increasing load over time. 
 """
 
 # =====================================================================================
@@ -63,13 +64,14 @@ table = None
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3), or 'monolith' 
-fx_num = 1
+
 fx = f'{experiment_name}{fx_num}'
 
 # =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 15 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
+coldtime = 15 * 60 if coldtime == None else coldtime
 # =====================================================================================
 
 # sleep for 15 minutes to ensure coldstart
@@ -87,23 +89,23 @@ errors = []
 # * comment below function out and other invoke     *
 # * function in if experiment is concurrent invoked *
 # ***************************************************
-def invoke(aegs:dict= None):
+def invoke(args:dict= None):
     response = lib.get_dict(
         benchmarker.invoke_function(function_name=fx, function_args=args))
     return response if 'error' not in response else errors.append(response)
 
-# def invoke(thread_numb:int, args:dict= None):
+def invoke_function_conccurrently(thread_numb:int, args:dict= None):
 
-#     err_count = len(errors)
-#     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
-#     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-#     benchmarker.invoke_function_conccurrently(function_name=fx, numb_threads=thread_numb,function_args=args))]))
-#     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
+    err_count = len(errors)
+    # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
+    invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
+    benchmarker.invoke_function_conccurrently(function_name=fx, numb_threads=thread_numb,function_args=args))]))
+    # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
    
-#     # *** NOTE if a single accumulated dict is desired as return value comment below line in ***
-#     # invocations = lib.accumulate_dicts(invocations)
-#     # return error count and result for this particular invocation 
-#     return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
+    # *** NOTE if a single accumulated dict is desired as return value comment below line in ***
+    # invocations = lib.accumulate_dicts(invocations)
+    # return error count and result for this particular invocation 
+    return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
 
 # function to be given to validate function if not successful
 # if other action is desired give other function as body
@@ -126,15 +128,7 @@ def append_result(values_to_log) -> None:
 
 try:
 
-# Add the experiment logic here
-# for example invoke function:
-#   response = validate(invoke,f'invoking {fx}')
-# or concurrently:
-#   validate(invoke, f'invoking {fx} concurrently', 8)
-
-# NOTE use lib.dev_mode_print to print to terminal in dev_mode
-# takes context:str and args:list as arguments -> args are what you want to have printed
-
+    
 
    # =====================================================================================
     # end of the experiment, results are logged to database
