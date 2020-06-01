@@ -42,16 +42,11 @@ terraform apply -auto-approve
 pmsg "Fixing broken terraform azure function code deployment ..."
 
 # reupload function code but with dependencies....
-# TODO update for monolith
 function_code_dirs=$(ls function_code/)
 for fcd in $function_code_dirs; do
-    # get the function number
-    fx_num=$(echo $fcd | grep -oP "\d")
-    exp_function_app_name=$experiment_name$fx_num-python
-    pmsg "Fixing deployment of azure function: $exp_function_app_name"
-    cd function_code/$fcd
-    func azure functionapp publish $exp_function_app_name
-    cd ../..
+    pmsg "Fixing deployment of azure function: $fcd"
+    cd "$experiment_context/azure_functions/function_code/$fcd"
+    func azure functionapp publish $fcd
 done
 
 pmsg "Outputting variables to $experiment_name-awslambda.env ..."
