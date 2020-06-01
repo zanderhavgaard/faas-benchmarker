@@ -67,7 +67,7 @@ resource "aws_lambda_function" "monolith-python" {
   filename = data.archive_file.monolith-lambda-code.output_path
   function_name = "single-function-time-to-cold-start-multithreaded-twelve-monolith"
   role = aws_iam_role.single-function-time-to-cold-start-multithreaded-twelve-role.arn
-  handler = "function1.lambda_handler"
+  handler = "monolith.lambda_handler"
   runtime = "python3.7"
   source_code_hash = filesha256(data.archive_file.monolith-lambda-code.output_path)
   publish = true

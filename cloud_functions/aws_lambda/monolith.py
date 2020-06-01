@@ -1,3 +1,4 @@
+import boto3
 import time
 import uuid
 import json
@@ -1960,7 +1961,7 @@ def invoke_lambda(lambda_name: str,
             "error-"+lambda_name+'-nested_invocation-'+str(end_time): {
                 "identifier": "error-"+lambda_name+'-nested_invocation-'+str(end_time),
                 "uuid": None,
-                "function_name": 'function1',
+                "function_name": 'monolith',
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
@@ -1988,37 +1989,3 @@ class StatusCodeException(Exception):
     pass
 
 
-# call the method if running locally
-#  if __name__ == "__main__":
-
-    #  simplest invoke
-    #  test_event = {"StatusCode": 200}
-
-    #  invoke with sleep
-    #  test_event = {"StatusCode": 200, 'sleep': 1.5}
-
-    #  invoke with nested invocations
-    #  test_event = {"StatusCode": 200,
-    #  "invoke_nested": [
-    #  {
-    #  "function_name": "dev2-python",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  "sleep": 0.5,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  {
-    #  "function_name": "dev3-python",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  ],
-    #  }
-
-    #  test_context = None
-
-    #  response = lambda_handler(test_event, test_context)
-    #  print(response)
