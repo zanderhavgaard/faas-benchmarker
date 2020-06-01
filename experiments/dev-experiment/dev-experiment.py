@@ -328,7 +328,7 @@ def db_interface_sanity_check():
 
     print('\nRunning database test')
 
-    db = database(True)
+    db = database(experiment_name)
     benchmarker = create_benchmarker('test db interface', 'monolith feature test')
     print('invoking with sleep: ')
     response = benchmarker.invoke_function(function_name='function1',function_args={'sleep':0.2})
