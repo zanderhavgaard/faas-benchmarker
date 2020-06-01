@@ -79,7 +79,7 @@ def create_benchmarker(exp_name:str,desc:str,verbose= False):
     return benchmarker
 
 
-db = database(True)
+db = database(dev_mode)
 # =====================================================================================
 
 def sequential_sanity_check():
