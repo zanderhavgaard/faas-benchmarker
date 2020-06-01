@@ -57,17 +57,17 @@ class Invocation:
             keys += ',process_time_matrix,running_time_matrix'
             values += """,{0},{1}""".format(invo_dict.pop('process_time_matrix'),invo_dict.pop('running_time_matrix'))
 
-        return f'INSERT INTO Monolith ({keys}) VALUES ({values});'
+        return [f'INSERT INTO Monolith ({keys}) VALUES ({values});']
 
 
     def get_query_string(self):
         key_values = self.__dict__.copy()
-        monolith = '' if key_values['function_name'] != 'monolith' else self.create_monolith_query(key_values)
+        monolith = [] if key_values['function_name'] != 'monolith' else self.create_monolith_query(key_values)
         is_error = key_values.pop('is_error')
 
         list(map(lambda x: x if x[1] != None else key_values.pop(x[0]), key_values.copy().items()))
          
         (keys,vals) = reduce(lambda x,y: ( f'{x[0]}{y[0]},', f'{x[1]}{y[1]},') if not isinstance(y[1],str) 
                             else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(key_values.items()))
-        return 'INSERT INTO {0} ({1}) VALUES ({2});{3}'.format('Error' if is_error else 'Invocation', keys[:-1], vals[:-1],monolith)
+        return ['INSERT INTO {0} ({1}) VALUES ({2});'.format('Error' if is_error else 'Invocation', keys[:-1], vals[:-1])]+monolith
 

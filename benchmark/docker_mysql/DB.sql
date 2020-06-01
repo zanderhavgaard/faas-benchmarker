@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS  `Monolith` (
   `function_called` varchar(50) NOT NULL,
   `process_time_matrix` DOUBLE DEFAULT 0.0,
   `running_time_matrix` DOUBLE DEFAULT 0.0,
+  `monolith_result` varchar(100) NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
   FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
