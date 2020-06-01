@@ -299,7 +299,7 @@ try:
                 int(sleep_time / 60),
                 int(sleep_time % 60),
                 increment,
-                latency_time < benchmark,
+                latency_time > benchmark,
                 True)
 
 
