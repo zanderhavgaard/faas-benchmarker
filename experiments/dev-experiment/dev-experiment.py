@@ -83,7 +83,7 @@ db = database(dev_mode)
 # =====================================================================================
 
 def sequential_sanity_check():
-    benchmarker = create_benchmarker('test linked','testing linked invocations')
+    benchmarker = create_benchmarker(experiment_name,'testing linked invocations')
     # name of function to be invoked
     fx_name = 'function'
     sleep_amount = 0.5
@@ -217,7 +217,7 @@ def sequential_sanity_check():
     # =====================================================================================
 
 def concurrent_sanity_check():
-    benchmarker = create_benchmarker('concurrent invocations', 'run with different thread counts')
+    benchmarker = create_benchmarker(experiment_name, 'run with different thread counts')
     response = benchmarker.invoke_function_conccurrently(function_name='function1',numb_threads=8)
     pprint(response)
     print()
@@ -267,7 +267,7 @@ def concurrent_sanity_check():
 
 
 def test_monolith():
-    benchmarker = create_benchmarker('test monolith', 'monolith feature test')
+    benchmarker = create_benchmarker(experiment_name, 'monolith feature test')
     
     args = {
         'args': 8,
