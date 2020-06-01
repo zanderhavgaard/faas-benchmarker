@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "throughput-benchmarking2-function-code" {
   type = "zip"
-  source_dir = "function_code/throughput-benchmarking2"
+  source_dir = "function_code/throughput-benchmarking-function2"
   output_path = "function2.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "throughput-benchmarking2-code" {
 resource "azurerm_function_app" "throughput-benchmarking2" {
   depends_on = [azurerm_storage_blob.throughput-benchmarking2-code]
 
-  name = "throughput-benchmarking2-python"
+  name = "throughput-benchmarking-function2"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.throughput-benchmarking-rg.name
   app_service_plan_id = azurerm_app_service_plan.throughput-benchmarking-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "throughput-benchmarking2-function-key" {
 }
 
 # output some useful variables
-output "throughput-benchmarking2_function_key" {
+output "throughput-benchmarking-function2_function_key" {
   value = "${lookup(azurerm_template_deployment.throughput-benchmarking2-function-key.outputs, "functionkey")}"
 }
-output "throughput-benchmarking2_function_app_url" {
+output "throughput-benchmarking-function2_function_app_url" {
   value = azurerm_function_app.throughput-benchmarking2.default_hostname
 }

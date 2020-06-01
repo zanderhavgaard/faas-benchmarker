@@ -1,74 +1,75 @@
 
+
 # creates zip archive containing lambda code
-data "archive_file" "coldtime-large-functions-monolith-lambda-code" {
+data "archive_file" "monolith-lambda-code" {
   type = "zip"
-  source_file = "${var.path_to_code}/coldtime-large-functions-monolith.py"
-  output_path = "${var.path_to_code}/coldtime-large-functions-monolith.zip"
+  source_file = "${var.path_to_code}/monolith.py"
+  output_path = "${var.path_to_code}/monolith.zip"
 }
 
 # create API endpoint
-resource "aws_api_gateway_resource" "coldtime-large-functions-monolith-api-resource" {
-  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-monolith-api.id
-  parent_id = aws_api_gateway_rest_api.coldtime-large-functions-monolith-api.root_resource_id
-  path_part = "coldtime-large-functions-monolith"
+resource "aws_api_gateway_resource" "monolith-api-resource" {
+  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-api.id
+  parent_id = aws_api_gateway_rest_api.coldtime-large-functions-api.root_resource_id
+  path_part = aws_lambda_function.monolith-python.function_name
 }
 
 # create API endpoint method
-resource "aws_api_gateway_method" "coldtime-large-functions-monolith-lambda-method" {
-  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-monolith-api.id
-  resource_id = aws_api_gateway_resource.coldtime-large-functions-monolith-api-resource.id
+resource "aws_api_gateway_method" "monolith-lambda-method" {
+  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-api.id
+  resource_id = aws_api_gateway_resource.monolith-api-resource.id
   http_method = "POST"
   authorization = "None"
   api_key_required = true
 }
 
-resource "aws_api_gateway_method_response" "coldtime-large-functions-monolith-response_200" {
-  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-monolith-api.id
-  resource_id = aws_api_gateway_resource.coldtime-large-functions-monolith-api-resource.id
-  http_method = aws_api_gateway_method.coldtime-large-functions-monolith-lambda-method.http_method
+resource "aws_api_gateway_method_response" "monolith-response_200" {
+  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-api.id
+  resource_id = aws_api_gateway_resource.monolith-api-resource.id
+  http_method = aws_api_gateway_method.monolith-lambda-method.http_method
   status_code = "200"
 }
 
 # point API endpoint at lambda function
-resource "aws_api_gateway_integration" "coldtime-large-functions-monolith-api-integration" {
-  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-monolith-api.id
-  resource_id = aws_api_gateway_method.coldtime-large-functions-monolith-lambda-method.resource_id
-  http_method = aws_api_gateway_method.coldtime-large-functions-monolith-lambda-method.http_method
+resource "aws_api_gateway_integration" "monolith-api-integration" {
+  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-api.id
+  resource_id = aws_api_gateway_method.monolith-lambda-method.resource_id
+  http_method = aws_api_gateway_method.monolith-lambda-method.http_method
   integration_http_method = "POST"
   type                    = "AWS"
-  uri                     = aws_lambda_function.coldtime-large-functions-monolith-python.invoke_arn
+  uri                     = aws_lambda_function.monolith-python.invoke_arn
 }
 
-resource "aws_api_gateway_integration_response" "coldtime-large-functions-monolith" {
+resource "aws_api_gateway_integration_response" "monolith" {
   depends_on = [
-    aws_api_gateway_integration.coldtime-large-functions-monolith-api-integration
+    aws_api_gateway_integration.monolith-api-integration
   ]
-  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-monolith-api.id
-  resource_id = aws_api_gateway_method.coldtime-large-functions-monolith-lambda-method.resource_id
-  http_method = aws_api_gateway_method.coldtime-large-functions-monolith-lambda-method.http_method
-  status_code = aws_api_gateway_method_response.coldtime-large-functions-monolith-response_200.status_code
+  rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-api.id
+  resource_id = aws_api_gateway_method.monolith-lambda-method.resource_id
+  http_method = aws_api_gateway_method.monolith-lambda-method.http_method
+  status_code = aws_api_gateway_method_response.monolith-response_200.status_code
 }
 
 # add permission for gateway to invoke lambdas
-resource "aws_lambda_permission" "coldtime-large-functions-monolith-apigw-permission" {
+resource "aws_lambda_permission" "monolith-apigw-permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.coldtime-large-functions-monolith-python.function_name
+  function_name = aws_lambda_function.monolith-python.function_name
   principal     = "apigateway.amazonaws.com"
 
   # The "/*/*" portion grants access from any method on any resource
   # within the API Gateway REST API.
-  source_arn = "${aws_api_gateway_rest_api.coldtime-large-functions-monolith-api.execution_arn}/*/*"
+  source_arn = "${aws_api_gateway_rest_api.coldtime-large-functions-api.execution_arn}/*/*"
 }
 
 # create lambda function
-resource "aws_lambda_function" "coldtime-large-functions-monolith-python" {
-  filename = data.archive_file.coldtime-large-functions-monolith-lambda-code.output_path
-  function_name = "monolith"
-  role = aws_iam_role.coldtime-large-functions-monolith-role.arn
-  handler = "monolith.lambda_handler"
+resource "aws_lambda_function" "monolith-python" {
+  filename = data.archive_file.monolith-lambda-code.output_path
+  function_name = "coldtime-large-functions-monolith"
+  role = aws_iam_role.coldtime-large-functions-role.arn
+  handler = "function1.lambda_handler"
   runtime = "python3.7"
-  source_code_hash = filesha256(data.archive_file.coldtime-large-functions-coldtime-large-functions-monolith-lambda-code.output_path)
+  source_code_hash = filesha256(data.archive_file.monolith-lambda-code.output_path)
   publish = true
-  layers = [aws_lambda_layer_version.coldtime-large-functions-coldtime-large-functions-monolith-lambda-layer.arn]
+  layers = [aws_lambda_layer_version.coldtime-large-functions-monolith-lambda-layer.arn]
 }

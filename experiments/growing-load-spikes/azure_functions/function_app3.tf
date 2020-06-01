@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "growing-load-spikes3-function-code" {
   type = "zip"
-  source_dir = "function_code/growing-load-spikes3"
+  source_dir = "function_code/growing-load-spikes-function3"
   output_path = "function3.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "growing-load-spikes3-code" {
 resource "azurerm_function_app" "growing-load-spikes3" {
   depends_on = [azurerm_storage_blob.growing-load-spikes3-code]
 
-  name = "growing-load-spikes3-python"
+  name = "growing-load-spikes-function3"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.growing-load-spikes-rg.name
   app_service_plan_id = azurerm_app_service_plan.growing-load-spikes-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "growing-load-spikes3-function-key" {
 }
 
 # output some useful variables
-output "growing-load-spikes3_function_key" {
+output "growing-load-spikes-function3_function_key" {
   value = "${lookup(azurerm_template_deployment.growing-load-spikes3-function-key.outputs, "functionkey")}"
 }
-output "growing-load-spikes3_function_app_url" {
+output "growing-load-spikes-function3_function_app_url" {
   value = azurerm_function_app.growing-load-spikes3.default_hostname
 }

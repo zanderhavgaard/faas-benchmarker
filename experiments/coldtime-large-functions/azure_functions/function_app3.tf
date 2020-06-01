@@ -1,7 +1,7 @@
 # create zip archive locally
 data "archive_file" "coldtime-large-functions3-function-code" {
   type = "zip"
-  source_dir = "function_code/coldtime-large-functions3"
+  source_dir = "function_code/coldtime-large-functions-function3"
   output_path = "function3.zip"
 }
 
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "coldtime-large-functions3-code" {
 resource "azurerm_function_app" "coldtime-large-functions3" {
   depends_on = [azurerm_storage_blob.coldtime-large-functions3-code]
 
-  name = "coldtime-large-functions3-python"
+  name = "coldtime-large-functions-function3"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.coldtime-large-functions-rg.name
   app_service_plan_id = azurerm_app_service_plan.coldtime-large-functions-plan.id
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "coldtime-large-functions3-function-key" 
 }
 
 # output some useful variables
-output "coldtime-large-functions3_function_key" {
+output "coldtime-large-functions-function3_function_key" {
   value = "${lookup(azurerm_template_deployment.coldtime-large-functions3-function-key.outputs, "functionkey")}"
 }
-output "coldtime-large-functions3_function_app_url" {
+output "coldtime-large-functions-function3_function_app_url" {
   value = azurerm_function_app.coldtime-large-functions3.default_hostname
 }

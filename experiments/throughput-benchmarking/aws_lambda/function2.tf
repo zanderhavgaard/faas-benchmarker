@@ -10,7 +10,7 @@ data "archive_file" "throughput-benchmarking2-lambda-code" {
 resource "aws_api_gateway_resource" "throughput-benchmarking2-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.throughput-benchmarking-api.id
   parent_id = aws_api_gateway_rest_api.throughput-benchmarking-api.root_resource_id
-  path_part = "throughput-benchmarking2"
+  path_part = aws_lambda_function.throughput-benchmarking2-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "throughput-benchmarking2-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "throughput-benchmarking2-python" {
   filename = data.archive_file.throughput-benchmarking2-lambda-code.output_path
-  function_name = "throughput-benchmarking2"
+  function_name = "throughput-benchmarking-function2"
   role = aws_iam_role.throughput-benchmarking-role.arn
   handler = "function2.lambda_handler"
   runtime = "python3.7"

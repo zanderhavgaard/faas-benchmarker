@@ -10,7 +10,7 @@ data "archive_file" "coldtime-large-functions3-lambda-code" {
 resource "aws_api_gateway_resource" "coldtime-large-functions3-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-api.id
   parent_id = aws_api_gateway_rest_api.coldtime-large-functions-api.root_resource_id
-  path_part = "coldtime-large-functions3"
+  path_part = aws_lambda_function.coldtime-large-functions3-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "coldtime-large-functions3-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "coldtime-large-functions3-python" {
   filename = data.archive_file.coldtime-large-functions3-lambda-code.output_path
-  function_name = "coldtime-large-functions3"
+  function_name = "coldtime-large-functions-function3"
   role = aws_iam_role.coldtime-large-functions-role.arn
   handler = "function3.lambda_handler"
   runtime = "python3.7"

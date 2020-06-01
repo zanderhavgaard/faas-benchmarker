@@ -1,13 +1,13 @@
 # create zip archive locally
-data "archive_file" "coldtime-large-functions1-function-code" {
+data "archive_file" "coldtime-large-functions-monolith-function-code" {
   type = "zip"
-  source_dir = "function_code/coldtime-large-functions-function1"
+  source_dir = "function_code/coldtime-large-functions-monolith"
   output_path = "function1.zip"
 }
 
 # upload zip archive to storage contianer
-resource "azurerm_storage_blob" "coldtime-large-functions1-code" {
-  name = "coldtime-large-functions1-function.zip"
+resource "azurerm_storage_blob" "coldtime-large-functions-monolith-code" {
+  name = "coldtime-large-functions-monolith-function.zip"
   storage_account_name = azurerm_storage_account.coldtime-large-functions-experiment-storage.name
   storage_container_name = azurerm_storage_container.coldtime-large-functions-container.name
   type = "Block"
@@ -16,8 +16,8 @@ resource "azurerm_storage_blob" "coldtime-large-functions1-code" {
 
 # create function app 'environment'
 # different from how AWS lambda works
-resource "azurerm_function_app" "coldtime-large-functions1" {
-  depends_on = [azurerm_storage_blob.coldtime-large-functions1-code]
+resource "azurerm_function_app" "coldtime-large-functions-monolith" {
+  depends_on = [azurerm_storage_blob.coldtime-large-functions-monolith-code]
 
   name = "coldtime-large-functions-function1"
   location = var.azure_region
@@ -27,20 +27,20 @@ resource "azurerm_function_app" "coldtime-large-functions1" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.coldtime-large-functions1-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.coldtime-large-functions1-code.url}${data.azurerm_storage_account_sas.sas-coldtime-large-functions.sas}"
+    HASH = data.archive_file.coldtime-large-functions-monolith-function-code.output_base64sha256
+    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.coldtime-large-functions-monolith-code.url}${data.azurerm_storage_account_sas.sas-coldtime-large-functions.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.coldtime-large-functions.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }
 }
 
 # Get the functions key out of the app
-resource "azurerm_template_deployment" "coldtime-large-functions1-function-key" {
-  depends_on = [azurerm_function_app.coldtime-large-functions1]
+resource "azurerm_template_deployment" "coldtime-large-functions-monolith-function-key" {
+  depends_on = [azurerm_function_app.coldtime-large-functions-monolith]
 
-  name = "coldtime-large-functions1_get_function_key"
+  name = "coldtime-large-functions-monolith_get_function_key"
   parameters = {
-    "functionApp" = azurerm_function_app.coldtime-large-functions1.name
+    "functionApp" = azurerm_function_app.coldtime-large-functions-monolith.name
   }
   resource_group_name    = azurerm_resource_group.coldtime-large-functions-rg.name
   deployment_mode = "Incremental"
@@ -67,9 +67,9 @@ resource "azurerm_template_deployment" "coldtime-large-functions1-function-key" 
 }
 
 # output some useful variables
-output "coldtime-large-functions-function1_function_key" {
-  value = "${lookup(azurerm_template_deployment.coldtime-large-functions1-function-key.outputs, "functionkey")}"
+output "coldtime-large-functions-monolith_function_key" {
+  value = "${lookup(azurerm_template_deployment.coldtime-large-functions-monolith-function-key.outputs, "functionkey")}"
 }
-output "coldtime-large-functions-function1_function_app_url" {
-  value = azurerm_function_app.coldtime-large-functions1.default_hostname
+output "coldtime-large-functions-monolith_function_app_url" {
+  value = azurerm_function_app.coldtime-large-functions-monolith.default_hostname
 }

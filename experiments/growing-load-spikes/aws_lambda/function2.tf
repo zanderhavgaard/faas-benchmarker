@@ -10,7 +10,7 @@ data "archive_file" "growing-load-spikes2-lambda-code" {
 resource "aws_api_gateway_resource" "growing-load-spikes2-api-resource" {
   rest_api_id = aws_api_gateway_rest_api.growing-load-spikes-api.id
   parent_id = aws_api_gateway_rest_api.growing-load-spikes-api.root_resource_id
-  path_part = "growing-load-spikes2"
+  path_part = aws_lambda_function.growing-load-spikes2-python.function_name
 }
 
 # create API endpoint method
@@ -64,7 +64,7 @@ resource "aws_lambda_permission" "growing-load-spikes2-apigw-permission" {
 # create lambda function
 resource "aws_lambda_function" "growing-load-spikes2-python" {
   filename = data.archive_file.growing-load-spikes2-lambda-code.output_path
-  function_name = "growing-load-spikes2"
+  function_name = "growing-load-spikes-function2"
   role = aws_iam_role.growing-load-spikes-role.arn
   handler = "function2.lambda_handler"
   runtime = "python3.7"
