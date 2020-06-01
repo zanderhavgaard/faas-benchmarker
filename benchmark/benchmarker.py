@@ -90,7 +90,7 @@ class Benchmarker:
         print(f'Experiment end time: {time.ctime(int(end_time))}')
         print('Experiment running time: ' +
               f'{time.strftime("%H:%M:%S", time.gmtime(total_time))}')
-        print(f'{len(self.experiment.get_invocations)} invocations were made')
+        print(f'{len(self.experiment.get_invocations())} invocations were made')
         print('=================================================\n')
 
 
@@ -124,7 +124,9 @@ class Benchmarker:
                     print(invo.get_query_string())
                     print('-------------------------------------------')
 
-    def end_experiment(self) -> None:
+    def end_experiment(self, invocation_count:int= None) -> None:
+        if invocation_count != None:
+            self.invocation_count = invocation_count
         # log the experiment running time, and print to log
         self.log_experiment_running_time()
         self.dump_data()
@@ -133,13 +135,10 @@ class Benchmarker:
 
     def invoke_function(self,
                         function_name: str,
-                        function_args: dict = None,
-                        ) -> None:
-
-        response = self.provider.invoke_function(
-            function_name=function_name,
-            function_args=function_args,
-            )
+                        function_args:dict = None) -> None:
+        
+        response = self.provider.invoke_function(function_name=function_name,
+                                                 function_args=function_args)
 
         if response is None:
             raise EmptyResponseError(
@@ -156,18 +155,14 @@ class Benchmarker:
         return response
 
     def invoke_function_conccurrently(self,
-                                      function_endpoint: str,
-                                      sleep: float = 0.0,
-                                      invoke_nested: dict = None,
-                                      throughput_time: float = 0.0,
-                                      numb_threads: int = 1
+                                      function_name: str,
+                                      numb_threads: int = 1,
+                                      function_args:dict= None
                                       ) -> None:
-        self.invocation_count += numb_threads
-        response_list = self.provider.invoke_function_conccrently(function_endpoint,
-                                                                  sleep,
-                                                                  invoke_nested,
-                                                                  throughput_time,
-                                                                  numb_threads
+       
+        response_list = self.provider.invoke_function_conccrently(function_name=function_name,
+                                                                  numb_threads=numb_threads,
+                                                                  function_args=function_args
                                                                   )
 
         if response_list is None:
