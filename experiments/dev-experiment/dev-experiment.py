@@ -247,7 +247,7 @@ def concurrent_sanity_check():
 
     invoke_1_nested = [
         {
-            "function_name": f"{experiment_name}-function1",
+            "function_name": f"{experiment_name}-function2",
             "invoke_payload": {
                 "StatusCode": 200,
                 "sleep": 0.1
