@@ -1853,7 +1853,7 @@ def handle(req):
         body[identifier]['function_argument'] = event['args']
         body[identifier]['seed'] = event['seed']
         body[identifier]['function_called'] = function_name
-        body[identifier]['monolith_result'] = str(result)
+        body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
 
         # =============================================
 
