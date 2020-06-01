@@ -2,7 +2,7 @@
 data "archive_file" "concurrency-benchmarking-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/concurrency-benchmarking-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "concurrency-benchmarking-monolith-code" {
   storage_account_name = azurerm_storage_account.concurrency-benchmarking-experiment-storage.name
   storage_container_name = azurerm_storage_container.concurrency-benchmarking-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "concurrency-benchmarking-monolith-code" {
 resource "azurerm_function_app" "concurrency-benchmarking-monolith" {
   depends_on = [azurerm_storage_blob.concurrency-benchmarking-monolith-code]
 
-  name = "concurrency-benchmarking-function1"
+  name = "concurrency-benchmarking-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.concurrency-benchmarking-rg.name
   app_service_plan_id = azurerm_app_service_plan.concurrency-benchmarking-plan.id

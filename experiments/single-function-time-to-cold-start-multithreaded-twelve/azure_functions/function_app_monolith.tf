@@ -2,7 +2,7 @@
 data "archive_file" "single-function-time-to-cold-start-multithreaded-twelve-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/single-function-time-to-cold-start-multithreaded-twelve-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "single-function-time-to-cold-start-multithreade
   storage_account_name = azurerm_storage_account.single-function-time-to-cold-start-multithreaded-twelve-experiment-storage.name
   storage_container_name = azurerm_storage_container.single-function-time-to-cold-start-multithreaded-twelve-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "single-function-time-to-cold-start-multithreade
 resource "azurerm_function_app" "single-function-time-to-cold-start-multithreaded-twelve-monolith" {
   depends_on = [azurerm_storage_blob.single-function-time-to-cold-start-multithreaded-twelve-monolith-code]
 
-  name = "single-function-time-to-cold-start-multithreaded-twelve-function1"
+  name = "single-function-time-to-cold-start-multithreaded-twelve-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.single-function-time-to-cold-start-multithreaded-twelve-rg.name
   app_service_plan_id = azurerm_app_service_plan.single-function-time-to-cold-start-multithreaded-twelve-plan.id

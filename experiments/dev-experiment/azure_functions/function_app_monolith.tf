@@ -2,7 +2,7 @@
 data "archive_file" "dev-experiment-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/dev-experiment-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "dev-experiment-monolith-code" {
   storage_account_name = azurerm_storage_account.dev-experiment-experiment-storage.name
   storage_container_name = azurerm_storage_container.dev-experiment-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "dev-experiment-monolith-code" {
 resource "azurerm_function_app" "dev-experiment-monolith" {
   depends_on = [azurerm_storage_blob.dev-experiment-monolith-code]
 
-  name = "dev-experiment-function1"
+  name = "dev-experiment-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.dev-experiment-rg.name
   app_service_plan_id = azurerm_app_service_plan.dev-experiment-plan.id

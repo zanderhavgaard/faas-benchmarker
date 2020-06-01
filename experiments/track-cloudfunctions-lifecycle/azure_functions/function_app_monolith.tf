@@ -2,7 +2,7 @@
 data "archive_file" "track-cloudfunctions-lifecycle-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/track-cloudfunctions-lifecycle-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "track-cloudfunctions-lifecycle-monolith-code" {
   storage_account_name = azurerm_storage_account.track-cloudfunctions-lifecycle-experiment-storage.name
   storage_container_name = azurerm_storage_container.track-cloudfunctions-lifecycle-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "track-cloudfunctions-lifecycle-monolith-code" {
 resource "azurerm_function_app" "track-cloudfunctions-lifecycle-monolith" {
   depends_on = [azurerm_storage_blob.track-cloudfunctions-lifecycle-monolith-code]
 
-  name = "track-cloudfunctions-lifecycle-function1"
+  name = "track-cloudfunctions-lifecycle-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.track-cloudfunctions-lifecycle-rg.name
   app_service_plan_id = azurerm_app_service_plan.track-cloudfunctions-lifecycle-plan.id

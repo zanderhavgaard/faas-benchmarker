@@ -2,7 +2,7 @@
 data "archive_file" "weakest-link-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/weakest-link-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "weakest-link-monolith-code" {
   storage_account_name = azurerm_storage_account.weakest-link-experiment-storage.name
   storage_container_name = azurerm_storage_container.weakest-link-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "weakest-link-monolith-code" {
 resource "azurerm_function_app" "weakest-link-monolith" {
   depends_on = [azurerm_storage_blob.weakest-link-monolith-code]
 
-  name = "weakest-link-function1"
+  name = "weakest-link-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.weakest-link-rg.name
   app_service_plan_id = azurerm_app_service_plan.weakest-link-plan.id

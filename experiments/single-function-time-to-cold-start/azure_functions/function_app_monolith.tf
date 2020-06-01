@@ -2,7 +2,7 @@
 data "archive_file" "single-function-time-to-cold-start-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/single-function-time-to-cold-start-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "single-function-time-to-cold-start-monolith-cod
   storage_account_name = azurerm_storage_account.single-function-time-to-cold-start-experiment-storage.name
   storage_container_name = azurerm_storage_container.single-function-time-to-cold-start-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "single-function-time-to-cold-start-monolith-cod
 resource "azurerm_function_app" "single-function-time-to-cold-start-monolith" {
   depends_on = [azurerm_storage_blob.single-function-time-to-cold-start-monolith-code]
 
-  name = "single-function-time-to-cold-start-function1"
+  name = "single-function-time-to-cold-start-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.single-function-time-to-cold-start-rg.name
   app_service_plan_id = azurerm_app_service_plan.single-function-time-to-cold-start-plan.id

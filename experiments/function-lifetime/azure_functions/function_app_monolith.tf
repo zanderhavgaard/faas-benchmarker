@@ -2,7 +2,7 @@
 data "archive_file" "function-lifetime-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/function-lifetime-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "function-lifetime-monolith-code" {
   storage_account_name = azurerm_storage_account.function-lifetime-experiment-storage.name
   storage_container_name = azurerm_storage_container.function-lifetime-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "function-lifetime-monolith-code" {
 resource "azurerm_function_app" "function-lifetime-monolith" {
   depends_on = [azurerm_storage_blob.function-lifetime-monolith-code]
 
-  name = "function-lifetime-function1"
+  name = "function-lifetime-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.function-lifetime-rg.name
   app_service_plan_id = azurerm_app_service_plan.function-lifetime-plan.id

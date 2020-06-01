@@ -2,7 +2,7 @@
 data "archive_file" "growing-load-spikes-monolith-function-code" {
   type = "zip"
   source_dir = "function_code/growing-load-spikes-monolith"
-  output_path = "function1.zip"
+  output_path = "monolith.zip"
 }
 
 # upload zip archive to storage contianer
@@ -11,7 +11,7 @@ resource "azurerm_storage_blob" "growing-load-spikes-monolith-code" {
   storage_account_name = azurerm_storage_account.growing-load-spikes-experiment-storage.name
   storage_container_name = azurerm_storage_container.growing-load-spikes-container.name
   type = "Block"
-  source = "function1.zip"
+  source = "monolith.zip"
 }
 
 # create function app 'environment'
@@ -19,7 +19,7 @@ resource "azurerm_storage_blob" "growing-load-spikes-monolith-code" {
 resource "azurerm_function_app" "growing-load-spikes-monolith" {
   depends_on = [azurerm_storage_blob.growing-load-spikes-monolith-code]
 
-  name = "growing-load-spikes-function1"
+  name = "growing-load-spikes-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.growing-load-spikes-rg.name
   app_service_plan_id = azurerm_app_service_plan.growing-load-spikes-plan.id
