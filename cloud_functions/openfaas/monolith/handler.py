@@ -61,7 +61,7 @@ def handle(req):
             ('levelOrder', lambda x: levelOrder(make_tree(TreeNode(random.randint(0,10)),x))),
             ('maxDepth', lambda x: maxDepth(make_tree(TreeNode(random.randint(0,10)),x))),
             ('levelOrderBottom', lambda x: levelOrderBottom(make_tree(TreeNode(random.randint(0,10)),x))),
-            ('sortedArrayToBST', lambda x: sortedArrayToBST(n for n in range(x))),
+            ('sortedArrayToBST', lambda x: sortedArrayToBST([n for n in range(x)])),
             ('zigzagLevelOrder', lambda x: zigzagLevelOrder(make_tree(TreeNode(random.randint(0,10)),x))),
             ('sortedListToBST', lambda x: sortedListToBST(makeListNode(x))),
             ('isBalanced', lambda x: isBalanced(make_tree(TreeNode(random.randint(0,10)),x))),
@@ -174,7 +174,7 @@ def handle(req):
             return result
         
         def fib():
-            n = random.randint(20)
+            n = random.randint(0,20)
             return ((1+sqrt(5))**n-(1-sqrt(5))**n)/(2**n*sqrt(5))
         
         class TreeNode(object):
@@ -1803,8 +1803,8 @@ def handle(req):
         
         # invoke Arrow2 class to ensure it is not left out by a smart compiler
         def use_arrow():
-            utc = Arrow2().utcnow()
-            now = Arrow2().now()
+            utc = Arrow2.utcnow()
+            now = Arrow2.now()
             return f'{utc} | {now}'
         
         # invoke functions from two fairly large libraries 
