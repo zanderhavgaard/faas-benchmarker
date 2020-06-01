@@ -189,10 +189,7 @@ class SQL_Interface:
                             exp_uuid:str,
                             fx:str,
                             thread_numb:int,
-                            sleep_time:float,
                             errors:int,
-                            throughput_time:float,
-                            throughput:int,
                             p_time:float,
                             cores:float,
                             success_rate:float,
@@ -202,13 +199,28 @@ class SQL_Interface:
                             acc_invo_end:float,
                             acc_exe_total:float,
                             acc_invo_total:float,
-                            acc_latency:float) -> bool:
-        query = """INSERT INTO Cc_bench (exp_id,function_name,numb_threads,sleep_time,errors,throughput_time,acc_throughput,
-                    acc_process_time,cores,success_rate,acc_execution_start,acc_execution_end,acc_invocation_start,
-                    acc_invocation_end,acc_execution_total,acc_invocation_total,acc_latency) 
-                    VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16})""".format(
-                    exp_uuid,fx,thread_numb,sleep_time,errors,throughput_time,throughput,p_time,cores,success_rate,acc_exe_st,
-                    acc_exe_end,acc_invo_st,acc_invo_end,acc_exe_total,acc_invo_total,acc_latency)
+                            acc_latency:float,
+                            acc_throughput:int=0,
+                            acc_throughput_time:float= 0.0,
+                            acc_throughput_process_time:float= 0.0,
+                            acc_throughput_running_time:float= 0.0,
+                            sleep_time:float= 0.0):
+
+        query = f"""INSERT INTO Cc_bench (exp_id,function_name,numb_threads,errors,acc_process_time,cores,success_rate,acc_execution_start,
+        acc_execution_end,acc_invocation_start,acc_invocation_end,acc_execution_total,acc_invocation_total,acc_latency,acc_throughput,
+        acc_throughput_time,acc_throughput_process_time,acc_throughput_running_time,sleep) VALUES ('{exp_uuid}','{fx}',{thread_numb},
+        {errors},{p_time},{cores},{success_rate},{acc_exe_st},{acc_exe_end},{acc_invo_st},{acc_invo_end},{acc_exe_total},{acc_invo_total},
+        {acc_latency},{acc_throughput},{acc_throughput_time},{acc_throughput_process_time},{acc_throughput_running_time},{sleep_time});"""
+
+
+
+        # query = f"""INSERT INTO Cc_bench (exp_id,function_name,numb_threads,sleep,errors,
+        #             acc_process_time,cores,success_rate,acc_execution_start,acc_execution_end,acc_invocation_start,
+        #             acc_invocation_end,acc_execution_total,acc_invocation_total,acc_latency) 
+        #             VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16});"""
+                    # .format(
+                    # exp_uuid,fx,thread_numb,sleep_time,errors,throughput_time,throughput,p_time,cores,success_rate,acc_exe_st,
+                    # acc_exe_end,acc_invo_st,acc_invo_end,acc_exe_total,acc_invo_total,acc_latency)
                     
         return self.tunnel.insert_queries([query])
 
