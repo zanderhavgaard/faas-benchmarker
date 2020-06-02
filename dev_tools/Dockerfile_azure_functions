@@ -9,6 +9,7 @@ RUN apt-get update \
     && apt-get install -y azure-cli azure-functions-core-tools
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT 1
+ENV FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT 1
 
 RUN useradd \
         --create-home \
