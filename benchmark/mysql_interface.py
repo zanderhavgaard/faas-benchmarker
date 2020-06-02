@@ -189,10 +189,7 @@ class SQL_Interface:
                             exp_uuid:str,
                             fx:str,
                             thread_numb:int,
-                            sleep_time:float,
                             errors:int,
-                            throughput_time:float,
-                            throughput:int,
                             p_time:float,
                             cores:float,
                             success_rate:float,
@@ -202,13 +199,28 @@ class SQL_Interface:
                             acc_invo_end:float,
                             acc_exe_total:float,
                             acc_invo_total:float,
-                            acc_latency:float) -> bool:
-        query = """INSERT INTO Cc_bench (exp_id,function_name,numb_threads,sleep_time,errors,throughput_time,acc_throughput,
-                    acc_process_time,cores,success_rate,acc_execution_start,acc_execution_end,acc_invocation_start,
-                    acc_invocation_end,acc_execution_total,acc_invocation_total,acc_latency) 
-                    VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16})""".format(
-                    exp_uuid,fx,thread_numb,sleep_time,errors,throughput_time,throughput,p_time,cores,success_rate,acc_exe_st,
-                    acc_exe_end,acc_invo_st,acc_invo_end,acc_exe_total,acc_invo_total,acc_latency)
+                            acc_latency:float,
+                            acc_throughput:int=0,
+                            acc_throughput_time:float= 0.0,
+                            acc_throughput_process_time:float= 0.0,
+                            acc_throughput_running_time:float= 0.0,
+                            sleep_time:float= 0.0):
+
+        query = f"""INSERT INTO Cc_bench (exp_id,function_name,numb_threads,errors,acc_process_time,cores,success_rate,acc_execution_start,
+        acc_execution_end,acc_invocation_start,acc_invocation_end,acc_execution_total,acc_invocation_total,acc_latency,acc_throughput,
+        acc_throughput_time,acc_throughput_process_time,acc_throughput_running_time,sleep) VALUES ('{exp_uuid}','{fx}',{thread_numb},
+        {errors},{p_time},{cores},{success_rate},{acc_exe_st},{acc_exe_end},{acc_invo_st},{acc_invo_end},{acc_exe_total},{acc_invo_total},
+        {acc_latency},{acc_throughput},{acc_throughput_time},{acc_throughput_process_time},{acc_throughput_running_time},{sleep_time});"""
+
+
+
+        # query = f"""INSERT INTO Cc_bench (exp_id,function_name,numb_threads,sleep,errors,
+        #             acc_process_time,cores,success_rate,acc_execution_start,acc_execution_end,acc_invocation_start,
+        #             acc_invocation_end,acc_execution_total,acc_invocation_total,acc_latency) 
+        #             VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16});"""
+                    # .format(
+                    # exp_uuid,fx,thread_numb,sleep_time,errors,throughput_time,throughput,p_time,cores,success_rate,acc_exe_st,
+                    # acc_exe_end,acc_invo_st,acc_invo_end,acc_exe_total,acc_invo_total,acc_latency)
                     
         return self.tunnel.insert_queries([query])
 
@@ -217,16 +229,21 @@ class SQL_Interface:
                                 exp_uuid:str,
                                 func_name:str,
                                 numb_invokation:int,
+                                numb_invocations_orig:int,
                                 throughput_time:float,
                                 errors:int,
                                 unique_instances:int,
                                 distribution:float,
                                 error_dist:float,
-                                diif_from_first:int,
-                                identifiers:str):
-        query = """INSERT INTO Function_lifecycle (exp_id,function_name,numb_invokations,throughput_time,errors,unique_instances,
-        distribution,error_dist,diff_from_first,identifiers) VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},'{9}');""".format(
-        exp_uuid,func_name,numb_invokation,throughput_time,errors,unique_instances,distribution,error_dist,diif_from_first,identifiers)
+                                diff_from_first:int,
+                                identifiers:str,
+                                repeats_from_orig:str):
+        query = f"""INSERT INTO Function_lifecycle (exp_id,function_name,numb_invokations,numb_invocations_orig,throughput_time,errors,
+        unique_instances,distribution,error_dist,diff_from_orig,identifiers,repeats_from_orig) VALUES ('{exp_uuid}','{func_name}',{numb_invokation},{numb_invocations_orig},
+        {throughput_time},{errors},{unique_instances},{distribution},{error_dist},{diff_from_first},'{identifiers}','{repeats_from_orig}');"""
+        
+        # .format(
+        # exp_uuid,func_name,numb_invokation,throughput_time,errors,unique_instances,distribution,error_dist,diif_from_first,identifiers)
         return self.tunnel.insert_queries([query])
     
     def log_exp_result(self,results:list) -> bool:

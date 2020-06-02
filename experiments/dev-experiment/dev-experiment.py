@@ -162,7 +162,7 @@ def sequential_sanity_check():
 
     invoke_1_nested = [
         {
-            "function_name": f"{experiment_name}-function1",
+            "function_name": f"{experiment_name}-function2",
             "invoke_payload": {
                 "StatusCode": 200,
                 "sleep": 0.1
@@ -338,11 +338,19 @@ def db_interface_sanity_check():
     response_error = benchmarker.invoke_function(function_name='function1',function_args={'sleep':'0.2'})
     pprint(response_error)
     print()
+    print('invoking Monolith ')
+    response_error = benchmarker.invoke_function(function_name='monolith',function_args={'seed':8,
+                                                                                        'args':12,
+                                                                                        'run_function':'random'})
+    pprint(response_error)
+    print()
 
     # =====================================================================================
     # end of the experiment
     benchmarker.end_experiment()
     # =====================================================================================
+    # for q in benchmarker.experiment.log_experiment()[1]:
+    #     print(q)
     print('coldtime check')
     db.log_coldtime(benchmarker.experiment.uuid,
                     lib.get_dict(response)['identifier'],
@@ -362,7 +370,7 @@ def db_interface_sanity_check():
                     True,
                     True)
     
-    cold_res = db.get_from_table(table='Coldtime')
+    cold_res = db.get_from_table(table='Coldstart')
     print('Coldtime table results')
     print(cold_res)
     print()
@@ -386,22 +394,24 @@ def db_interface_sanity_check():
                             benchmarker.experiment.uuid,
                             'function1',
                             8,
-                            12,
-                            1,
+                            2,
                             1.1,
-                            100,
+                            4.0,
+                            1.2,
                             0.5,
-                            4,
+                            4.0,
                             0.9,
                             1.2,
                             2.2,
                             3.3,
                             3.4,
+                            22,
                             4.4,
                             5.5,
-                            6.6) 
+                            6.6,
+                            7.7) 
     
-    concurrent_res = db.get_from_table(table='Cc_bench')
+    concurrent_res = db.get_from_table(table='Cc_bench', args='exp_id,acc_latency')
     print('concurrent table results')
     print(concurrent_res)
     print()
@@ -411,13 +421,15 @@ def db_interface_sanity_check():
                                 benchmarker.experiment.uuid,
                                 'function1',
                                 8,
+                                10,
                                 1.2,
-                                1,
+                                3,
                                 2,
                                 1.2,
                                 2.2,
                                 2,
-                                'some ids')
+                                'some ids',
+                                'some more ids')
     
     Function_lifecycle_res = db.get_from_table(table='Function_lifecycle')
     print('Function_lifecycle table results')
@@ -432,7 +444,7 @@ def db_interface_sanity_check():
     print(db.get_from_table(table='Error',args='identifier'))
     print()
     print('Monolith check')
-    print(db.get_from_table(table='Monolith',args='identifier'))
+    print(db.get_from_table(table='Monolith',args='invo_id'))
     print()
 
 
@@ -441,4 +453,4 @@ def db_interface_sanity_check():
 sequential_sanity_check()
 concurrent_sanity_check()
 test_monolith()
-# db_interface_sanity_check()
+db_interface_sanity_check()
