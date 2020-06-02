@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
   `exp_id`varchar(36) NOT NULL,
   `function_name` varchar(50) NOT NULL,
   `numb_invokations` INT NOT NULL,
+  `numb_invocations_orig` INT NOT NULL,
   `throughput_time` DOUBLE NOT NULL,
   `errors` INT NOT NULL,
   `unique_instances` INT NOT NULL,

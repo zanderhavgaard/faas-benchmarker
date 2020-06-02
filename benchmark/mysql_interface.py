@@ -229,16 +229,21 @@ class SQL_Interface:
                                 exp_uuid:str,
                                 func_name:str,
                                 numb_invokation:int,
+                                numb_invocations_orig:int,
                                 throughput_time:float,
                                 errors:int,
                                 unique_instances:int,
                                 distribution:float,
                                 error_dist:float,
-                                diif_from_first:int,
-                                identifiers:str):
-        query = """INSERT INTO Function_lifecycle (exp_id,function_name,numb_invokations,throughput_time,errors,unique_instances,
-        distribution,error_dist,diff_from_first,identifiers) VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7},{8},'{9}');""".format(
-        exp_uuid,func_name,numb_invokation,throughput_time,errors,unique_instances,distribution,error_dist,diif_from_first,identifiers)
+                                diff_from_first:int,
+                                identifiers:str,
+                                repeats_from_orig:str):
+        query = f"""INSERT INTO Function_lifecycle (exp_id,function_name,numb_invokations,numb_invocations_orig,throughput_time,errors,
+        unique_instances,distribution,error_dist,diff_from_orig,identifiers,repeats_from_orig) VALUES ('{exp_uuid}','{func_name}',{numb_invokation},{numb_invocations_orig},
+        {throughput_time},{errors},{unique_instances},{distribution},{error_dist},{diff_from_first},'{identifiers}','{repeats_from_orig}');"""
+        
+        # .format(
+        # exp_uuid,func_name,numb_invokation,throughput_time,errors,unique_instances,distribution,error_dist,diif_from_first,identifiers)
         return self.tunnel.insert_queries([query])
     
     def log_exp_result(self,results:list) -> bool:

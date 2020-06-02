@@ -421,13 +421,15 @@ def db_interface_sanity_check():
                                 benchmarker.experiment.uuid,
                                 'function1',
                                 8,
+                                10,
                                 1.2,
-                                1,
+                                3,
                                 2,
                                 1.2,
                                 2.2,
                                 2,
-                                'some ids')
+                                'some ids',
+                                'some more ids')
     
     Function_lifecycle_res = db.get_from_table(table='Function_lifecycle')
     print('Function_lifecycle table results')
