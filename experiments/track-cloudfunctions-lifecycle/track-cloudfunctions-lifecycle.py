@@ -31,6 +31,9 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
+# verbode mose
+verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
+
 
 # =====================================================================================
 
@@ -51,7 +54,8 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
-                          dev_mode=dev_mode)
+                          dev_mode=dev_mode,
+                          verbose=verbose)
 # =====================================================================================
 # create database interface for logging results
 db = database(dev_mode)
@@ -109,6 +113,10 @@ def err_func(): benchmarker.end_experiment()
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 
+# get instance identifiers from invocations
+def get_identifiers(dicts:list):
+    return list(filter(None,map(lambda x: x['instance_identifier'] if isinstance(x['instance_identifier'],str) else None,dicts)))
+
 def set_init_values(th_numb:int):
     global throughput_time  
     (err,init_responses) = validate(invoke,'initial invocations',th_numb)
@@ -118,10 +126,6 @@ def set_init_values(th_numb:int):
     else:
         throughput_time += 0.1 
         return set_init_values(th_numb)
-
-# get instance identifiers from invocations
-def get_identifiers(dicts:list):
-    return list(filter(None,map(lambda x: x['instance_identifier'] if isinstance(x['instance_identifier'],str) else None,dicts)))
 
 # parse data that needs to be logged to database.
 # can take whatever needed arguments but has to return/append a dict
