@@ -1838,7 +1838,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
         # =============================================
         #  DIFF FROM GENERIC FUNCTIONS
-         def get_function():
+        def get_function():
             if req_json['run_function'] == 'random':
                 return functions[random.randint(0,len(functions)-1)]
             else:
