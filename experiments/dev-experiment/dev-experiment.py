@@ -329,7 +329,7 @@ def db_interface_sanity_check():
     print('\nRunning database test')
 
     db = database(dev_mode)
-    benchmarker = create_benchmarker('test db interface', 'monolith feature test')
+    benchmarker = create_benchmarker(experiment_name, 'monolith feature test')
     print('invoking with sleep: ')
     response = benchmarker.invoke_function(function_name='function1',function_args={'sleep':0.2})
     pprint(response)
@@ -450,7 +450,7 @@ def db_interface_sanity_check():
 
 # ============================================================
 # run the tests - comment out to leave out
-#  sequential_sanity_check()
-#  concurrent_sanity_check()
+sequential_sanity_check()
+concurrent_sanity_check()
 test_monolith()
-#  db_interface_sanity_check()
+db_interface_sanity_check()

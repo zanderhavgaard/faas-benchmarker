@@ -43,6 +43,8 @@ class AzureFunctionsProvider(AbstractProvider):
         function_app_url = os.getenv(f'{self.experiment_name}-{function_name}_function_app_url')
         function_key = os.getenv(f'{self.experiment_name}-{function_name}_function_key')
 
+        print('env',function_app_url,function_key)
+
         if function_app_url is None or function_key is None:
             raise RuntimeError('Could not parse function app url or key.')
 
