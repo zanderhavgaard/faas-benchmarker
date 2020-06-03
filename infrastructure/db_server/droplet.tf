@@ -2,7 +2,7 @@ resource "digitalocean_droplet" "db-server" {
   image = "ubuntu-20-04-x64"
   name = "db-server"
   region = "fra1"
-  size = "s-1vcpu-1gb"
+  size = "s-2vcpu-2gb"
   private_networking = true
   ssh_keys = [var.db_ssh_fingerprint, var.client_ssh_fingerprint, var.orch_ssh_fingerprint]
 }

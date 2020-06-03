@@ -3,7 +3,7 @@ resource "digitalocean_droplet" "orchestrator" {
   # image = "ubuntu-20-04-x64"
   name = "orchestrator"
   region = "fra1"
-  size = "s-1vcpu-1gb"
+  size = "s-2vcpu-2gb"
   private_networking = true
   ssh_keys = [var.orch_ssh_fingerprint]
 }
