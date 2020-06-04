@@ -1847,13 +1847,14 @@ def handle(req):
                     if f[0] == function_to_find:
                         return f
             raise Exception('no function-name matching the given input')
-
-        (function_name,func) = get_function()
-        result = func(event['args'])
-        body[identifier]['function_argument'] = event['args']
-        body[identifier]['seed'] = event['seed']
-        body[identifier]['function_called'] = function_name
-        body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
+        
+        if 'run_function' in event:
+            (function_name,func) = get_function()
+            result = func(event['args'])
+            body[identifier]['function_argument'] = event['args']
+            body[identifier]['seed'] = event['seed']
+            body[identifier]['function_called'] = function_name
+            body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
 
         # =============================================
 
