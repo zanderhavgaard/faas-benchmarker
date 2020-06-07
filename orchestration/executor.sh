@@ -111,10 +111,11 @@ scp_errorlog_command="[ -f \"/home/$client_user/ErrorLogFile.log\" ] && scp -o S
 
 create_done_file="touch /home/$client_user/done"
 
+openfaas_eks_cluster_name="$experiment_name-$experiment_meta_identifier"
 eks_bootstrap_command="bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1"
 eks_destroy_command="bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1"
 
-ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null &"
+ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
 
 
 # =================================
@@ -177,20 +178,20 @@ case "$platform" in
         # TODO cleanup a bit more
         if [ "$option" = "bootstrap" ] ; then
             pmsg "Will only create the eks openfaas cluster ..."
-            ssh_command="nohup bash -c '$eks_bootstrap_command' >> /dev/null &"
+            ssh_command="nohup bash -c '$eks_bootstrap_command' >> /dev/null 2>&1 &"
         elif [ "$option" = "destroy" ] ; then
             pmsg "Will only destroy the eks openfaas cluster ..."
-            ssh_command="nohup bash -c '$eks_destroy_command' >> /dev/null &"
+            ssh_command="nohup bash -c '$eks_destroy_command' >> /dev/null 2>&1 &"
         elif [ "$option" = "run" ] ; then
             pmsg "Will run experiment, and wait for it to finish ..."
-            ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null &"
+            ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
         elif [ "$option" = "skip" ] ; then
             pmsg "Will run experiment, and skip waiting for it to finish ..."
-            ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null &"
+            ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
         else
             # this is the default behaviour used in production
             pmsg "Will bootstrap the openfaas eks cluster, run the experiment, wait for it to finish, then destroy the cluster ..."
-            ssh_command="nohup bash -c ' $eks_bootstrap_command ; $docker_command ; $eks_destroy_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null &"
+            ssh_command="nohup bash -c ' $eks_bootstrap_command ; $docker_command ; $eks_destroy_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
         fi
 
         # start the experiment process on the remote worker server
