@@ -4,6 +4,11 @@ set -e
 
 source "$fbrd/fb_cli/utils.sh"
 
+# the experiment name to test
+experiment_name=$1
+# unique experiment idenfifier for the experiments started in parallel for the different cloud providers
+experiment_meta_identifier=$2
+
 # ===== create client vm
 
 pmsg "Creating openfaas client vm ..."
