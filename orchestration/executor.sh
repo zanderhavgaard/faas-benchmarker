@@ -50,8 +50,7 @@ case "$platform" in
         experiment_cloud_function_provider="openfaas"
         experiment_client_env="$experiment_context/$experiment_name-openfaas_client_vm.env"
         # check that infrastructure has been created
-        # TODO enable
-        # check_infra_lockfile "$experiment_name" "$experiment_client_provider"
+        check_infra_lockfile "$experiment_name" "$experiment_client_provider"
         ;;
 esac
 
@@ -162,8 +161,7 @@ case "$platform" in
         pmsg "Executing experiment code on remote client vm ..."
 
         # start the experiment process on the remote worker server
-        # ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
-        echo ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
+        ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
         # check every interval if the experiment code has finished running and the infrastructure can be destroyed
         check_progress "$option"
@@ -176,6 +174,7 @@ case "$platform" in
 
         ssh_command=""
 
+        # TODO cleanup a bit more
         if [ "$option" = "bootstrap" ] ; then
             pmsg "Will only create the eks openfaas cluster ..."
             ssh_command="nohup bash -c '$eks_bootstrap_command' >> /dev/null &"
@@ -195,7 +194,7 @@ case "$platform" in
         fi
 
         # start the experiment process on the remote worker server
-        echo ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
+        ssh -o StrictHostKeyChecking=no -i $key_path $client_user@$client_ip $ssh_command
 
         if [ "$option" != 'bootstrap' ] && [ "$option" != "destroy" ] && [ "$option" != "skip" ] ; then
             # check every interval if the experiment code has finished running and the infrastructure can be destroyed
