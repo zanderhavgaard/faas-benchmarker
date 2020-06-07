@@ -44,14 +44,9 @@ def lambda_handler(event: dict, context: dict) -> dict:
     # whoami?
     identifier = f'{function_name}-{invocation_uuid}'
 
-    functions = {
-        'somefunction': lambda x: print('callfunction()')
-    }
-
 
     try:
-        seed = event['seed']
-        random.seed(seed)
+        
 
         # list of functions that will be called dependent on the seed given
         functions = [
@@ -1858,12 +1853,15 @@ def lambda_handler(event: dict, context: dict) -> dict:
                         return f
             raise Exception('no function-name matching the given input')
 
-        (function_name,func) = get_function()
-        result = func(event['args'])
-        body[identifier]['function_argument'] = event['args']
-        body[identifier]['seed'] = event['seed']
-        body[identifier]['function_called'] = function_name
-        body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
+        if 'run_function' in event:
+            seed = event['seed']
+            random.seed(seed)
+            (function_name,func) = get_function()
+            result = func(event['args'])
+            body[identifier]['function_argument'] = event['args']
+            body[identifier]['seed'] = event['seed']
+            body[identifier]['function_called'] = function_name
+            body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
 
 
         # =============================================

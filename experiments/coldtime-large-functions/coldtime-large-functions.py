@@ -7,6 +7,7 @@ import traceback
 from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
+from pprint import pprint
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -30,6 +31,9 @@ env_file_path = sys.argv[5]
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
 
+# verbose mode
+verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
+
 # =====================================================================================
 
 # describe experiment, should be verbose enough to figure
@@ -50,7 +54,8 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
-                          dev_mode=dev_mode)
+                          dev_mode=dev_mode,
+                          verbose=verbose)
 # =====================================================================================
 # database interface for logging results if needed
 db = database(dev_mode)
@@ -62,17 +67,17 @@ table = None
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3), or 'monolith' 
-function_endpoint = experiment_name
+
 function = 'function1'
 
 # =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 15 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
-coldtime = 15 * 60 if coldtime == None else coldtime
-# concurrent coldtime
-coldtime_concurrent = db.get_delay_between_experiment(provider,threaded=True) 
-coldtime_concurrent = 15 * 60 if coldtime_concurrent == None else coldtime_concurrent
+if verbose:
+    print('running in dev_mode and verbose')
+    print('coldtime: ',coldtime)
+
 # =====================================================================================
 
 # sleep for 15 minutes to ensure coldstart
@@ -90,7 +95,7 @@ errors = []
 # ***************************************************
 def invoke(args:dict= None):
     response = lib.get_dict(
-        benchmarker.invoke_function(function_endpoint=function_endpoint, function=function, args=args))
+        benchmarker.invoke_function(function_name=function, function_args=args))
     return response if 'error' not in response else errors.append(response)
 
 
@@ -107,17 +112,27 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 # =====================================================================================
 
 try:
-    def run_experiment():
+    def run_experiment(args:dict = None):
         for i in range(10):
-            for x in range(5):
-                validate(invoke, f'invoking {function}')
+            for x in range(10):
+                response = validate(invoke, f'invoking {function}',args)
+                if verbose:
+                    print('Verbose print for',function,'with args:',args,f'run {i}, iteration {x}')
+                    pprint(response)
+                    print()
             time.sleep(coldtime)
     
     run_experiment()
 
+    if not dev_mode:
+        run_experiment(args={"throughput_time":0.2})
+
     function = 'monolith'
 
     run_experiment()
+
+    if not dev_mode:
+        run_experiment(args={"throughput_time":0.2})
 
 
    # =====================================================================================

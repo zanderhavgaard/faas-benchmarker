@@ -107,7 +107,7 @@ class AzureFunctionsProvider(AbstractProvider):
 
             # TODO make same change with if else for AWS and azure
             # if succesfull invocation parse response
-            if(response.status_code == 200):
+            if(response != None and response.status_code == 200):
 
                 # parse the response json
                 response_data = json.loads(response.content.decode())

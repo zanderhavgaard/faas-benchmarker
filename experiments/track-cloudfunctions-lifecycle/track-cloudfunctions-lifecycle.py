@@ -8,6 +8,7 @@ from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
 from functools import reduce
+from pprint import pprint
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -60,15 +61,14 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
 # create database interface for logging results
 db = database(dev_mode)
 # name of table to insert data into - HAVE TO BE SET!!
-table = 'Function_lifecycle'
+table = 'Function_lifecycle' 
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx_num = 2
-fx = f'{experiment_name}{fx_num}'
+fx = 'function2'
 
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 15 minutes if the experiment has not been run
@@ -101,7 +101,9 @@ def invoke(th_numb:int):
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocation_list = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=th_numb,throughput_time=throughput_time))]))
+    benchmarker.invoke_function_conccurrently(function_name=fx, 
+                                            numb_threads=th_numb,
+                                            function_args={'throughput_time':throughput_time}))]))
     # return error count for this particular invocation and accumulated result
     return (len(errors)-err_count, invocation_list)
 
@@ -115,7 +117,9 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 
 # get instance identifiers from invocations
 def get_identifiers(dicts:list):
-    return list(filter(None,map(lambda x: x['instance_identifier'] if isinstance(x['instance_identifier'],str) else None,dicts)))
+    print(len(dicts))
+    print()
+    return list(filter(None, map(lambda x: x['instance_identifier'] if isinstance(x['instance_identifier'],str) else None,dicts)))
 
 def set_init_values(th_numb:int):
     global throughput_time  
@@ -135,7 +139,7 @@ def append_result(errors:int, start_thread_numb:int, th_numb:int, vals:list, ori
     diff_from_orig = len([x for x in set(vals) if x not in orig])
     unique_instances = len(set(vals))
     distribution = float(th_numb / unique_instances)
-    error_dist = float(th_numb / errors)
+    error_dist = float(errors / th_numb)
     identifiers = reduce(lambda x,y: f'{x+y},',['']+sorted(vals))[:-1]
     repeats_from_orig_string = reduce(lambda x,y: f'{x+y},',['']+sorted(repeats_from_orig))[:-1]
 
@@ -165,10 +169,10 @@ try:
         throughput_time = 0.2
 
         (err_count,invocations) = set_init_values(th_threads)
-        orig = get_identifiers(invocations)
-        if not dev_mode:
-            append_result(err_count,th_threads, th_threads, orig, [])
-        else:
+        orig = invocations
+        append_result(err_count,th_threads, th_threads, orig, [])
+
+        if verbose:
             lib.dev_mode_print(context=f'orig identifiers with {th_threads} threads',
             values=[('throughput_time',throughput_time)]+orig)
         
@@ -178,9 +182,9 @@ try:
             for i in range(5):
                 time.sleep(10)
                 (err,ids) = validate(invoke,f'invoking with {local_thread_numb} threads',local_thread_numb)
-                if not dev_mode:
-                    append_result(err, th_threads, local_thread_numb, get_identifiers(ids), orig)
-                else:
+                append_result(err, th_threads, local_thread_numb, get_identifiers(ids), orig)
+                
+                if verbose:
                     lib.dev_mode_print(context=f'identifiers with {local_thread_numb} threads, iter: {i}',
                     values=[('throughput_time',throughput_time),('errors: ',err)]+get_identifiers(ids))
     
@@ -189,10 +193,13 @@ try:
 
     if dev_mode:
         benchmarker.end_experiment()
+        lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
         lib.dev_mode_print(
             f'Experiment {experiment_name} with UUID: {experiment_uuid} ended due to dev_mode. {len(errors)} errors occured.', 
-            ['Queries for experiment:']+[lib.dict_to_query(x, table) for x in results]
-                        )
+            ['Queries for experiment:']+[lib.dict_to_query(x, table) for x in results])
         sys.exit()
 
 

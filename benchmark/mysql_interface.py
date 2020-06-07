@@ -30,7 +30,7 @@ class SQL_Interface:
         (SELECT uuid FROM Experiment WHERE cl_provider='{0}') AND cold=True AND final=True 
         AND multithreaded={1} ORDER BY id DESC LIMIT 1;""".format(provider,threaded)
         res = np.array(self.tunnel.retrive_query(query)).tolist()
-        return res[0][0]*60+res[0][1] if res != [] else 16 * 60
+        return res[0][0]*60+res[0][1] if res != [] and res != None else 16 * 60
     
     def get_most_recent_from_table(self, table:str, args: str = '*', flag: bool = True) -> list:
         query = 'SELECT {0} from {1} where exp_id=(select max(id) from Experiment) ORDER BY id DESC LIMIT 1;'.format(args,table)
@@ -61,6 +61,10 @@ class SQL_Interface:
         where id=(select max(id) from Experiment));""".format(args,table)
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
+    
+    def delete_dev_mode_experiments(self):
+        query = " DELETE FROM Experiment WHERE dev_mode=True"
+        return self.tunnel.insert_queries([query])
 
     def get_explicit_number_experiments(self, args: str = '*', number: int = 1, flag: bool = False, order: bool = True):
         key_word = 'desc' if order else 'asc'

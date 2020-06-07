@@ -126,7 +126,6 @@ class SSH_query:
 
                             # retrive and read data
                             data = pd.read_sql_query(query, conn)
-
                             conn.close()
                             tunnel.stop()
 

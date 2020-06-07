@@ -70,7 +70,6 @@ fx = f'{experiment_name}{fx_num}'
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 15 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
-coldtime = 15 * 60 if coldtime == None else coldtime
 # =====================================================================================
 
 # sleep for 15 minutes to ensure coldstart
