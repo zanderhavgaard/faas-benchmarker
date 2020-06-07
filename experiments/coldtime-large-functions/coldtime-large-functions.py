@@ -132,7 +132,7 @@ try:
     run_experiment()
 
     if not dev_mode:
-        run_experiment(arg={"throughput_time":0.2})
+        run_experiment(args={"throughput_time":0.2})
 
 
    # =====================================================================================
