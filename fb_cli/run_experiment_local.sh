@@ -21,7 +21,6 @@ dev_mode="True"
 # more detailed print
 verbose="False"
 
-
 python \
   $experiment_python_file \
   $experiment_name \
