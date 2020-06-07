@@ -7,6 +7,7 @@ import traceback
 from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
+from pprint import pprint
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -73,7 +74,9 @@ function = 'function1'
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 15 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
-coldtime = 15 * 60 if coldtime == None else coldtime
+if verbose:
+    print('running in dev_mode and verbose')
+    print('coldtime: ',coldtime)
 
 # =====================================================================================
 
@@ -92,7 +95,7 @@ errors = []
 # ***************************************************
 def invoke(args:dict= None):
     response = lib.get_dict(
-        benchmarker.invoke_function(function_name=function, args=args))
+        benchmarker.invoke_function(function_name=function, function_args=args))
     return response if 'error' not in response else errors.append(response)
 
 
@@ -109,16 +112,20 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 # =====================================================================================
 
 try:
-    def run_experiment(arg:dict = None):
+    def run_experiment(args:dict = None):
         for i in range(10):
             for x in range(10):
-                validate(invoke, f'invoking {function}',arg)
+                response = validate(invoke, f'invoking {function}',args)
+                if verbose:
+                    print('Verbose print for',function,'with args:',args,f'run {i}, iteration {x}')
+                    pprint(response)
+                    print()
             time.sleep(coldtime)
     
     run_experiment()
-    
+
     if not dev_mode:
-        run_experiment(arg={"throughput_time":0.2})
+        run_experiment(args={"throughput_time":0.2})
 
     function = 'monolith'
 

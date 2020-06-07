@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS  `Monolith` (
   `monolith_result` varchar(100) NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
-  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
+  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier) ON DELETE CASCADE
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS `Coldstart` (
@@ -128,7 +128,7 @@ CREATE TABLE IF NOT EXISTS `Coldstart` (
   `final` BOOLEAN DEFAULT FALSE,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE,
-  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier)
+  FOREIGN KEY (invo_id) REFERENCES Invocation(identifier) ON DELETE CASCADE
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
 
 CREATE TABLE IF NOT EXISTS  `Function_lifetime` (

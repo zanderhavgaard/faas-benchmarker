@@ -62,7 +62,7 @@ class Invocation:
 
     def get_query_string(self):
         key_values = self.__dict__.copy()
-        monolith = [] if key_values['function_name'] != 'monolith' else self.create_monolith_query(key_values)
+        monolith = [] if 'monolith_result' not in key_values else self.create_monolith_query(key_values)
         is_error = key_values.pop('is_error')
 
         list(map(lambda x: x if x[1] != None else key_values.pop(x[0]), key_values.copy().items()))
