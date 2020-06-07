@@ -37,3 +37,8 @@ function msg {
 function smsg {
 echo -e "${BOLD}${GREEN}--> $1${NONE}"
 }
+
+# check if element is in a list
+function listContainsElement {
+  [[ " $1 " =~ " $2 " ]] && return 0 || return 1
+}

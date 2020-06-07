@@ -1,3 +1,4 @@
+*.lock
 azure-functions-core-tools
 
 logs/*
