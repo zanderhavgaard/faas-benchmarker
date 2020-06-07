@@ -138,6 +138,7 @@ function check_progress {
 # openfaas helper functions
 # ======================================
 
+# TODO use
 function check_eks_lockfile {
     eks_lockfile="$experiment_context/eks.lock"
     if [ -f "$eks_lockfile" ] ; then
