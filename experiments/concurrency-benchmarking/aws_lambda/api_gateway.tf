@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "concurrency-benchmarking-prod" {
     aws_api_gateway_integration.concurrency-benchmarking1-api-integration,
     aws_api_gateway_integration.concurrency-benchmarking2-api-integration,
     aws_api_gateway_integration.concurrency-benchmarking3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.concurrency-benchmarking-api.id
   stage_name = "prod"

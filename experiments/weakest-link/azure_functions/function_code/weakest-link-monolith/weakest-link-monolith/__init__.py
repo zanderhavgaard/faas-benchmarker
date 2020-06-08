@@ -50,9 +50,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         # parse request json
         req_json = json.loads(req.get_body())
 
-        seed = req_json['seed']
-        random.seed(seed)
-
          # list of functions that will be called dependent on the seed given
         functions = [
             ('matrix_mult', lambda x: matrix_mult(x,x)),
@@ -1848,12 +1845,15 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                         return f
             raise Exception('no function-name matching the given input')
 
-        (function_name,fx) = get_function()
-        result = fx(req_json['args'])
-        body[identifier]['function_argument'] = req_json['args']
-        body[identifier]['seed'] = req_json['seed']
-        body[identifier]['function_called'] = function_name
-        body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
+        if 'run_function' in req_json:
+            seed = req_json['seed']
+            random.seed(seed)
+            (function_name,func) = get_function()
+            result = func(req_json['args'])
+            body[identifier]['function_argument'] = req_json['args']
+            body[identifier]['seed'] = req_json['seed']
+            body[identifier]['function_called'] = function_name
+            body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
 
         # =============================================
 

@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "function-lifetime-prod" {
     aws_api_gateway_integration.function-lifetime1-api-integration,
     aws_api_gateway_integration.function-lifetime2-api-integration,
     aws_api_gateway_integration.function-lifetime3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.function-lifetime-api.id
   stage_name = "prod"

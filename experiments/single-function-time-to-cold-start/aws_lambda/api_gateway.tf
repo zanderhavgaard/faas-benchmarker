@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "single-function-time-to-cold-start-prod" 
     aws_api_gateway_integration.single-function-time-to-cold-start1-api-integration,
     aws_api_gateway_integration.single-function-time-to-cold-start2-api-integration,
     aws_api_gateway_integration.single-function-time-to-cold-start3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.single-function-time-to-cold-start-api.id
   stage_name = "prod"

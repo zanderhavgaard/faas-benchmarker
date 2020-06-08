@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "growing-load-spikes-prod" {
     aws_api_gateway_integration.growing-load-spikes1-api-integration,
     aws_api_gateway_integration.growing-load-spikes2-api-integration,
     aws_api_gateway_integration.growing-load-spikes3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.growing-load-spikes-api.id
   stage_name = "prod"

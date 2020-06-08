@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "coldtime-large-functions-prod" {
     aws_api_gateway_integration.coldtime-large-functions1-api-integration,
     aws_api_gateway_integration.coldtime-large-functions2-api-integration,
     aws_api_gateway_integration.coldtime-large-functions3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.coldtime-large-functions-api.id
   stage_name = "prod"

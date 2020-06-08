@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "track-cloudfunctions-lifecycle-prod" {
     aws_api_gateway_integration.track-cloudfunctions-lifecycle1-api-integration,
     aws_api_gateway_integration.track-cloudfunctions-lifecycle2-api-integration,
     aws_api_gateway_integration.track-cloudfunctions-lifecycle3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.track-cloudfunctions-lifecycle-api.id
   stage_name = "prod"

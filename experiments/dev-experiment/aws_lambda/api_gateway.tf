@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "dev-experiment-prod" {
     aws_api_gateway_integration.dev-experiment1-api-integration,
     aws_api_gateway_integration.dev-experiment2-api-integration,
     aws_api_gateway_integration.dev-experiment3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.dev-experiment-api.id
   stage_name = "prod"

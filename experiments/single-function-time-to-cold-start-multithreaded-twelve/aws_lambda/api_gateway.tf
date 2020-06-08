@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "single-function-time-to-cold-start-multit
     aws_api_gateway_integration.single-function-time-to-cold-start-multithreaded-twelve1-api-integration,
     aws_api_gateway_integration.single-function-time-to-cold-start-multithreaded-twelve2-api-integration,
     aws_api_gateway_integration.single-function-time-to-cold-start-multithreaded-twelve3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.single-function-time-to-cold-start-multithreaded-twelve-api.id
   stage_name = "prod"

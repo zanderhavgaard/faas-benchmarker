@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "weakest-link-prod" {
     aws_api_gateway_integration.weakest-link1-api-integration,
     aws_api_gateway_integration.weakest-link2-api-integration,
     aws_api_gateway_integration.weakest-link3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.weakest-link-api.id
   stage_name = "prod"
