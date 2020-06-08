@@ -36,6 +36,7 @@ resource "aws_api_gateway_deployment" "changeme-prod" {
     aws_api_gateway_integration.changeme1-api-integration,
     aws_api_gateway_integration.changeme2-api-integration,
     aws_api_gateway_integration.changeme3-api-integration,
+    aws_api_gateway_integration.monolith-api-integration,
   ]
   rest_api_id = aws_api_gateway_rest_api.changeme-api.id
   stage_name = "prod"
