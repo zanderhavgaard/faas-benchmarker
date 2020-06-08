@@ -79,8 +79,26 @@ fx4 = 'monolith'
 # meassured time for a function to be cold in a sequantial environment
 # default value set to 15 minutes if the experiment has not been run
 coldtime = db.get_delay_between_experiment(provider,threaded=False) 
-coldtime = 15 * 60 if coldtime == None else coldtime
 # =====================================================================================
+
+errors = []
+# ======================================================================================
+# Convienience methods needed for this experiment
+
+# invoke function and return the result dict
+def invoke( args:tuple):
+
+    response = lib.get_dict(
+        benchmarker.invoke_function(function_name=args[0], function_args=args[1]))
+    return response if 'error' not in response else errors.append(response)
+
+
+# the wrapper ends the experiment if any it can not return a valid value
+def err_func(): return benchmarker.end_experiment()
+
+# convinience for not having to repeat values
+def validate(x, y, z=None): return lib.iterator_wrapper(
+    invoke, x, experiment_name, (y,z), err_func)
 
 def create_nesting(functions:list):
     nested = {
@@ -93,7 +111,7 @@ def create_nesting(functions:list):
         nested["invoke_nested"] = [create_nesting(functions[1:])]
     return nested
 
-def run_experiment(iterations:int, invoke_order:list, hot_instances:int):
+def run_experiment(iterations:int, invoke_order:list, hot_instances:int, nested:dict):
     for i in range(iterations):
 
         if verbose:
@@ -101,47 +119,54 @@ def run_experiment(iterations:int, invoke_order:list, hot_instances:int):
 
         for n in range(hot_instances):
         # invoke function 1 and 2 such that they are hot
-            hot_response = benchmarker.invoke_function(function_name=invoke_order[0])
+            hot_response = validate(f'prewarming {invoke_order[0]}', invoke_order[0])
         
             if verbose:
                 print('Response from prewarming function {invoke_order[n]} at level {n}')
                 pprint(hot_response)
-            
-
-        # setup nested invocations
-        nested = [
-            {
-                "function_name": fx2,
-                "invoke_payload": {
-                    "StatusCode": 200,
-                    "invoke_nested": [
-                        {
-                            "function_name": fx3,
-                            "invoke_payload": {
-                                "StatusCode": 200,
-                                "invoke_nested": [
-                                    {
-                                        'function_name':
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                }
-            }
-        ]
 
         # invoke function 1, that will invoke function 2, which will invoke funcion 3
         # we expect that only function3 will be a cold start, and thus the majority of the response time
-        nested = benchmarker.invoke_function(function_name=fx1, function_args=nested)
+        response = validate(f'invoking {invoke_order[0]} with nested', invoke_order[0], nested)
 
-        time.sleep(coldtime)
+        if verbose:
+            print('Response')
+            pprint(response)
+            print()
+
+        time.sleep(coldtime if not dev_mode else 20)    
+
+        
 try:
+    func_list = [fx1, fx2, fx3,]
+    args = {
+        "nested": [create_nesting(func_list[1:])]
+    }
+    print('printing args')
+    pprint(args)
+    print()
+    run_experiment(3,func_list,0,args)
+
+    run_experiment(3,func_list,1,args)
+
+    run_experiment(3,func_list,2,args)
+
+    # run_experiment(10,func_list,3,args)
+
+    # run_experiment(10,func_list,4,args)
+
+
+
 
     # =====================================================================================
     # end of the experiment
     benchmarker.end_experiment()
     # =====================================================================================
+     # log experiments specific results, hence results not obtainable from the generic Invocation object
+    lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                True)
 
 except Exception as e:
     # this will print to logfile

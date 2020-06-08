@@ -130,6 +130,7 @@ class Benchmarker:
         # log the experiment running time, and print to log
         self.log_experiment_running_time()
         self.dump_data()
+        
 
     # main method to be used by experiment clients
 

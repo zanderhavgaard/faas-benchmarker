@@ -5,6 +5,7 @@ import function_lib as lib
 import os
 from os.path import expanduser
 import time
+import sys
 
 
 def accumulate_dicts(list_dicts: list):
@@ -26,7 +27,7 @@ def get_dict(data: dict) -> dict:
     return data[root]
 
 
-def iterator_wrapper(func, error_point: str, experiment_name: str, args=None, err_func=None):
+def iterator_wrapper(func, error_point:str, experiment_name: str, args=None, err_func=None):
   
     try:
         for i in range(5):
@@ -46,6 +47,7 @@ def iterator_wrapper(func, error_point: str, experiment_name: str, args=None, er
         print('----------------------------------------------------------------------')
         if err_func != None:
             err_func()
+        sys.exit()
 
 # function for writing error messages to ErrorLogFile.txt"
 def write_errorlog(ex:Exception, description:str, dev_mode:bool, query: str = None):
