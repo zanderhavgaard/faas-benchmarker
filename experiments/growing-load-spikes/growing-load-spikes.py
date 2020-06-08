@@ -86,15 +86,15 @@ errors = []
 # * function in if experiment is concurrent invoked *
 # ***************************************************
 def invoke(args:dict= None):
-    response = benchmarker.invoke_function(function_endpoint=function, args=args)
+    response = benchmarker.invoke_function(function_name=function, function_args=args)
     return response if 'error' not in response else errors.append(response)
 
-def invoke_concurrently( args:tuple ):
+def invoke_concurrently( args:tuple= None ):
 
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_endpoint=function, numb_threads=args[0], args=args[1]))]))
+    benchmarker.invoke_function_conccurrently(function_name=function, numb_threads=args[0], function_args=args[1]))]))
    
     return None if invocations == [] else invocations
 
@@ -105,13 +105,16 @@ try:
     base_functions = [lambda x: invoke(x)]
     base_args = [{'throughput_time': 0.1}]
 
-    spikes = lib.increment_list(16,16,128) + lib.increment_list(16,16,128,True)[1:]
+    spikes = lib.increment_list(16,16,128) + lib.increment_list(16,16,128,True)[1:] if not dev_mode \
+    else lib.increment_list(2,2,14) + lib.increment_list(2,2,14,True)[1:]
     spike_args = [(x,{'throughput_time': 0.1}) for x in spikes]
 
     for args in spike_args:
-        for i in range(3):
+        for i in range(1):
             lib.baseline(30, 0.3, base_functions, base_args)
             invoke_concurrently(args)
+            if verbose:
+                print(f'done invoking for iteration {i} with args: {args}')
 
    # =====================================================================================
     # end of the experiment, results are logged to database

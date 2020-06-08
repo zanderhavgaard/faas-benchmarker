@@ -4,6 +4,7 @@ import traceback
 import function_lib as lib
 import os
 from os.path import expanduser
+import time
 
 
 def accumulate_dicts(list_dicts: list):
@@ -94,7 +95,7 @@ def log_experiment_specifics(exp_name:str, uuid:str, err:int, db_check:bool=True
 # ============================================================================================
 # scenario testing
 
-def baseline(time:int, 
+def baseline(runtime:int, 
             sleep_time:int, 
             functions:list, 
             args:list, 
@@ -105,7 +106,7 @@ def baseline(time:int,
 
     starttime = time.time()
     invocation_count = 0
-    while(time > time.time() - starttime ):
+    while(runtime > time.time() - starttime ):
         if(dist != None and invocation_count % dist == dist-1 and special_func != None):
             special_func(special_args)
         else:
@@ -132,7 +133,7 @@ def exponential_list(start:int, n:int, reverse:bool=False):
 def increment_list(start:int, increment:int, n:int, reverse:bool=False):
     result = [start]
     for i in range(n):
-        result.appen(result[i]+increment)
+        result.append(result[i]+increment)
     return result if not reverse else result[::-1]
 
 def range_list(low_bound:int, increment:int, upper_bound:int, reverse:bool=False):
