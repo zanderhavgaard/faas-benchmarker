@@ -71,7 +71,7 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function1'
+fx = 'function2'
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
     time.sleep(15*60)  # more??
@@ -94,7 +94,7 @@ def invoke(thread_numb:int):
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
     benchmarker.invoke_function_conccurrently(function_name=fx, 
                                             numb_threads=thread_numb,
-                                            args= {'throughput_time':0.2}))]))
+                                            function_args= {'throughput_time':0.2}))]))
     
     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
     invocations = lib.accumulate_dicts(invocations)

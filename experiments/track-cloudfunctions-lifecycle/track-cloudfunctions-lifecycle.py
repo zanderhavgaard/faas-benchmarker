@@ -43,7 +43,7 @@ verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
 description = f"""
 {experiment_name}: This experiment will test whether there is a pattern to which instance 
 of a cloud function that will serve request. This is done by invoking a number of functions
-simultaneously, checking that they have different id's, and then invoking one less function
+simultaneously, checking that they have different ids, and then invoking one less function
 for every iteration down to 1. 
 """
 
@@ -117,9 +117,8 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 
 # get instance identifiers from invocations
 def get_identifiers(dicts:list):
-    print(len(dicts))
-    print()
     return list(filter(None, map(lambda x: x['instance_identifier'] if isinstance(x['instance_identifier'],str) else None,dicts)))
+  
 
 def set_init_values(th_numb:int):
     global throughput_time  

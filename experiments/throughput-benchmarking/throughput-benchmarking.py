@@ -61,7 +61,6 @@ table = None
 # UUID from experiment
 experiment_uuid = benchmarker.experiment.uuid
 
-function_endpoint = experiment_name
 function = 'function1'
 
 
@@ -93,15 +92,15 @@ errors = []
 # ***************************************************
 def invoke(args:dict= None):
     response = lib.get_dict(
-        benchmarker.invoke_function(function_endpoint=function_endpoint, function=function, args=args))
+        benchmarker.invoke_function(function_name=function, function_args=args))
     return response if 'error' not in response else errors.append(response)
 
-def invoke_concurrently( args ):
+def invoke_concurrently( args:tuple ):
 
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_endpoint=function_endpoint, function=function, args=args[0], numb_threads=args[1]))]))
+    benchmarker.invoke_function_conccurrently(function_name=function, function_args=args[0], numb_threads=args[1]))]))
     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
    
     # invocations = lib.accumulate_dicts(invocations)
@@ -123,18 +122,22 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 
 try:
 
-    throughput_times = [0.1,0.2,0.4,0.8,1.2,1.6,2.4]
+    throughput_times = [0.1,0.2,0.4,0.8,1.2,1.6,2.4] if not dev_mode else [0.1,0.2,0.4,0.8]
     for t in throughput_times:
         for i in range(5):
             validate(invoke,f'invoking sequantially with {t} throughput_time', {'throughput_time':t})
+            if verbose:
+                print(f'invoking sequantially with {t} throughput_time')
     
     for t in throughput_times[:-2]:
         for i in range(5):
             validate(invoke_concurrently, f'invoking concurrently with {t} throughput_time', ({'throughput_time':t}, 12))
+            if verbose:
+                print(f'invoking concurrently with {t} throughput_time')
     
     # change endpoint to monolith function and invoke throughput in terms of matrix multiplication
 
-    matrix_size = [40,80,120,160,200,240]
+    matrix_size = [40,80,120,160,200,240] if not dev_mode else [40,80,120,160]
     function = 'monolith'
     for n in matrix_size:
         for i in range(5):
@@ -145,6 +148,8 @@ try:
                     'run_function': 'matrix_mult',
                     'args': n
                     })
+            if verbose:
+                print(f'invoking monolith with args {n}')
     
     for n in matrix_size[:-3]:
         for i in range(3):
@@ -155,7 +160,8 @@ try:
                     'run_function': 'matrix_mult',
                     'args': n
                     }, 12))
-
+            if verbose:
+                print(f'invoking monolith with args {n}')
 
 
    # =====================================================================================
