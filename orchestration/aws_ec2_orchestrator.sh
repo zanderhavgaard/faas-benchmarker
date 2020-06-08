@@ -46,7 +46,7 @@ function destroy {
 
     pmsg "Removing experiment environment files ..."
 
-    rm "$experiment_client_env"
+    rm -f "$experiment_client_env"
 
     pmsg "Done removing environment files."
 }
