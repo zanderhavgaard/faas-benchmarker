@@ -1848,8 +1848,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         if 'run_function' in req_json:
             seed = req_json['seed']
             random.seed(seed)
-            (function_name,func) = get_function()
-            result = func(req_json['args'])
+            (function_name,fx) = get_function()
+            result = fx(req_json['args'])
             body[identifier]['function_argument'] = req_json['args']
             body[identifier]['seed'] = req_json['seed']
             body[identifier]['function_called'] = function_name
