@@ -7,6 +7,7 @@ import traceback
 from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
+from pprint import pprint
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -29,6 +30,9 @@ env_file_path = sys.argv[5]
 
 # dev_mode
 dev_mode = eval(sys.argv[6]) if len(sys.argv) > 6 else False
+
+# verbose mode
+verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
 
 # =====================================================================================
 
@@ -53,7 +57,8 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           client_provider=client_provider,
                           experiment_description=description,
                           env_file_path=env_file_path,
-                          dev_mode=dev_mode)
+                          dev_mode=dev_mode,
+                          verbose=verbose)
 # =====================================================================================
 # database interface for logging results if needed
 db = database(dev_mode)
@@ -64,13 +69,11 @@ table = None
 # UUID from experiment
 experiment_uuid = benchmarker.experiment.uuid
 
-# how many times we repeat the experiment
-iterations = 10
-
 # setup convenient function names
-fx1 = f'{experiment_name}1'
-fx2 = f'{experiment_name}2'
-fx3 = f'{experiment_name}3'
+fx1 = 'function1'
+fx2 = 'function2'
+fx3 = 'function3'
+fx4 = 'monolith'
 
 # =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
@@ -79,19 +82,31 @@ coldtime = db.get_delay_between_experiment(provider,threaded=False)
 coldtime = 15 * 60 if coldtime == None else coldtime
 # =====================================================================================
 
-try:
+def create_nesting(functions:list):
+    nested = {
+        "function_name": functions[0],
+            "invoke_payload": {
+            "StatusCode": 200,
+            }
+        }
+    if(len(functions)-1 != 0):
+        nested["invoke_nested"] = [create_nesting(functions[1:])]
+    return nested
 
+def run_experiment(iterations:int, invoke_order:list, hot_instances:int):
     for i in range(iterations):
 
-        print(f'Experiment {experiment_name}, iteration {i} ...')
+        if verbose:
+            print(f'Experiment {experiment_name}, iteration {i} ...')
 
+        for n in range(hot_instances):
         # invoke function 1 and 2 such that they are hot
-        hot_response1 = benchmarker.invoke_function(function_endpoint=fx1)
-        # print('Response from prewarming function 1')
-        # pprint(hot_response1)
-        hot_response2 = benchmarker.invoke_function(function_endpoint=fx2)
-        # print('Response from prewarming function 2')
-        # pprint(hot_response2)
+            hot_response = benchmarker.invoke_function(function_name=invoke_order[0])
+        
+            if verbose:
+                print('Response from prewarming function {invoke_order[n]} at level {n}')
+                pprint(hot_response)
+            
 
         # setup nested invocations
         nested = [
@@ -104,6 +119,11 @@ try:
                             "function_name": fx3,
                             "invoke_payload": {
                                 "StatusCode": 200,
+                                "invoke_nested": [
+                                    {
+                                        'function_name':
+                                    }
+                                ]
                             }
                         }
                     ]
@@ -113,11 +133,10 @@ try:
 
         # invoke function 1, that will invoke function 2, which will invoke funcion 3
         # we expect that only function3 will be a cold start, and thus the majority of the response time
-        nested = benchmarker.invoke_function(
-            function_endpoint=fx1, invoke_nested=nested)
+        nested = benchmarker.invoke_function(function_name=fx1, function_args=nested)
 
         time.sleep(coldtime)
-    
+try:
 
     # =====================================================================================
     # end of the experiment

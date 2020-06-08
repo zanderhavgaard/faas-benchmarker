@@ -49,9 +49,6 @@ def handle(req):
         # load json to string to dict
         event = json.loads(req)
 
-        seed = event['seed']
-        random.seed(seed)
-
         # list of functions that will be called dependent on the seed given
         functions = [
             ('matrix_mult', lambda x: matrix_mult(x,x)),
@@ -1849,6 +1846,8 @@ def handle(req):
             raise Exception('no function-name matching the given input')
         
         if 'run_function' in event:
+            seed = event['seed']
+            random.seed(seed)
             (function_name,func) = get_function()
             result = func(event['args'])
             body[identifier]['function_argument'] = event['args']

@@ -57,8 +57,6 @@ class AWSLambdaProvider(AbstractProvider):
         # create url of function to invoke
         invoke_url = f'{self.gateway_url}/{self.experiment_name}-{function_name}'
 
-        print('url',invoke_url)
-
         # log start time of invocation
         start_time = time.time()
 
@@ -92,7 +90,7 @@ class AWSLambdaProvider(AbstractProvider):
 
             # TODO make same change with if else for AWS and azure
             # if succesfull invocation parse response
-            if(response != None and  response.status_code == 200):
+            if(response != None and response.status_code == 200):
 
                 #  response_json = json.loads(response.content.decode())
                 response_json = response.json()
