@@ -42,6 +42,7 @@ class OpenFaasProvider(AbstractProvider):
             function_args = {"StatusCode":200}
         else:
             function_args["StatusCode"] = 200
+            
 
         # for openfaas we do not need the endpoint, as it is always the same
         # create url of function to invoke
