@@ -89,6 +89,7 @@ resource "null_resource" "root-provisioner" {
       "echo 'export PYTHON_PATH=\"$PYTHON_PATH:$fbrd/benchmark\"' >> /home/ubuntu/.bashrc",
       "echo 'cd /home/ubuntu/faas-benchmarker && git pull' >> /home/ubuntu/.bashrc",
       "echo 'export FUNCTIONS_CORE_TOOLS_TELEMETRY_OPTOUT=1' >> /home/ubuntu/.bashrc",
+      "echo 'alias tailf=\"tail -f -n 999999\"' >> /home/ubuntu/.bashrc",
 
       # install azure functions cli tools
       "curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg",
