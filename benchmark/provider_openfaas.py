@@ -7,6 +7,7 @@ from provider_abstract import AbstractProvider
 import traceback
 import sys
 import http
+from pprint import pprint
 
 
 class OpenFaasProvider(AbstractProvider):
@@ -41,7 +42,6 @@ class OpenFaasProvider(AbstractProvider):
             function_args = {"StatusCode":200}
         else:
             function_args["StatusCode"] = 200
-
 
         # for openfaas we do not need the endpoint, as it is always the same
         # create url of function to invoke

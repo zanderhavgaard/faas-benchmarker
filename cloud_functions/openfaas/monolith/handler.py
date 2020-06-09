@@ -1913,77 +1913,77 @@ def handle(req):
         # invoke_payload: dict containing arguments for invoked function
 
 
-    def invoke_nested_function(function_name: str,
-                            invoke_payload: dict
-                            ) -> dict:
+def invoke_nested_function(function_name: str,
+                        invoke_payload: dict
+                        ) -> dict:
 
-        # capture the invocation start time
-        start_time = time.time()
+    # capture the invocation start time
+    start_time = time.time()
 
-        try:
+    try:
 
-            headers = {
-                'Content-Type': 'application/json'
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        function_url = 'gateway.openfaas:8080'
+        # strip expreiment name from function_name
+        function_name = function_name.split('-').pop()
+        invocation_url = f'http://{function_url}/function/{function_name}'
+
+        response = requests.post(
+            url=invocation_url,
+            headers=headers,
+            data=json.dumps(invoke_payload)
+        )
+
+        # capture the invocation end time
+        end_time = time.time()
+
+        # parse response_json
+        response_json = json.loads((response.content.decode()))
+
+        # get the identifier
+        id = response_json['identifier']
+
+        # parse response body
+        body = json.loads(response_json['body'])
+
+        # add invocation metadata to response
+        body[id]['invocation_start'] = start_time
+        body[id]['invocation_end'] = end_time
+
+        return body
+
+    except Exception as e:
+        end_time = time.time()
+        return {
+            "error-"+function_name+'-nested_invocation-'+str(end_time): {
+                "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
+                "uuid": None,
+                "function_name": 'function1',
+                "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
+                "parent": invoke_payload['parent'],
+                "sleep": None,
+                "function_cores": 0,
+                "throughput": None,
+                "throughput_time": None,
+                "throughput_process_time": None,
+                'throughput_running_time': None,
+                "random_seed": None,
+                "python_version": None,
+                "level": invoke_payload['level'],
+                "memory": None,
+                "instance_identifier": None,
+                "execution_start": None,
+                "execution_end": None,
+                "invocation_start": start_time,
+                "invocation_end": end_time,
+                "cpu": platform.processor(),
+                "process_time": time.process_time()
             }
-
-            function_url = 'gateway.openfaas:8080'
-            # strip expreiment name from function_name
-            function_name = function_name.split('-').pop()
-            invocation_url = f'http://{function_url}/function/{function_name}'
-
-            response = requests.post(
-                url=invocation_url,
-                headers=headers,
-                data=json.dumps(invoke_payload)
-            )
-
-            # capture the invocation end time
-            end_time = time.time()
-
-            # parse response_json
-            response_json = json.loads((response.content.decode()))
-
-            # get the identifier
-            id = response_json['identifier']
-
-            # parse response body
-            body = json.loads(response_json['body'])
-
-            # add invocation metadata to response
-            body[id]['invocation_start'] = start_time
-            body[id]['invocation_end'] = end_time
-
-            return body
-
-        except Exception as e:
-            end_time = time.time()
-            return {
-                "error-"+function_name+'-nested_invocation-'+str(end_time): {
-                    "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
-                    "uuid": None,
-                    "function_name": 'function1',
-                    "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
-                    "parent": invoke_payload['parent'],
-                    "sleep": None,
-                    "function_cores": 0,
-                    "throughput": None,
-                    "throughput_time": None,
-                    "throughput_process_time": None,
-                    'throughput_running_time': None,
-                    "random_seed": None,
-                    "python_version": None,
-                    "level": invoke_payload['level'],
-                    "memory": None,
-                    "instance_identifier": None,
-                    "execution_start": None,
-                    "execution_end": None,
-                    "invocation_start": start_time,
-                    "invocation_end": end_time,
-                    "cpu": platform.processor(),
-                    "process_time": time.process_time()
-                }
-            }
+        }
 
 
-    class StatusCodeException(Exception):
-        pass
+class StatusCodeException(Exception):
+    pass
