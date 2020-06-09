@@ -21,9 +21,9 @@ azure_functions_pidfile="/tmp/$experiment_name-azure_functions.pid"
 openfaas_pidfile="/tmp/$experiment_name-openfaas.pid"
 
 function check_that_experiment_is_not_running {
-  [ -f "$aws_lambda_pidfile" ] && errmsg "Experiment pidfile(s) already exists, you must wait for existing experiment to finish before running again." && exit
-  [ -f "$azure_functions_pidfile" ] && errmsg "Experiment pidfile(s) already exists, you must wait for existing experiment to finish before running again." && exit
-  [ -f "$openfaas_pidfile" ] && errmsg "Experiment pidfile(s) already exists, you must wait for existing experiment to finish before running again." && exit
+  [ -f "$aws_lambda_pidfile" ] && errmsg "Experiment pidfile(s) already exists, you must wait for existing experiment to finish before running again." && exit 1
+  [ -f "$azure_functions_pidfile" ] && errmsg "Experiment pidfile(s) already exists, you must wait for existing experiment to finish before running again." && exit 1
+  [ -f "$openfaas_pidfile" ] && errmsg "Experiment pidfile(s) already exists, you must wait for existing experiment to finish before running again." && exit 1
 }
 
 function run_experiment_aws_lambda {

@@ -2,7 +2,7 @@
 
 set -e
 
-[ -z "$1" ] && echo "Please specify experiment name as first argument." && exit
+[ -z "$1" ] && echo "Please specify experiment name as first argument." && exit 1
 experiment_name=$1
 cluster_name="$experiment_name-openfaas-cluster"
 region="eu-west-1"

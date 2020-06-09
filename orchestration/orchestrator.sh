@@ -16,17 +16,18 @@ platform=$3
 
 # validate inputs
 # TODO fix check experiment
-# if ! listContainsElement "$experiments" "$experiment_name"  ; then errmsg "Invalid experiment" ; exit ; fi
-if ! listContainsElement "$valid_commands" "$cmd"           ; then errmsg "Invalid command" ; exit ; fi
-if ! listContainsElement "$valid_platforms" "$platform"     ; then errmsg "Invalid platform" ; exit ; fi
+# if ! listContainsElement "$experiments" "$experiment_name"  ; then errmsg "Invalid experiment" ; exit 1 ; fi
+if ! listContainsElement "$valid_commands" "$cmd"           ; then errmsg "Invalid command" ; exit 1 ; fi
+if ! listContainsElement "$valid_platforms" "$platform"     ; then errmsg "Invalid platform" ; exit 1 ; fi
 
 # source the correct platform orchestrator
 source "$fbrd/orchestration/${platform}_orchestrator.sh"
 
 case "$cmd" in
     bootstrap)
-        create_infra_lock "$experiment_name" "$platform"
+        create_bootstrap_lock "$experiment_name" "$platform"
         bootstrap "$experiment_name"
+        create_infra_lock "$experiment_name" "$platform"
         ;;
     destroy)
         check_infra_lockfile "$experiment_name" "$platform"
