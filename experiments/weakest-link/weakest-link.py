@@ -88,8 +88,7 @@ errors = []
 # invoke function and return the result dict
 def invoke( args:tuple):
 
-    response = lib.get_dict(
-        benchmarker.invoke_function(function_name=args[0], function_args=args[1]))
+    response = benchmarker.invoke_function(function_name=args[0], function_args=args[1])
     return response if 'error' not in response else errors.append(response)
 
 
@@ -103,12 +102,12 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 def create_nesting(functions:list):
     nested = {
         "function_name": functions[0],
-            "invoke_payload": {
-            "StatusCode": 200,
-            }
+        "invoke_payload": {
+                "StatusCode": 200,
+                }
         }
     if(len(functions)-1 != 0):
-        nested["invoke_nested"] = [create_nesting(functions[1:])]
+        nested["invoke_payload"]["invoke_nested"] = [create_nesting(functions[1:])]
     return nested
 
 def run_experiment(iterations:int, invoke_order:list, hot_instances:int, nested:dict):
@@ -138,24 +137,28 @@ def run_experiment(iterations:int, invoke_order:list, hot_instances:int, nested:
 
         
 try:
-    func_list = [fx1, fx2, fx3,]
+    func_list = [fx1, fx2, fx3,fx4]
     args = {
-        "nested": [create_nesting(func_list[1:])]
+        "invoke_nested": [create_nesting(func_list[1:])]
     }
-    print('printing args')
-    pprint(args)
-    print()
-    run_experiment(3,func_list,0,args)
 
-    run_experiment(3,func_list,1,args)
+    run_experiment(10,func_list,0,args)
 
-    run_experiment(3,func_list,2,args)
+    run_experiment(10,func_list,1,args)
 
-    # run_experiment(10,func_list,3,args)
+    run_experiment(10,func_list,2,args)
 
-    # run_experiment(10,func_list,4,args)
+    run_experiment(10,func_list,3,args)
 
+    run_experiment(10,func_list,4,args)
 
+    func_list = func_list[::-1]
+  
+    args["invoke_nested"] = [create_nesting(func_list[1:])]
+
+    run_experiment(10,func_list,1,args)
+
+    run_experiment(10,func_list,2,args)
 
 
     # =====================================================================================
