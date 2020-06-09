@@ -104,6 +104,13 @@ function createExperiment {
     || ( errmsg "Invalid Experiment name ... aborting" && exit )
 }
 
+function createExperimentFromArgument {
+  exp_name=$1
+  checkValidExperimentName "$exp_name" \
+    && bash "$fbrd/fb_cli/create_experiment.sh" "$exp_name" \
+    || ( errmsg "Invalid Experiment name ... aborting" && exit )
+}
+
 function listExperiments {
   ls -I "*.md" "$fbrd/experiments"
 }
@@ -479,6 +486,14 @@ else
 
       -lr | --list-running-experiments)
         listRunningExperiments
+        exit
+        ;;
+
+      --create-experiment)
+        EXPERIMENT_NAME="$2"
+        createExperimentFromArgument "$EXPERIMENT_NAME"
+        shift
+        shift
         exit
         ;;
 
