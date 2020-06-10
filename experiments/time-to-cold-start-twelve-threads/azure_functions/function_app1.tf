@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "time-to-cold-start-twelve-threads1-function-code" {
-  type = "zip"
-  source_dir = "function_code/time-to-cold-start-twelve-threads-function1"
-  output_path = "function1.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "time-to-cold-start-twelve-threads1-code" {
-  name = "time-to-cold-start-twelve-threads1-function.zip"
-  storage_account_name = azurerm_storage_account.time-to-cold-start-twelve-threads-experiment-storage.name
-  storage_container_name = azurerm_storage_container.time-to-cold-start-twelve-threads-container.name
-  type = "Block"
-  source = "function1.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "time-to-cold-start-twelve-threads1" {
-  depends_on = [azurerm_storage_blob.time-to-cold-start-twelve-threads1-code]
 
   name = "time-to-cold-start-twelve-threads-function1"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "time-to-cold-start-twelve-threads1" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.time-to-cold-start-twelve-threads1-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.time-to-cold-start-twelve-threads1-code.url}${data.azurerm_storage_account_sas.sas-time-to-cold-start-twelve-threads.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.time-to-cold-start-twelve-threads.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }

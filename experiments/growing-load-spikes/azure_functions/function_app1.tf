@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "growing-load-spikes1-function-code" {
-  type = "zip"
-  source_dir = "function_code/growing-load-spikes-function1"
-  output_path = "function1.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "growing-load-spikes1-code" {
-  name = "growing-load-spikes1-function.zip"
-  storage_account_name = azurerm_storage_account.growing-load-spikes-experiment-storage.name
-  storage_container_name = azurerm_storage_container.growing-load-spikes-container.name
-  type = "Block"
-  source = "function1.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "growing-load-spikes1" {
-  depends_on = [azurerm_storage_blob.growing-load-spikes1-code]
 
   name = "growing-load-spikes-function1"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "growing-load-spikes1" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.growing-load-spikes1-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.growing-load-spikes1-code.url}${data.azurerm_storage_account_sas.sas-growing-load-spikes.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.growing-load-spikes.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }

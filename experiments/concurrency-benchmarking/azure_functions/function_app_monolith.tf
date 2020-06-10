@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "concurrency-benchmarking-monolith-function-code" {
-  type = "zip"
-  source_dir = "function_code/concurrency-benchmarking-monolith"
-  output_path = "monolith.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "concurrency-benchmarking-monolith-code" {
-  name = "concurrency-benchmarking-monolith-function.zip"
-  storage_account_name = azurerm_storage_account.concurrency-benchmarking-experiment-storage.name
-  storage_container_name = azurerm_storage_container.concurrency-benchmarking-container.name
-  type = "Block"
-  source = "monolith.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "concurrency-benchmarking-monolith" {
-  depends_on = [azurerm_storage_blob.concurrency-benchmarking-monolith-code]
 
   name = "concurrency-benchmarking-monolith"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "concurrency-benchmarking-monolith" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.concurrency-benchmarking-monolith-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.concurrency-benchmarking-monolith-code.url}${data.azurerm_storage_account_sas.sas-concurrency-benchmarking.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.concurrency-benchmarking.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }

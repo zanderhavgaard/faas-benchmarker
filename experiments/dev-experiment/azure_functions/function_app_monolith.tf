@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "dev-experiment-monolith-function-code" {
-  type = "zip"
-  source_dir = "function_code/dev-experiment-monolith"
-  output_path = "monolith.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "dev-experiment-monolith-code" {
-  name = "dev-experiment-monolith-function.zip"
-  storage_account_name = azurerm_storage_account.dev-experiment-experiment-storage.name
-  storage_container_name = azurerm_storage_container.dev-experiment-container.name
-  type = "Block"
-  source = "monolith.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "dev-experiment-monolith" {
-  depends_on = [azurerm_storage_blob.dev-experiment-monolith-code]
 
   name = "dev-experiment-monolith"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "dev-experiment-monolith" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.dev-experiment-monolith-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.dev-experiment-monolith-code.url}${data.azurerm_storage_account_sas.sas-dev-experiment.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.dev-experiment.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }

@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "weakest-link3-function-code" {
-  type = "zip"
-  source_dir = "function_code/weakest-link-function3"
-  output_path = "function3.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "weakest-link3-code" {
-  name = "weakest-link3-function.zip"
-  storage_account_name = azurerm_storage_account.weakest-link-experiment-storage.name
-  storage_container_name = azurerm_storage_container.weakest-link-container.name
-  type = "Block"
-  source = "function3.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "weakest-link3" {
-  depends_on = [azurerm_storage_blob.weakest-link3-code]
 
   name = "weakest-link-function3"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "weakest-link3" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.weakest-link3-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.weakest-link3-code.url}${data.azurerm_storage_account_sas.sas-weakest-link.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.weakest-link.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }

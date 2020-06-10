@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "track-cloudfunctions-lifecycle2-function-code" {
-  type = "zip"
-  source_dir = "function_code/track-cloudfunctions-lifecycle-function2"
-  output_path = "function2.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "track-cloudfunctions-lifecycle2-code" {
-  name = "track-cloudfunctions-lifecycle2-function.zip"
-  storage_account_name = azurerm_storage_account.track-cloudfunctions-lifecycle-experiment-storage.name
-  storage_container_name = azurerm_storage_container.track-cloudfunctions-lifecycle-container.name
-  type = "Block"
-  source = "function2.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "track-cloudfunctions-lifecycle2" {
-  depends_on = [azurerm_storage_blob.track-cloudfunctions-lifecycle2-code]
 
   name = "track-cloudfunctions-lifecycle-function2"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "track-cloudfunctions-lifecycle2" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.track-cloudfunctions-lifecycle2-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.track-cloudfunctions-lifecycle2-code.url}${data.azurerm_storage_account_sas.sas-track-cloudfunctions-lifecycle.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.track-cloudfunctions-lifecycle.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }

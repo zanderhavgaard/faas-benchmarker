@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "single-function-time-to-cold-start-monolith-function-code" {
-  type = "zip"
-  source_dir = "function_code/single-function-time-to-cold-start-monolith"
-  output_path = "monolith.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "single-function-time-to-cold-start-monolith-code" {
-  name = "single-function-time-to-cold-start-monolith-function.zip"
-  storage_account_name = azurerm_storage_account.single-function-time-to-cold-start-experiment-storage.name
-  storage_container_name = azurerm_storage_container.single-function-time-to-cold-start-container.name
-  type = "Block"
-  source = "monolith.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "single-function-time-to-cold-start-monolith" {
-  depends_on = [azurerm_storage_blob.single-function-time-to-cold-start-monolith-code]
 
   name = "single-function-time-to-cold-start-monolith"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "single-function-time-to-cold-start-monolith" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.single-function-time-to-cold-start-monolith-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.single-function-time-to-cold-start-monolith-code.url}${data.azurerm_storage_account_sas.sas-single-function-time-to-cold-start.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.single-function-time-to-cold-start.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }
