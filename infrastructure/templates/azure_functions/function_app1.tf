@@ -1,23 +1,6 @@
-# create zip archive locally
-data "archive_file" "changeme1-function-code" {
-  type = "zip"
-  source_dir = "function_code/changeme-function1"
-  output_path = "function1.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "changeme1-code" {
-  name = "changeme1-function.zip"
-  storage_account_name = azurerm_storage_account.changeme-experiment-storage.name
-  storage_container_name = azurerm_storage_container.changeme-container.name
-  type = "Block"
-  source = "function1.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "changeme1" {
-  depends_on = [azurerm_storage_blob.changeme1-code]
 
   name = "changeme-function1"
   location = var.azure_region
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "changeme1" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.changeme1-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.changeme1-code.url}${data.azurerm_storage_account_sas.sas-changeme.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.changeme.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }
