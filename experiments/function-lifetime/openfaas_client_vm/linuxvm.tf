@@ -24,8 +24,8 @@ resource "azurerm_linux_virtual_machine" "function-lifetime-openfaas-worker" {
 
   source_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    offer     = "0001-com-ubuntu-minimal-focal-daily"
+    sku       = "minimal-20_04-daily-lts"
     version   = "latest"
   }
 }
