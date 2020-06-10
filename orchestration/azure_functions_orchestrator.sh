@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -e
+# TODO check if disabling creates problems elsewhere
+# remove flag as it conflicts with the until loop
+# set -e
 
 source "$fbrd/fb_cli/utils.sh"
 
@@ -24,7 +26,22 @@ function bootstrap {
     for fcd in $function_code_dirs; do
         pmsg "Fixing deployment of azure function: $fcd"
         cd "$experiment_context/azure_functions/function_code/$fcd"
-        func azure functionapp publish $fcd
+
+        # we retry the function app publish, as it might fail...
+        retries=10
+        counter=0
+        deployed="false"
+        until $deployed ; do
+            (( counter++ ))
+            if [ $counter = $retries ] ; then
+                errmsg "Maximum deployment retries reaches, aborting ..."
+                exit
+            fi
+            pmsg "Trying functionapp deployment, attempt # $counter..."
+            func azure functionapp publish $fcd \
+                && deployed="true" \
+                && smsg "Successfully deployed function $fcd"
+        done
     done
 
     cd "$experiment_context/azure_functions"
