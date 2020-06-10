@@ -25,7 +25,7 @@ sudo mv ./kubectl /usr/local/bin/kubectl
 # https://helm.sh/docs/intro/install/
 curl "https://get.helm.sh/helm-v3.2.3-linux-amd64.tar.gz" -o "helm.tar.gz"
 tar -zxvf helm.tar.gz
-mv linux-amd64/helm /usr/local/bin/helm
+sudo mv linux-amd64/helm /usr/local/bin/helm
 rm -rf linux-amd64
 rm helm.tar.gz
 
