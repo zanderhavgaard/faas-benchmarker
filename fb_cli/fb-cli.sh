@@ -220,7 +220,7 @@ function listRunningExperiments {
     if ls /tmp/"$exp"-* > /dev/null 2>&1 ; then
       msg "$exp is running ... pids:"
       for f in /tmp/$exp-* ; do
-        cat "$f"
+        msg "$f --> pid $(cat $f)"
       done
     fi
   done
