@@ -6,7 +6,7 @@
 # install aws cli
 curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
 unzip awscli-bundle.zip
-sudo python awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+sudo python3 awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
 rm -rf awscli-bundle
 rm awscli-bundle.zip
 
@@ -20,6 +20,14 @@ sudo mv /tmp/eksctl /usr/local/bin
 curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
+
+# install helm
+# https://helm.sh/docs/intro/install/
+curl "https://get.helm.sh/helm-v3.2.3-linux-amd64.tar.gz" -o "helm.tar.gz"
+tar -zxvf helm.tar.gz
+mv linux-amd64/helm /usr/local/bin/helm
+rm -rf linux-amd64
+rm helm.tar.gz
 
 # install arkade
 # https://github.com/alexellis/arkade

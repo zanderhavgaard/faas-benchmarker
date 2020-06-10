@@ -34,7 +34,7 @@ function bootstrap {
         until $deployed ; do
             (( counter++ ))
             if [ $counter = $retries ] ; then
-                errmsg "Maximum deployment retries reaches, aborting ..."
+                errmsg "Maximum deployment retries reached, aborting ..."
                 exit
             fi
             pmsg "Trying functionapp deployment, attempt # $counter..."
