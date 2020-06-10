@@ -51,7 +51,7 @@ function run_experiment_azure_functions {
 function run_experiment_openfaas {
   stmsg "Starting experiment for OpenFaas ..."
   openfaas_log="$fbrd/logs/$timestamp-$experiment_meta_identifier-$experiment_name-openfaas.log"
-  pmsg "Logging orchestrion to file: $openfaas_log"
+  pmsg "Logging orchestration to file: $openfaas_log"
   nohup bash -c " \
       bash \"$fbrd/orchestration/run_experiment_openfaas.sh\" \"$experiment_name\" \"$experiment_meta_identifier\" > $openfaas_log 2>&1 \
       ; scp -o StrictHostKeyChecking=no -i $key_file $openfaas_log ubuntu@$TF_VAR_db_server_static_ip:$log_location \
