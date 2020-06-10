@@ -10,12 +10,12 @@ experiment_name=$1
 cluster_name="$experiment_name-openfaas-cluster"
 region="eu-west-1"
 
-pmsg -e "Bootstrapping OpenFaas on AWS EKS/Fargate ..."
-pmsg -e "Experiment name: $experiment_name"
-pmsg -e "EKS cluster name: $cluster_name"
-pmsg -e "AWS region: $region"
+pmsg "Bootstrapping OpenFaas on AWS EKS/Fargate ..."
+pmsg "Experiment name: $experiment_name"
+pmsg "EKS cluster name: $cluster_name"
+pmsg "AWS region: $region"
 
-pmsg -e "Creating EKS cluster on fargate ..."
+pmsg "Creating EKS cluster on fargate ..."
 
 # create the cluster
 eksctl create cluster \
@@ -26,7 +26,7 @@ eksctl create cluster \
 # wait a bit for things to be ready
 sleep 5
 
-pmsg -e "Creating fargateprofile for openfaas namespace ..."
+pmsg "Creating fargateprofile for openfaas namespace ..."
 
 # setup fargate profiles for namespaces
 eksctl create fargateprofile \
@@ -37,7 +37,7 @@ eksctl create fargateprofile \
 # wait a bit for things to be ready
 sleep 5
 
-pmsg -e "Creating fargateprofile for openfaas-fn namespace ..."
+pmsg "Creating fargateprofile for openfaas-fn namespace ..."
 
 eksctl create fargateprofile \
     --cluster "$cluster_name" \
@@ -47,7 +47,7 @@ eksctl create fargateprofile \
 # wait a bit for things to be ready
 sleep 5
 
-pmsg -e "arkade install openfaas ..."
+pmsg "arkade install openfaas ..."
 
 # the arkade install might fail, so we try a few times ...
 retries=10
@@ -74,36 +74,36 @@ done
 # wait a bit for things to be ready
 sleep 5
 
-pmsg -e "Kubectl openfaas gateway rollout ..."
+pmsg "Kubectl openfaas gateway rollout ..."
 
 # configure openfaas
 kubectl rollout status -n openfaas deploy/gateway
 
 sleep 5
 
-pmsg -e "Creating portforwarding ..."
+pmsg "Creating portforwarding ..."
 
 kubectl port-forward -n openfaas svc/gateway 8080:8080 &
 
 # wait a bit for things to be ready
 sleep 5
 
-pmsg -e "faas-cli log in to cluste ..."
+pmsg "faas-cli log in to cluste ..."
 
 # log faas-cli into the new cluster
 PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)
 echo -n $PASSWORD | faas-cli login --username admin --password-stdin
 
-pmsg -e "Pulling OpenFaas template files ..."
+pmsg "Pulling OpenFaas template files ..."
 
 # download openfaas template files
 faas-cli template pull
 
-pmsg -e "Deploying functions ..."
+pmsg "Deploying functions ..."
 
 # deploy the functions
 faas-cli deploy \
   -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml \
   --label "com.openfaas.scale.zero=true"
 
-smsg -e "\nDone configuring OpenFaas\n"
+smsg "Done configuring OpenFaas"
