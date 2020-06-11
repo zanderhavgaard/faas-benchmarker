@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 source "$fbrd/fb_cli/utils.sh"
 
 minikube_driver="kvm2"
@@ -17,11 +15,26 @@ sleep 5
 
 pmsg "Installing OpenFaas using arkade ..."
 
-arkade install openfaas \
-    --wait \
-    --set "faasIdler.dryRun=false" \
-    --set "faasIdler.inactivityDuration=10m" \
-    --set "faasIdler.reconcileInterval=5m"
+# the arkade install might fail, so we try a few times ...
+retries=10
+counter=0
+deployed="false"
+until $deployed ; do
+    (( counter++ ))
+    if [ $counter = $retries ] ; then
+        errmsg "Maximum deployment retries reached, aborting ..."
+        exit
+    fi
+    pmsg "Trying openfaas deployment, attempt # $counter..."
+    # install openfaas
+    arkade install openfaas \
+        --wait \
+        --set "faasIdler.dryRun=false" \
+        --set "faasIdler.inactivityDuration=10m" \
+        --set "faasIdler.reconcileInterval=5m" \
+        && deployed="true" \
+        && smsg "Successfully deployed openfaas $fcd"
+done
 sleep 5
 
 pmsg "Configuring gateway ..."
