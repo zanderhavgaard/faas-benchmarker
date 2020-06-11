@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "$fbrd/fb_cli/utils.sh"
+
 set -e
 
 [ -z "$1" ] && errmsg "Please specify experiment name as first argument." && exit
@@ -7,19 +9,19 @@ experiment_name=$1
 cluster_name="$experiment_name-openfaas-cluster"
 region="eu-west-1"
 
-pmsg "\nDestroying OpenFaas on AWS EKS/Fargate ..."
+pmsg "Destroying OpenFaas on AWS EKS/Fargate ..."
 pmsg "Experiment name: $experiment_name"
 pmsg "EKS cluster name: $cluster_name"
-pmsg "AWS region: $region\n"
+pmsg "AWS region: $region"
 
-pmsg "\nRemoving deployed OpenFaas functions ...\n"
+pmsg "Removing deployed OpenFaas functions ..."
 
 faas-cli remove -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml
 
-pmsg "\nDestroying EKS cluster ...\n"
+pmsg "Destroying EKS cluster ..."
 
 eksctl delete cluster \
     --name "$cluster_name" \
     --region "$region"
 
-smsg "\nDone destroying OpenFaas infrastructure.\n"
+smsg "Done destroying OpenFaas infrastructure."
