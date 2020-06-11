@@ -11,3 +11,6 @@ variable "env_file" {}
 
 # ip address of the db server
 variable "db_server_static_ip" {}
+
+variable "subnet_id" {}
+variable "security_group_id" {}

@@ -6,9 +6,9 @@ resource "aws_instance" "track-cloudfunctions-lifecycle1-worker-aws" {
   # ami = "ami-0701e7be9b2a77600"
   ami = "ami-0dad359ff462124ca"
   instance_type = "t2.micro"
-  key_name = "track-cloudfunctions-lifecycle1_worker"
-  subnet_id = aws_subnet.track-cloudfunctions-lifecycle1-worker-subnet.id
-  security_groups = [aws_security_group.allow-ssh.id]
+  key_name = "faasbenchmarker"
+  subnet_id = var.subnet_id
+  security_groups = [var.security_group_id]
 }
 
 # HACK to run provisioners over SSH after instance
