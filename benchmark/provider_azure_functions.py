@@ -31,19 +31,16 @@ class AzureFunctionsProvider(AbstractProvider):
 
     def load_env_vars(self, env_file_path: str) -> None:
         dotenv.load_dotenv(dotenv_path=env_file_path)
-        print('path',env_file_path)
 
     # the functions are available under
     # https://<funtion_app_name>/api/<function_name>?code=<function_key>
     def invoke_function(self,
-                        function_name:str,
-                        function_args:dict = None
+                        function_name: str,
+                        function_args: dict = None
                         ) -> dict:
 
         function_app_url = os.getenv(f'{self.experiment_name}-{function_name}_function_app_url')
         function_key = os.getenv(f'{self.experiment_name}-{function_name}_function_key')
-
-        print('env',function_app_url,function_key)
 
         if function_app_url is None or function_key is None:
             raise RuntimeError('Could not parse function app url or key.')
@@ -56,10 +53,9 @@ class AzureFunctionsProvider(AbstractProvider):
 
         # paramters, the only required paramter is the statuscode
         if function_args is None:
-            function_args = {"StatusCode":200}
+            function_args = {"StatusCode": 200}
         else:
             function_args["StatusCode"] = 200
-
 
         # add optional dict describing nested invocations, if presente
         if 'invoke_nested' in function_args:
