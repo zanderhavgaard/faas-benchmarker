@@ -97,13 +97,15 @@ class AzureFunctionsProvider(AbstractProvider):
                         f"Caught an error for attempt {i}, retrying invocation ...")
                     print(e)
                     continue
+            else:
+                print('Reached max number of incovation retries, continueing experiment ...')
+                response = None
 
             # log the end time of the invocation
             end_time = time.time()
 
-            # TODO make same change with if else for AWS and azure
             # if succesfull invocation parse response
-            if(response != None and response.status_code == 200):
+            if (response != None) and (response.status_code == 200):
 
                 # parse the response json
                 response_data = json.loads(response.content.decode())
@@ -128,8 +130,8 @@ class AzureFunctionsProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-provider_azure_functions-' + self.experiment_name + '-' + str(end_time): {
-                        'identifier': 'StatusCode-error-provider_azure_functions' + self.experiment_name + '-' + str(end_time),
+                    f'StatusCode-error-provider_azure_functions-{self.experiment_name}-{str(end_time)}': {
+                        'identifier': f'StatusCode-error-provider_azure_functions-{self.experiment_name}-{str(end_time)}',
                         'uuid': None,
                         'function_name': self.experiment_name,
                         'error': {'trace': 'None 200 code in provider_azure_functions: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
@@ -146,15 +148,15 @@ class AzureFunctionsProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-provider_azure_functions' + self.experiment_name + '-' + str(end_time)
+                    'root_identifier': f'StatusCode-error-provider_azure_functions-{self.experiment_name}-{str(end_time)}'
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-provider_azure_functions-' + self.experiment_name + str(end_time): {
-                    'identifier': 'exception-provider_azure_functions' + self.experiment_name + str(end_time),
+                f'exception-provider_azure_functions-{self.experiment_name}-{str(end_time)}': {
+                    'identifier': f'exception-provider_azure_functions-{self.experiment_name}-{str(end_time)}',
                     'uuid': None,
                     'function_name': self.experiment_name,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
@@ -171,7 +173,7 @@ class AzureFunctionsProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time,
                 },
-                'root_identifier': 'exception-provider_azure_functions' + self.experiment_name + str(end_time)
+                'root_identifier': f'exception-provider_azure_functions-{self.experiment_name}-{str(end_time)}'
             }
             return error_dict
 

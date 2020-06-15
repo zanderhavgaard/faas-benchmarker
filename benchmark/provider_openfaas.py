@@ -70,13 +70,15 @@ class OpenFaasProvider(AbstractProvider):
                         f"Caught an error for attempt {i}, retrying invocation ...")
                     print(e)
                     continue
+            else:
+                print('Reached max number of incovation retries, continueing experiment ...')
+                response = None
 
             # log the end time of the invocation
             end_time = time.time()
 
-            # TODO make same change with if else for AWS and azure
             # if succesfull invocation parse response
-            if(response != None and response.status_code == 200):
+            if (response != None) and (response.status_code == 200):
 
                 response_json = json.loads(response.content.decode())
 
@@ -100,11 +102,11 @@ class OpenFaasProvider(AbstractProvider):
 
             else:
                 error_dict = {
-                    'StatusCode-error-provider_openfaas-' + self.experiment_name + '-' + str(end_time): {
-                        'identifier': 'StatusCode-error-provider_openfaas' + self.experiment_name + '-' + str(end_time),
+                    f'StatusCode-error-provider_openfaas-{self.experiment_name}-{str(end_time)}': {
+                        'identifier': f'StatusCode-error-provider_openfaas-{self.experiment_name}-{str(end_time)}',
                         'uuid': None,
                         'function_name': self.experiment_name,
-                        'error': {'trace': 'None 200 code in provider_openfaas: ' + str(response.status_code), 'type': 'StatusCodeException', 'message': 'statuscode: ' + str(response.status_code)},
+                        'error': {'trace': f'None 200 code in provider_openfaas: {str(response.status_code)}', 'type': 'StatusCodeException', 'message': 'statuscode: {str(response.status_code)}'},
                         'parent': None,
                         'sleep': 0.0,
                         'numb_threads': 1,
@@ -118,15 +120,15 @@ class OpenFaasProvider(AbstractProvider):
                         'invocation_start': start_time,
                         'invocation_end': end_time,
                     },
-                    'root_identifier': 'StatusCode-error-provider_openfaas-' + self.experiment_name + '-' + str(end_time)
+                    'root_identifier': f'StatusCode-error-provider_openfaas-{self.experiment_name}-{str(end_time)}'
                 }
                 return error_dict
 
         except Exception as e:
             end_time = time.time()
             error_dict = {
-                'exception-provider_openfaas-' + f'{self.experiment_name}-{end_time}': {
-                    'identifier': 'exception-provider_openfaas' + self.experiment_name + str(end_time),
+                f'exception-provider_openfaas-{self.experiment_name}-{end_time}': {
+                    'identifier': f'exception-provider_openfaas-{self.experiment_name}-{end_time}',
                     'uuid': None,
                     'function_name': self.experiment_name,
                     'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
@@ -143,6 +145,6 @@ class OpenFaasProvider(AbstractProvider):
                     'invocation_start': start_time,
                     'invocation_end': end_time
                 },
-                'root_identifier': 'exception-provider_openfaas' + f'{self.experiment_name}-{end_time}'
+                'root_identifier': f'exception-provider_openfaas-{self.experiment_name}-{end_time}'
             }
             return error_dict
