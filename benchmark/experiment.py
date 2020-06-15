@@ -38,7 +38,8 @@ class Experiment:
         pprint(vars(self))
 
     def get_invocations(self) -> list:
-        return reduce(lambda x, y: x+y, self.invocations)
+        return reduce(lambda x, y: x+y, self.invocations) if len(self.invocations) != 0 \
+            else [] and print('Error! no invocations') 
 
     def get_invocations_original_form(self) -> list:
         return self.invocations

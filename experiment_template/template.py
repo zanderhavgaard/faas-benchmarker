@@ -87,17 +87,17 @@ errors = []
 # * comment below function out and other invoke     *
 # * function in if experiment is concurrent invoked *
 # ***************************************************
-def invoke():
+def invoke(aegs:dict= None):
     response = lib.get_dict(
-        benchmarker.invoke_function(function_endpoint=fx))
+        benchmarker.invoke_function(function_name=fx, function_args=args))
     return response if 'error' not in response else errors.append(response)
 
-# def invoke(thread_numb:int):
+# def invoke(thread_numb:int, args:dict= None):
 
 #     err_count = len(errors)
 #     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
 #     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-#     benchmarker.invoke_function_conccurrently(function_endpoint=fx, numb_threads=thread_numb,throughput_time=th_time))]))
+#     benchmarker.invoke_function_conccurrently(function_name=fx, numb_threads=thread_numb,function_args=args))]))
 #     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
    
 #     # *** NOTE if a single accumulated dict is desired as return value comment below line in ***

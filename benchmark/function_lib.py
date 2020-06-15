@@ -98,8 +98,8 @@ def log_experiment_specifics(exp_name:str, uuid:str, err:int, db_check:bool=True
 # ============================================================================================
 # scenario testing
 
-def baseline(runtime:int, 
-            sleep_time:int, 
+def baseline(run_time:int, 
+            sleep_time:float, 
             functions:list, 
             args:list, 
             special_func= None,
@@ -109,13 +109,15 @@ def baseline(runtime:int,
 
     starttime = time.time()
     invocation_count = 0
-    while(runtime > time.time() - starttime ):
+
+    while(run_time > time.time() - starttime ):
         if(dist != None and invocation_count % dist == dist-1 and special_func != None):
             special_func(special_args)
         else:
             functions[invocation_count % len(functions)](args[invocation_count % len(args)])
         invocation_count += 1
         time.sleep(sleep_time)
+  
 
 def invocation_pattern(iterations:int, 
                         functions:list, 
