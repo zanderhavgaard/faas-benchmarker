@@ -188,3 +188,22 @@ CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE IF NOT EXISTS `Pyramid` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `exp_id` varchar(36) NOT NULL,
+  `total_runtime`DOUBLE NOT NULL,
+  `total_invocations`INT NOT NULL,
+  `total_errors` INT DEFAULT 0,
+  `increment`INT NOT NULL,
+  `peak_invocations`INT NOT NULL,
+  `functions` varchar (200) NOT NULL,
+  `increment_runtime` DOUBLE NOT NULL,
+  `sleep_time` DOUBLE NOT NULL,
+  `threads_per_invocation` INT NOT NULL,
+  `invocations_for_increment` INT NOT NULL,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+
