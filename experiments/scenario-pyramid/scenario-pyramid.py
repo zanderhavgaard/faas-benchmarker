@@ -62,7 +62,7 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
 # database interface for logging results if needed
 db = database(dev_mode)
 # name of table to insert data into - HAVE TO BE SET!!
-table = None
+table = 'Pyramid'
 # =====================================================================================
 # set meta data for experiment
 # UUID from experiment
@@ -131,17 +131,22 @@ try:
 
     # this is needed to ensure that all threads have finished when moving to next execution or the experiment is finished
     def get_futures():
+        # sleep to mitigate potential network overhead that could interfere with getting results from futures 
+        time.sleep(300)
+        # results of futures
+        invocation_results = []
         global futures
-        print('precheck',len(futures))
+        
         for fu in futures:
-            for i in range(10):
+            for i in range(20):
                 if not fu.done():
-                    time.sleep(0.1)
+                    time.sleep(0.5)
                 else:
-                    fu.result()
+                    invocation_results.append(fu.result())
                     break
-        futures = reduce(lambda x,y: x+y,map(lambda x: x if isinstance(x,list) else [x],futures))    
-        print('check',len(futures))
+        # flatmap results
+        futures = reduce(lambda x,y: x+y,map(lambda x: x if not isinstance(x,dict) else [x],invocation_results))    
+        
 
     # builds and executes pyramid  
     def invoke_pyramid(function_names:list, args:list, increment:int, peak:int, run_time:int):
@@ -153,76 +158,79 @@ try:
         # aux function to produce new tuple with concurrent execution and new sleeptime
         def set_concurrent(vals:tuple):
             invo_count = vals[0]
-            # mod_invo = 0
             thread_numb = 1
             sleep = vals[1]
-            while(sleep < 0.05):
+            while(sleep < 0.1):
                 thread_numb += 1
                 invo_count = int(vals[0] / thread_numb)
                 sleep = vals[2] / invo_count - avg_tread_time
-            fxs = [lambda args,fx=f, n=thread_numb: futures.apend(pool.submit(invoke_function_conccurrently,fx,n,args)) for f in function_names] 
+            fxs = [lambda args,fx=f, n=thread_numb: futures.append(pool.submit(invoke_function_conccurrently,fx,n,args)) for f in function_names] 
             return (vals[2],sleep,fxs,args,thread_numb,vals[0])
 
         # lambdas for sequantial execution (base case)
         sequantial_functions = [lambda x,fx=f: futures.append(pool.submit(invoke, fx, x)) for f in function_names]
 
-        # set parameters for pyramid
+        # create parameters for pyramid
         invo_ascending = [(x+1)*increment for x in range(int(peak / increment))]
         sleep_times = [ (run_time / len(invo_ascending) / x) - avg_tread_time for x in invo_ascending ]
         times = [run_time/len(invo_ascending)]*len(invo_ascending)
         # zip parameters for further use
         zipped = list(zip(invo_ascending,sleep_times,times))
         # map each zipped value to a sequantial or concurrent execution
-        mapped = list(map(lambda x: (x[2],x[1],sequantial_functions,args,1,x[0]) if x[1] > 0.05 else \
+        mapped = list(map(lambda x: (x[2],x[1],sequantial_functions,args,1,x[0]) if x[1] > 0.1 else \
             set_concurrent(x), zipped))
         # append reversed version of mapped values to the mapped values to finish the pyramid structure
         pyramid_vals = mapped + mapped[:-1][::-1]
 
-        # execute the baseline for 60 seconds
-        lib.baseline(run_time=60, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
         
+        # number of invocations that should ideally have been invoked
+        invocation_count = reduce(lambda x,y: x+y, invo_ascending) * 2 - peak
+        
+        # execute the baseline for 60 seconds
+        lib.baseline(run_time=20, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
+    
         # execute the pyramid
         for (rt,st,fxs,argv,tn,ic) in pyramid_vals:
             lib.baseline(run_time=rt,sleep_time=st,functions=fxs,args=argv)
-            if verbose:
+            if dev_mode:
                 print('meta for pyramid:',run_time,invocation_count,increment,peak)
                 print('iteration',rt,st,tn,ic)
+       
 
         # execute baselien as tail
-        lib.baseline(run_time=60, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
+        lib.baseline(run_time=20, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
 
         get_futures()
 
         # log metadata for pyramid
-        # number of invocations that should ideally have been invoked
-        invocation_count = reduce(lambda x,y: x+y, invo_ascending) * 2 - peak
+        
         for (rt,st,fxs,argv,tn,ic) in pyramid_vals:
-            append_result(runtime,
+            append_result(run_time,
                         invocation_count,
                         increment,
                         peak,
-                        str(function_names),
+                        ','.join(function_names),
                         rt,
                         st,
                         tn,
                         ic)
             
-        
         errors = []
 
-
-    # execute the logic of this experiment
-        
-    invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],5,50,60)
-
+    ########################################
+    # execute the logic of this experiment #
+    ########################################    
     if dev_mode:
+        # invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],3,30,30)
+        invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],5,50,45)
+
         benchmarker.end_experiment()
         lib.log_experiment_specifics(experiment_name,
                                 experiment_uuid, 
                                 len(errors), 
                                 db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
+        sys.exit()
 
-        raise Exception('Ending experiment due to devmode')
 
     time.sleep(coldtime)
     
@@ -238,12 +246,8 @@ try:
 
     time.sleep(coldtime)
 
-    invoke_pyramid(invoke_pyramid(['function1'],[{"throughput_time":0.05}],10,1000,300))
+    invoke_pyramid(invoke_pyramid(['function1'],[{"throughput_time":0.05}],10,1000,600))
 
-
-
-  
-    
 
    # =====================================================================================
     # end of the experiment, results are logged to database

@@ -109,21 +109,15 @@ def baseline(run_time:int,
 
     starttime = time.time()
     invocation_count = 0
-    # l = []
+
     while(run_time > time.time() - starttime ):
         if(dist != None and invocation_count % dist == dist-1 and special_func != None):
             special_func(special_args)
         else:
-            # t = time.time()
             functions[invocation_count % len(functions)](args[invocation_count % len(args)])
-            # l.append(time.time()-t)
         invocation_count += 1
-    #     time.sleep(sleep_time)
-    # print('lib time')
-    # pprint(l)
-    # print()
-    # print(reduce(lambda x,y: x+y,l)/len(l))
-    # print()
+        time.sleep(sleep_time)
+  
 
 def invocation_pattern(iterations:int, 
                         functions:list, 
