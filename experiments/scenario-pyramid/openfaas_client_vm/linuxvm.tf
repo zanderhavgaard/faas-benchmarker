@@ -24,8 +24,8 @@ resource "azurerm_linux_virtual_machine" "scenario-pyramid-openfaas-worker" {
 
   source_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "18.04-LTS"
+    offer     = "0001-com-ubuntu-minimal-focal-daily"
+    sku       = "minimal-20_04-daily-lts"
     version   = "latest"
   }
 }
@@ -67,7 +67,7 @@ resource "null_resource" "linux-provisioners" {
 
       # install docker and other tools
       "sudo apt-get update -q",
-      "sudo apt-get install -y -qq unzip git docker-compose",
+      "sudo apt-get install -y -qq unzip git python3 python3-dev python3-venv docker-compose",
       "sudo systemctl enable --now docker",
       "sudo usermod -aG docker ubuntu",
       "sudo docker pull -q faasbenchmarker/client:latest",

@@ -50,9 +50,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         # parse request json
         req_json = json.loads(req.get_body())
 
-        seed = req_json['seed']
-        random.seed(seed)
-
          # list of functions that will be called dependent on the seed given
         functions = [
             ('matrix_mult', lambda x: matrix_mult(x,x)),
@@ -62,7 +59,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             ('levelOrder', lambda x: levelOrder(make_tree(TreeNode(random.randint(0,10)),x))),
             ('maxDepth', lambda x: maxDepth(make_tree(TreeNode(random.randint(0,10)),x))),
             ('levelOrderBottom', lambda x: levelOrderBottom(make_tree(TreeNode(random.randint(0,10)),x))),
-            ('sortedArrayToBST', lambda x: sortedArrayToBST(n for n in range(x))),
+            ('sortedArrayToBST', lambda x: sortedArrayToBST([n for n in range(x)])),
             ('zigzagLevelOrder', lambda x: zigzagLevelOrder(make_tree(TreeNode(random.randint(0,10)),x))),
             ('sortedListToBST', lambda x: sortedListToBST(makeListNode(x))),
             ('isBalanced', lambda x: isBalanced(make_tree(TreeNode(random.randint(0,10)),x))),
@@ -87,7 +84,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             },
         }
 
-        
+
 
         # make sure that things are working...
         if req_json['StatusCode'] != 200:
@@ -145,8 +142,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         body[identifier]['instance_identifier'] = instance_identifier
 
         # ==============================================================
-        
-        
+
+
         def make_matrix(x,y):
             matrix = []
             for i in range(x):
@@ -155,13 +152,13 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                     lis.append(random.randint(0,100))
                 matrix.append(lis)
             return matrix
-        
-        
+
+
         def matrix_mult(n,z):
 
             throughput_t_start = time.time()
             process_t_start = time.process_time()
-            
+
             matrix1 = make_matrix(n,z)
             matrix2 = make_matrix(n,z)
             multiplied = [ [ sum(a*b for a,b in zip(X_row,Y_col)) for Y_col in zip(*matrix2) ] for X_row in matrix1]
@@ -173,24 +170,24 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['running_time_matrix'] = time.time() - throughput_t_start
 
             return result
-        
+
         def fib():
-            n = random.randint(20)
+            n = random.randint(0,20)
             return ((1+sqrt(5))**n-(1-sqrt(5))**n)/(2**n*sqrt(5))
-        
+
         class TreeNode(object):
             def __init__(self, val=0, left=None, right=None):
                         self.val = val
                         self.left = left
                         self.right = right
-        
+
         def make_tree(node:TreeNode,n:int):
             if n == 0:
                 return node
             node.left = make_tree(TreeNode(random.randint(0,100)),n-1)
             node.right = make_tree(TreeNode(random.randint(0,100)),n-1)
             return node
-        
+
         class ListNode(object):
             def __init__(self, val=0, next=None):
                 self.val = val
@@ -204,7 +201,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 node.next = n
                 node = node.next
             return head
-            
+
 
         def compare(left, right):
             if not left and not right:
@@ -219,7 +216,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             if not root:
                 return True
             return compare(root.left, root.right)
-        
+
         def levelOrder(root: TreeNode):
             if not root:
                 return []
@@ -241,8 +238,8 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 if len(l):
                     level.append(l)
 
-            return level 
-        
+            return level
+
         def helper(Node):
             if Node==None:
                 return 0
@@ -253,7 +250,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 return 0
             else:
                 return helper(root)
-        
+
         def levelOrderBottom(root: TreeNode):
             res = []
             def helper(node, level):
@@ -267,7 +264,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             helper(root, 0)
             res.reverse()
             return res
-        
+
         def sortedArrayToBST(nums:list) -> TreeNode:
             if not nums:
                 return(None)
@@ -277,15 +274,15 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             if middleIndex < len(nums)-1:
                 root.right = sortedArrayToBST(nums[middleIndex+1:])
             return(root)
-        
+
         def zigzagLevelOrder(root: TreeNode):
             if not root:
                 return []
-            
+
             res = [[root.val]]
             queue = collections.deque([root])
             level = 1
-            
+
             while True:
                 curr = []
                 while queue:
@@ -302,30 +299,30 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 else:
                     res.append([node.val for node in curr])
                 level += 1
-                
+
             return res
 
         def sortedListToBST(head):
             def build(arr):
                 if not arr:
                     return None
-                
+
                 start, end = 0, len(arr)
                 mid = int(len(arr)/2)
-                
+
                 node = TreeNode(arr[mid])
                 node.left = build(arr[start:mid])
                 node.right = build(arr[mid+1:end])
-                
+
                 return node
 
             arr = []
             while head:
                 arr.append(head.val)
                 head = head.next
-            
+
             return build(arr)
-        
+
         def isBalanced(root: TreeNode) -> bool:
             def check_balanced(node):
                 if not node: return [0,True]
@@ -337,9 +334,9 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 right_bool = right[1]
                 total_bool = left_bool and right_bool and abs(left_height-right_height)<=1
                 return [max(left_height,right_height),total_bool]
-            check = check_balanced(root) 
+            check = check_balanced(root)
             return check[1]
-        
+
         def minDepth(root: TreeNode) -> int:
             if root is None:
                 return 0
@@ -354,20 +351,20 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             """
             if not root:
                 return None
-            
+
             flattened_left = flatten(root.left)
             flattened_right = flatten(root.right)
-            
+
             root.left = None
             root.right = flattened_left
-            
+
             it = root
             while it.right:
                 it = it.right
 
             it.right = flattened_right
-            
-            return root  
+
+            return root
 
         def maxPathSum(root: TreeNode) -> int:
             res = float('-inf')
@@ -383,19 +380,19 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 res = max(res, max_path, tree_sum)
                 return max_path
             dfs(root)
-            return res 
-        
+            return res
+
         def preorderTraversal(root: TreeNode):
-            ans = []    
-            def fn(node): 
-                if not node: return 
+            ans = []
+            def fn(node):
+                if not node: return
                 ans.append(node.val)
                 fn(node.left)
                 fn(node.right)
-                
+
             fn(root)
             return ans
-        
+
         def rightSideView(root):
             """
             :type root: TreeNode
@@ -406,10 +403,10 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
             right = left = []
             if root.right:
-                right = rightSideView(root.right)         
-            right = [root.val] + right   
+                right = rightSideView(root.right)
+            right = [root.val] + right
             if root.left:
-                left = rightSideView(root.left)           
+                left = rightSideView(root.left)
             left = [root.val] + left
 
             if len(right) >= len(left):
@@ -423,9 +420,9 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             text = f"""<html>
             <!-- Text between angle brackets is an HTML tag and is not displayed.
             Most {strings[random.randint(0,len(strings)-1)]}, such as the HTML and /HTML tags that surround the contents of
-            a page, come in pairs; some tags, like HR, for a horizontal rule, stand 
+            a page, come in pairs; some tags, like HR, for a horizontal rule, stand
             alone. Comments, such as the text you're reading, are not displayed when
-            the Web page is shown. The information between the HEAD and /HEAD tags is 
+            the Web page is shown. The information between the HEAD and /HEAD tags is
             not displayed. The information between the BODY and /BODY tags is displayed.-->
             <head>
             <title>Enter a title, {strings[random.randint(0,len(strings)-1)]} displayed at the top of the window.</title>
@@ -449,7 +446,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             </body>
             </html>"""
             rand = random.randint(0,len(text)-100)
-            sliced = text[rand:rand+100] 
+            sliced = text[rand:rand+100]
             return sliced
 
         def docker_documentation():
@@ -471,13 +468,13 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             On Windows, the ability to toggle between Linux and Windows Server environments to build applications
             Fast and reliable performance with native Windows Hyper-V virtualization
             Ability to work natively on Linux through WSL 2 on Windows machines
-            Volume mounting for code and data, including file change notifications and easy access to running 
+            Volume mounting for code and data, including file change notifications and easy access to running
             containers on the localhost network
             In-container development and debugging with supported IDEs
 
             Download and install {str([i for i in range(random.randint(0,100))])}
 
-            Docker Desktop is available for Mac and Windows. For download information, system requirements, 
+            Docker Desktop is available for Mac and Windows. For download information, system requirements,
             and installation instructions, see:
                 {insert_vals[random.randint(0,len(insert_vals)-1)]}
                 Install Docker Desktop on Mac
@@ -485,7 +482,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
             Get started
 
-            For information on how to get to get started with Docker Desktop and to learn about various UI 
+            For information on how to get to get started with Docker Desktop and to learn about various UI
             options and their usage, see:
             {insert_vals[random.randint(0,len(insert_vals)-1)]}
                 Get started with Docker Desktop on Mac
@@ -495,24 +492,24 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
             Docker Desktop offers Stable and Edge download channels.
 
-            The Stable release provides {insert_vals[random.randint(0,len(insert_vals)-1)]} a general 
-            availability release-ready installer for a fully baked and tested, more reliable app. 
-            The Stable version of Docker Desktop includes the latest released version of Docker Engine. 
-            The release schedule is synced every three months for major releases, with patch releases to fix minor issues, 
-            and to stay up to date with Docker Engine as required. You can choose to opt out of the usage statistics 
+            The Stable release provides {insert_vals[random.randint(0,len(insert_vals)-1)]} a general
+            availability release-ready installer for a fully baked and tested, more reliable app.
+            The Stable version of Docker Desktop includes the latest released version of Docker Engine.
+            The release schedule is synced every three months for major releases, with patch releases to fix minor issues,
+            and to stay up to date with Docker Engine as required. You can choose to opt out of the usage statistics
             and telemetry data on the Stable channel.
 
-            Docker Desktop Edge release is our preview version. It offers an installer with the 
-            latest features and comes with the experimental features turned on. When using the Edge 
-            release, bugs, crashes, and issues can occur as the new features may not be fully tested. 
-            However, you get a chance to preview new functionality, experiment, and provide feedback as 
-            Docker Desktop evolves. Edge releases are typically more frequent than Stable releases. 
+            Docker Desktop Edge release is our preview version. It offers an installer with the
+            latest features and comes with the experimental features turned on. When using the Edge
+            release, bugs, crashes, and issues can occur as the new features may not be fully tested.
+            However, you get a chance to preview new functionality, experiment, and provide feedback as
+            Docker Desktop evolves. Edge releases are typically more frequent than Stable releases.
             Telemetry data and usage statistics are sent by default on the Edge version. """
 
             rand = random.randint(0,len(text)-100)
-            sliced = text[rand:rand+100] 
+            sliced = text[rand:rand+100]
             return sliced
-        
+
         class Arrow2(object):
             """An :class:`Arrow2 <Arrow2.arrow.Arrow>` object.
             Implements the ``datetime`` interface, behaving as an aware ``datetime`` while implementing
@@ -1801,14 +1798,14 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                     if limit is None:
                         return end, sys.maxsize
                     return end, limit
-        
+
         # invoke Arrow2 class to ensure it is not left out by a smart compiler
         def use_arrow():
-            utc = Arrow2().utcnow()
-            now = Arrow2().now()
+            utc = Arrow2.utcnow()
+            now = Arrow2.now()
             return f'{utc} | {now}'
-        
-        # invoke functions from two fairly large libraries 
+
+        # invoke functions from two fairly large libraries
         def pandas_numpy(x):
             data = {}
             for i in range(x):
@@ -1819,7 +1816,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             reduced = reduce(lambda n,m: n+m, flatten)
             return reduced
 
-        
+
         # ==============================================================
 
         #  invoke nested functions from arguments
@@ -1838,22 +1835,25 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
         # =============================================
         #  DIFF FROM GENERIC FUNCTIONS
-         def get_function():
+        def get_function():
             if req_json['run_function'] == 'random':
-                return functions[random.nextint(0,len(functions)-1)]
+                return functions[random.randint(0,len(functions)-1)]
             else:
-                function_to_find = req_json['run_function'] 
+                function_to_find = req_json['run_function']
                 for f in functions:
                     if f[0] == function_to_find:
                         return f
             raise Exception('no function-name matching the given input')
 
-        (function_name,func) = get_function()
-        result = func(req_json['args'])
-        body[identifier]['function_argument'] = req_json['args']
-        body[identifier]['seed'] = req_json['seed']
-        body[identifier]['function_called'] = function_name
-        body[identifier]['monolith_result'] = str(result)
+        if 'run_function' in req_json:
+            seed = req_json['seed']
+            random.seed(seed)
+            (function_name,fx) = get_function()
+            result = fx(req_json['args'])
+            body[identifier]['function_argument'] = req_json['args']
+            body[identifier]['seed'] = req_json['seed']
+            body[identifier]['function_called'] = function_name
+            body[identifier]['monolith_result'] = str(result)[0:100] if len(str(result)) > 100 else str(result)
 
         # =============================================
 

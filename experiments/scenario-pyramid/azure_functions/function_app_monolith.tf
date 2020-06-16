@@ -1,25 +1,8 @@
-# create zip archive locally
-data "archive_file" "scenario-pyramid-monolith-function-code" {
-  type = "zip"
-  source_dir = "function_code/scenario-pyramid-monolith"
-  output_path = "function1.zip"
-}
-
-# upload zip archive to storage contianer
-resource "azurerm_storage_blob" "scenario-pyramid-monolith-code" {
-  name = "scenario-pyramid-monolith-function.zip"
-  storage_account_name = azurerm_storage_account.scenario-pyramid-experiment-storage.name
-  storage_container_name = azurerm_storage_container.scenario-pyramid-container.name
-  type = "Block"
-  source = "function1.zip"
-}
-
 # create function app 'environment'
 # different from how AWS lambda works
 resource "azurerm_function_app" "scenario-pyramid-monolith" {
-  depends_on = [azurerm_storage_blob.scenario-pyramid-monolith-code]
 
-  name = "scenario-pyramid-function1"
+  name = "scenario-pyramid-monolith"
   location = var.azure_region
   resource_group_name = azurerm_resource_group.scenario-pyramid-rg.name
   app_service_plan_id = azurerm_app_service_plan.scenario-pyramid-plan.id
@@ -27,8 +10,6 @@ resource "azurerm_function_app" "scenario-pyramid-monolith" {
   version = "~2"
 
   app_settings = {
-    HASH = data.archive_file.scenario-pyramid-monolith-function-code.output_base64sha256
-    WEBSITE_RUN_FROM_PACKAGE = "${azurerm_storage_blob.scenario-pyramid-monolith-code.url}${data.azurerm_storage_account_sas.sas-scenario-pyramid.sas}"
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.scenario-pyramid.instrumentation_key
     FUNCTIONS_WORKER_RUNTIME = "python"
   }
