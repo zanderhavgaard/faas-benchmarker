@@ -191,6 +191,7 @@ CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
 CREATE TABLE IF NOT EXISTS `Pyramid` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id` varchar(36) NOT NULL,
+  `provider` varchar(50) NOT NULL,
   `total_runtime`DOUBLE NOT NULL,
   `total_invocations`INT NOT NULL,
   `total_errors` INT DEFAULT 0,
