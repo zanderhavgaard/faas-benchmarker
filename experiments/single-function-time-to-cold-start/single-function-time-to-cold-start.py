@@ -283,6 +283,8 @@ try:
             sleep_time += increment
             set_cold_values()
             5 if not dev_mode else 2
+        
+        iter_count -= 1
 
     if(dev_mode):
         lib.dev_mode_print('post set_cold_values() coldtime exp', [
