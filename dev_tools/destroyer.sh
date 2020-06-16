@@ -28,12 +28,12 @@ function remove_env_files {
 }
 
 function destroy {
-    destroy_infra "aws_lambda"
-    destroy_infra "azure_functions"
-    destroy_infra "azure_linuxvm"
-    destroy_infra "aws_ec2"
-    destroy_infra "openfaas_client_vm"
-    remove_env_files
+    destroy_infra "aws_lambda" &
+    destroy_infra "azure_functions" &
+    destroy_infra "azure_linuxvm" &
+    destroy_infra "aws_ec2" &
+    destroy_infra "openfaas_client_vm" &
+    remove_env_files &
 }
 
 destroy
