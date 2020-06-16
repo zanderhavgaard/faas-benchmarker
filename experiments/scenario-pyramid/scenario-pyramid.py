@@ -109,6 +109,7 @@ def append_result(*values_to_log) -> None:
     # key HAS to have same name as column in database
     results.append({
         'exp_id' : experiment_uuid,
+        'provider': provider,
         'total_runtime': values_to_log[0],
         'total_invocations': values_to_log[1],
         'total_errors': len(errors),
