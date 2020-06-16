@@ -14,6 +14,9 @@ key_file="$fbrd/secrets/ssh_keys/db_server"
 log_location="/home/ubuntu/logs/orchestration/"
 # unique identifier for this round of experiments across providers
 experiment_meta_identifier=$(date +%s | sha256sum | base64 | head -c 32 ; echo)
+# we sleep 1 second, such that if multiple experiments are started at the same
+# time they will not get the same time-based identfifier
+sleep 1
 
 # store process pids to monitor that only one of each orchestrator is running at a time
 aws_lambda_pidfile="/tmp/$experiment_name-aws_lambda.pid"
