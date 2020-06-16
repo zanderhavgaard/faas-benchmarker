@@ -195,7 +195,7 @@ class AbstractProvider(ABC):
         except Exception as e:
             self.print_error('caught exception in invoke_function_conccrently', datetime.now(),
                                 e, thread_args, 'main', numb_threads)
-            return reduce(lambda x, y: x+y, data_list)
+            return reduce(lambda x, y: x+y, data_list) if len(data_list) > 0 else None
 
     def print_error(self, desc: str, time, exception: Exception, args, numb_threads: str, total_numb: int) -> None:
         print(desc)

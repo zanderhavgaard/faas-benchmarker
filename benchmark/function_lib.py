@@ -11,7 +11,9 @@ from pprint import pprint
 
 def accumulate_dicts(list_dicts: list):
     return dict(map(lambda n: n if (isinstance(n[1], str) or n[1] is None) else (n[0], float(n[1] / len(list_dicts))),
-                    reduce(lambda x, y: dict(map(lambda z: z[0] if (isinstance(z[0][1], str) or z[0][1] is None) else (z[0][0], z[0][1]+z[1][1]), zip(x.items(), y.items()))), list_dicts).items()))
+                    reduce(lambda x, y: dict(map(lambda z: z[0] if (isinstance(z[0][1], str) or z[0][1] is None) \
+                        else (z[0][0], z[0][1]+z[1][1]), zip(x.items(), y.items()))), list_dicts).items())) \
+                if list(filter(None,list_dicts)) != [] else {}
 
 # calculated the average of specified keys (str1,str2) from a list of dicts
 # args: tuble (list,(key1,key2)) -> value of key2 to be subtracked from value of key1
@@ -33,18 +35,17 @@ def iterator_wrapper(func, error_point:str, experiment_name: str, args=None, err
     try:
         for i in range(5):
             val = func(args) if args != None else func()
-            if(val != None):
+            if(list(filter(None, [val])) != []):
                 return val
         raise Exception(
-            'No result for: {0} , might not be any connection to provider'.format(error_point))
+            f'No result for: {error_point} , might not be any connection to provider')
     except Exception as e:
-        print('Ending experiment {0} due to fatal runtime error from iterator_wrapper'.format(
-            experiment_name))
+        print(f'Ending experiment {experiment_name} due to fatal runtime error from iterator_wrapper')
         print(str(datetime.now()))
         print('function type: '+str(type(func)))
         print('function args:', str(args))
         print('Error message: ', str(e))
-        print('Trace: {0}'.format(traceback.format_exc()))
+        print(f'Trace: {traceback.format_exc()}')
         print('----------------------------------------------------------------------')
         if err_func != None:
             err_func()
