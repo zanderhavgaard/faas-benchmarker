@@ -44,7 +44,7 @@ environment.
 The experiment is conducted by first creating a cold time baseline. This is done by i
 nvoking a single function with 12 concurrent requests and average over the results. 
 Then the same function is is invoked 10 times, again with 12 concurrent requests and 
-averaged as a 'warm time' baseline.
+averaged as a warm-time baseline.
 Then the function is invoked with 12 multithreaded requests continually with increasing 
 delay between invocations, until the avg of the requests falls within the cold time 
 baseline.
@@ -89,7 +89,7 @@ errors = []
 # invoke function and return the result dict
 def invoke(thread_numb:int):
 
-    err_count = len(errors)
+    
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
     benchmarker.invoke_function_conccurrently(function_name=fx, 
@@ -99,7 +99,7 @@ def invoke(thread_numb:int):
     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
     invocations = lib.accumulate_dicts(invocations)
     # return error count and result for this particular invocation 
-    return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
+    return None if invocations == {} else invocations
 
 
 # the wrapper ends the experiment if any it can not return a valid value
@@ -107,10 +107,7 @@ def err_func(): return benchmarker.end_experiment()
 
 # convinience for not having to repeat values
 
-
-def validate(x, y, z=threads): return lib.iterator_wrapper(
-    x, y, experiment_name, z, err_func)
-
+def validate(x, y, z=threads): return lib.iterator_wrapper(x, y, experiment_name, z, err_func)
 
 # creates list of invocation dicts.
 # args: tuble(x,y) -> x=length_of_list, y=error_point_string
@@ -118,16 +115,17 @@ create_invocation_list = lambda x=(5, 'create invocation_list'): [
     validate(invoke, x[1]) for i in range(x[0]) ]
 
 # parse data that needs to be logged to database.
-def append_result(exp_id,
+def append_result(
                 invo_id,
                 minutes,
                 seconds,
                 granularity,
                 multithreaded,
-                cold,final) -> None:
+                cold,
+                final) -> None:
 
     results.append({
-        'exp_id': exp_id,
+        'exp_id': experiment_uuid,
         'invo_id': invo_id,
         'minutes': minutes,
         'seconds': seconds,
@@ -234,7 +232,7 @@ try:
                     ('latest_latency_time',latest_latency_time),
                     ])
             else:
-                append_result(experiment_uuid,
+                append_result(
                             result_dict['identifier'],
                             int(sleep_time / 60),
                             int(sleep_time % 60),
@@ -279,7 +277,7 @@ try:
                 ('Final result', False)
                 ])
         else:
-            append_result(experiment_uuid,
+            append_result(
                         result_dict['identifier'],
                         int(sleep_time / 60),
                         int(sleep_time % 60),
@@ -287,6 +285,7 @@ try:
                         True,
                         latency_time < benchmark,
                         False)
+
         # if sleeptime did not result in coldstart adjust values and reset iterations
         if(latency_time < benchmark):
             granularity *= 2
@@ -312,7 +311,7 @@ try:
         invoke, 'invoking function: {0} from final invocation of cold start experiment'.format(fx))
     latency_time = result_dict['execution_start'] - result_dict['invocation_start']
     # log final result
-    append_result(experiment_uuid,
+    append_result(
                 result_dict['identifier'],
                 int(sleep_time / 60),
                 int(sleep_time % 60),
