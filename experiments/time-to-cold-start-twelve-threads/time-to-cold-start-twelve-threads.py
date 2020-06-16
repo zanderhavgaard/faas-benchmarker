@@ -261,7 +261,8 @@ try:
                             ])
 
     # variefy that result is valid by using same sleeptime between invocations 5 times
-    for i in range(5):
+    iter_count = 5 if not dev_mode else 2
+    while(iter_count > 0):
         time.sleep(sleep_time)
         result_dict = validate(
             invoke, 'invoking function: {0} from validation of cold start experiment'.format(fx))
@@ -292,7 +293,9 @@ try:
             increment *= 2
             sleep_time += increment
             set_cold_values()
-            i = 0
+            i = 5 if not dev_mode else 2
+        
+        iter_count -= 1
 
     if(dev_mode):
         lib.dev_mode_print('post set_cold_values() coldtime exp', [
