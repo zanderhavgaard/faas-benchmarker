@@ -28,6 +28,17 @@ function remove_env_files {
 }
 
 function destroy {
+    pmsg "Destroying ..."
+    destroy_infra "aws_lambda"
+    destroy_infra "azure_functions"
+    destroy_infra "azure_linuxvm"
+    destroy_infra "aws_ec2"
+    destroy_infra "openfaas_client_vm"
+    remove_env_files
+}
+
+function destroy_parallel {
+    pmsg "Destroying in parallel ..."
     destroy_infra "aws_lambda" &
     destroy_infra "azure_functions" &
     destroy_infra "azure_linuxvm" &
@@ -36,6 +47,10 @@ function destroy {
     remove_env_files &
 }
 
-destroy
+if [[ "$*" = *--parallel* ]] ; then
+    destroy_parallel
+else
+    destroy
+fi
 
 smsg "Done destroying infrastucture for experiment: $experiment"

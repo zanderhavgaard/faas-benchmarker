@@ -12,7 +12,7 @@ if [[ $REPLY =~ ^yes$ ]]; then
 
     for exp in $experiments ; do
         pmsg "Now destroying infrastructure for experiment: $exp"
-        bash "$fbrd/dev_tools/destroyer.sh" "$exp"
+        bash "$fbrd/dev_tools/destroyer.sh" "$exp" &
     done
 else
     errmsg "Aborting ..."
