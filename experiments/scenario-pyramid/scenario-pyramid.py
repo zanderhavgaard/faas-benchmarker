@@ -188,7 +188,7 @@ try:
         invocation_count = reduce(lambda x,y: x+y, invo_ascending) * 2 - peak
         
         # execute the baseline for 60 seconds
-        lib.baseline(run_time=20, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
+        lib.baseline(run_time=60, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
     
         # execute the pyramid
         for (rt,st,fxs,argv,tn,ic) in pyramid_vals:
@@ -199,7 +199,7 @@ try:
        
 
         # execute baselien as tail
-        lib.baseline(run_time=20, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
+        lib.baseline(run_time=60, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
 
         get_futures()
 
@@ -221,9 +221,11 @@ try:
     ########################################
     # execute the logic of this experiment #
     ########################################    
+
+    invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],5,50,45)
+
     if dev_mode:
         # invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],3,30,30)
-        invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],5,50,45)
 
         benchmarker.end_experiment()
         lib.log_experiment_specifics(experiment_name,
