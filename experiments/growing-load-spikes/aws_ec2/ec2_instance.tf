@@ -5,7 +5,7 @@ resource "aws_instance" "growing-load-spikes1-worker-aws" {
   }
   # ami = "ami-0701e7be9b2a77600"
   ami = "ami-0dad359ff462124ca"
-  instance_type = "t2.micro"
+  instance_type = var.aws_ec2_size
   key_name = "faasbenchmarker"
   subnet_id = var.subnet_id
   security_groups = [var.security_group_id]

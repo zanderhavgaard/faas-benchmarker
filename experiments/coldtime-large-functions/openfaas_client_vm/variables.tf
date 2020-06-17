@@ -11,3 +11,6 @@ variable "client_ssh_fingerprint" {}
 
 # ip address of the db server
 variable "db_server_static_ip" {}
+
+# for variable experiment based client size
+variable "openfaas_client_vm_size" {}

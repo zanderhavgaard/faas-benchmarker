@@ -5,7 +5,7 @@ resource "azurerm_linux_virtual_machine" "growing-load-spikes-worker" {
   name                = "growing-load-spikes-worker"
   resource_group_name = azurerm_resource_group.growing-load-spikes-worker-rg.name
   location            = azurerm_resource_group.growing-load-spikes-worker-rg.location
-  size                = "Standard_B1s"
+  size                = var.azure_linuxvm_size
   admin_username      = "ubuntu"
   disable_password_authentication = true
   network_interface_ids = [

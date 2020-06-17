@@ -14,3 +14,6 @@ variable "db_server_static_ip" {}
 
 variable "subnet_id" {}
 variable "security_group_id" {}
+
+# for variable experiment based client size
+variable "aws_ec2_size" {}

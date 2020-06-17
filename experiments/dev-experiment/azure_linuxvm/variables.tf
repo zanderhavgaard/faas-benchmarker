@@ -15,3 +15,6 @@ variable "client_ssh_fingerprint" {}
 
 # ip address of the db server
 variable "db_server_static_ip" {}
+
+# for variable experiment based client size
+variable "azure_linuxvm_size" {}

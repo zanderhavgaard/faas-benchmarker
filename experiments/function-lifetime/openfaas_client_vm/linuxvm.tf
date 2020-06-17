@@ -5,7 +5,7 @@ resource "azurerm_linux_virtual_machine" "function-lifetime-openfaas-worker" {
   name                = "function-lifetime-openfaas-worker"
   resource_group_name = azurerm_resource_group.function-lifetime-openfaas-worker-rg.name
   location            = azurerm_resource_group.function-lifetime-openfaas-worker-rg.location
-  size                = "Standard_B1s"
+  size                = var.openfaas_client_vm_size
   admin_username      = "ubuntu"
   disable_password_authentication = true
   network_interface_ids = [
