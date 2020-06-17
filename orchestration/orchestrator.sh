@@ -25,13 +25,14 @@ source "$fbrd/orchestration/${platform}_orchestrator.sh"
 
 case "$cmd" in
     bootstrap)
-        create_bootstrap_lock "$experiment_name" "$platform"
-        bootstrap "$experiment_name"
-        create_infra_lock "$experiment_name" "$platform"
+        create_lock "$experiment_name" "$platform" "build" || exit \
+            && bootstrap "$experiment_name" || exit \
+            && create_lock "$experiment_name" "$platform" "infra"
         ;;
+
     destroy)
-        check_infra_lockfile "$experiment_name" "$platform"
-        destroy "$experiment_name"
-        release_infra_lock "$experiment_name" "$platform"
+        create_lock "$experiment_name" "$platform" "destroy" || exit \
+            && destroy "$experiment_name" || exit \
+            && release_lock "$experiment_name" "$platform" "destroy"
         ;;
 esac
