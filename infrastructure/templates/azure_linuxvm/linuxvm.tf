@@ -5,7 +5,7 @@ resource "azurerm_linux_virtual_machine" "changeme-worker" {
   name                = "changeme-worker"
   resource_group_name = azurerm_resource_group.changeme-worker-rg.name
   location            = azurerm_resource_group.changeme-worker-rg.location
-  size                = "Standard_B1s"
+  size                = var.azure_linuxvm_size
   admin_username      = "ubuntu"
   disable_password_authentication = true
   network_interface_ids = [

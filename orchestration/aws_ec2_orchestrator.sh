@@ -19,6 +19,8 @@ function bootstrap {
     pmsg "Creating client vm ..."
     terraform apply \
         -auto-approve \
+        -compact-warnings \
+        -var-file="$experiment_context/$experiment_name.tfvars" \
         -var "env_file=$experiment_cloud_function_env" \
         -var "remote_env_file=$remote_env_file"
 
@@ -39,6 +41,8 @@ function destroy {
 
     terraform destroy \
         -auto-approve \
+        -compact-warnings \
+        -var-file="$experiment_context/$experiment_name.tfvars" \
         -var "env_file=$experiment_cloud_function_env" \
         -var "remote_env_file=$remote_env_file"
 

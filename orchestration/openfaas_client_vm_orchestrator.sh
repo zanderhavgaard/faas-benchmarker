@@ -18,7 +18,9 @@ function bootstrap {
 
     pmsg "Creating client vm ..."
     terraform apply \
-        -auto-approve
+        -auto-approve \
+        -compact-warnings \
+        -var-file="$experiment_context/$experiment_name.tfvars"
 
     pmsg "Outputting variables to $experiment_name-openfaas_client.env ..."
     terraform output > "$experiment_client_env"
@@ -36,7 +38,9 @@ function destroy {
     pmsg "Destroying client vm ..."
 
     terraform destroy \
-        -auto-approve
+        -auto-approve \
+        -compact-warnings \
+        -var-file="$experiment_context/$experiment_name.tfvars"
 
     smsg "Done destroying client vm."
 

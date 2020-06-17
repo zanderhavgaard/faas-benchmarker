@@ -20,9 +20,10 @@ mkdir -pv "$experiment_context"
 pmsg "Creating python experiment file from template ..."
 cp "$fbrd/experiment_template/template.py" "$experiment_context/$experiment_name.py"
 
+pmsg "Creating experiment terraform variables file from template ..."
+cp "$fbrd/experiment_template/template.tfvars" "$experiment_context/$experiment_name.tfvars"
+
 pmsg "Copying infrastructure template files ..."
 bash "$fbrd/fb_cli/copy_infrastructure_templates_to_experiment.sh" "$experiment_name"
-
-# TODO add orchestration
 
 pmsg "\n\tDone creating experiment from templates, experiment files ar located in faas-benchmarker/experiments/$experiment_name\n"
