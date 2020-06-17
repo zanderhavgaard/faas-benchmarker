@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#enable scale to zero, set to 'false', default 'true'
+dry_run="false"
+# how long should a function be inactive before scaling to zero, default 30m
+inactivity_duration="30m"
+# how often to check the status of whether a function should be scaled to zero, default 2m
+reconcile_interval="5m"
+
 source "$fbrd/fb_cli/utils.sh"
 
 # set might mess with the until loop
@@ -64,9 +71,9 @@ until $deployed ; do
     arkade install openfaas \
         --wait \
         --load-balancer \
-        --set "faasIdler.dryRun=false" \
-        --set "faasIdler.inactivityDuration=30m" \
-        --set "faasIdler.reconcileInterval=10m" \
+        --set "faasIdler.dryRun=$dry_run" \
+        --set "faasIdler.inactivityDuration=$inactivity_duration" \
+        --set "faasIdler.reconcileInterval=$reconcile_interval" \
         && deployed="true" \
         && smsg "Successfully deployed openfaas $fcd"
 done
