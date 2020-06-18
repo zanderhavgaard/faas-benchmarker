@@ -217,8 +217,7 @@ try:
         while(increment > granularity):
 
             time.sleep(sleep_time)
-            result_dict = validate(
-                invoke, 'invoking function: {0} from cold start experiment'.format(fx))
+            result_dict = validate(invoke, f'invoking function: {fx} from cold start experiment')
             latest_latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
             if(verbose):
@@ -264,12 +263,11 @@ try:
     iter_count = 5 if not dev_mode else 2
     while(iter_count > 0):
         time.sleep(sleep_time)
-        result_dict = validate(
-            invoke, 'invoking function: {0} from validation of cold start experiment'.format(fx))
+        result_dict = validate(invoke, f'invoking function: {fx} from validation of cold start experiment')
         latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
         if(verbose):
-            lib.dev_mode_print('logging cold time: {0} -> coldtime exp'.format(latency_time < benchmark), [
+            lib.dev_mode_print(f'logging cold time: {latency_time < benchmark} -> coldtime exp', [
                 ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
                 ('sleep_time / 60', int(sleep_time / 60)),
                 ('sleep_time % 60', int(sleep_time % 60)),
@@ -305,13 +303,19 @@ try:
             ('latest_latency_time', latest_latency_time)
         ])
         # if in dev_mode dont sleep 60 minutes to validate result
-        raise Exception('Ending experiment because of dev_mode')
+        benchmarker.end_experiment()
+   
+        # log experiments specific results, hence results not obtainable from the generic Invocation object
+        lib.log_experiment_specifics(experiment_name,
+                                    experiment_uuid, 
+                                    len(errors), 
+                                    db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
+        sys.exit()
 
     # sleep for 60 minutes and validate result
     time.sleep(60 * 60)
 
-    result_dict = validate(
-        invoke, 'invoking function: {0} from final invocation of cold start experiment'.format(fx))
+    result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment')
     latency_time = result_dict['execution_start'] - result_dict['invocation_start']
     # log final result
     append_result(

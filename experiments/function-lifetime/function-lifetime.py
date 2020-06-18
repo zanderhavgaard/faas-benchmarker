@@ -4,9 +4,11 @@ from pprint import pprint
 from benchmarker import Benchmarker
 import time
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import traceback
 from mysql_interface import SQL_Interface
 import function_lib as lib
+
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -110,6 +112,7 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 # can take whatever needed arguments but has to return/append a dict
 def append_result(exp_id:str,
                 identifier:str,
+                orig_identifier:str,
                 hours:int,
                 minutes:int,
                 seconds:int,
@@ -120,13 +123,16 @@ def append_result(exp_id:str,
     results.append({
                 'exp_id': exp_id,
                 'instance_identifier': identifier,
+                'orig_identifier': orig_identifier,
                 'hours': hours,
                 'minutes': minutes,
                 'seconds': seconds,
                 'sleep_time': sleep_time,
                 'reclaimed': reclaimed
-        })
+            })
+
     if verbose:
+        print('inserted in results:')
         pprint(results[len(results)-1])
         print()
 
@@ -135,9 +141,9 @@ def append_result(exp_id:str,
 
 try:
 
-    sleep_time = int(coldtime / 2) if not dev_mode else 30
+    sleep_time = int(coldtime / 2) if not dev_mode else 60 * 15
     start_time = int(time.time())
-    _24hours = 24 * 60 * 60 if not dev_mode else 10 * 60
+    _24hours = 24 * 60 * 60 if not dev_mode else 30 * 60
     init_response = validate(invoke,'first invokation') 
     function_id = init_response['instance_identifier']
 
@@ -145,39 +151,43 @@ try:
 
     while( last_recorded < start_time + _24hours ):
         response = validate(invoke,'invokation from loop')
+        last_recorded = int(response['execution_start'])
+        
         if(response['instance_identifier'] != function_id):
             instance_latest = datetime.fromtimestamp(last_recorded)
-            start_time_datetiem = datetime.fromtimestamp(start_time)
-            instance_lifetime = instance_latest - start_time_datetiem
-            conv_time = (datetime.min + instance_lifetime).time()
+            start_time_datetime = datetime.fromtimestamp(start_time)
+
+            instance_lifetime = relativedelta(instance_latest, start_time_datetime)
+
              # log result as False for the platform not reclaiming the instance resource within 24 hours
             append_result(experiment_uuid,
                         function_id,
-                        conv_time.hour,
-                        conv_time.minute,
-                        conv_time.second,
+                        response['instance_identifier'],
+                        instance_lifetime.hours,
+                        instance_lifetime.minutes,
+                        instance_lifetime.seconds,
                         sleep_time,
                         True)
+
             # lifetime found, end experiment 
             benchmarker.end_experiment()
             lib.log_experiment_specifics(experiment_name,
                                 experiment_uuid, 
                                 len(errors), 
                                 db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
+            pprint(results)
             if verbose:
-                if verbose:
-                    print('printing query')
-                    print(results[0])
-                    print()
+                print('result found')
+                print(results[len(results)-1])
+                print()
             sys.exit()
 
-        else:
-            last_recorded = int(response['execution_start'])
-            time.sleep(sleep_time)
+        time.sleep(sleep_time)
             
     # log result as True for the platform nor reclaiming the instance resource within 24 hours
     append_result(experiment_uuid,
                 function_id,
+                response['instance_identifier'],
                 24,
                 0,
                 0,
@@ -192,9 +202,9 @@ try:
                                 experiment_uuid, 
                                 len(errors), 
                                 db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
-    if verbose:
-        print('printing query')
-        print(results[0])
+    if dev_mode:
+        print('result found')
+        print(lib.dict_to_query( results[len(results)-1],table))
         print()
 
 except Exception as e:

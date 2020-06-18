@@ -135,6 +135,7 @@ CREATE TABLE IF NOT EXISTS  `Function_lifetime` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `exp_id`varchar(36) NOT NULL,
   `instance_identifier` varchar(100) NOT NULL,
+  `orig_identifier` varchar(100) NOT NULL,
   `hours` INT DEFAULT 0 NOT NULL,
   `minutes` INT DEFAULT 0 NOT NULL,
   `seconds` INT DEFAULT 0,
