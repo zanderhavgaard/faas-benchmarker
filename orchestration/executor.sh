@@ -34,23 +34,23 @@ case "$platform" in
         experiment_client_provider="azure_linuxvm"
         experiment_client_env="$experiment_context/$experiment_name-azure_linuxvm.env"
         # check that infrastructure has been created
-        check_infra_lockfile "$experiment_name" "$experiment_client_provider"
-        check_infra_lockfile "$experiment_name" "$experiment_cloud_function_provider"
+        check_lock "$experiment_name" "$experiment_client_provider" "infra" || exit
+        check_lock "$experiment_name" "$experiment_cloud_function_provider" "infra" || exit
         ;;
     azure_functions)
         experiment_cloud_function_provider="azure_functions"
         experiment_client_provider="aws_ec2"
         experiment_client_env="$experiment_context/$experiment_name-aws_ec2.env"
         # check that infrastructure has been created
-        check_infra_lockfile "$experiment_name" "$experiment_client_provider"
-        check_infra_lockfile "$experiment_name" "$experiment_cloud_function_provider"
+        check_lock "$experiment_name" "$experiment_client_provider" "infra" || exit
+        check_lock "$experiment_name" "$experiment_cloud_function_provider" "infra" || exit
         ;;
     openfaas | openfaas_eks)
         experiment_client_provider="openfaas_client_vm"
         experiment_cloud_function_provider="openfaas"
         experiment_client_env="$experiment_context/$experiment_name-openfaas_client_vm.env"
         # check that infrastructure has been created
-        check_infra_lockfile "$experiment_name" "$experiment_client_provider"
+        check_lock "$experiment_name" "$experiment_cloud_function_provider" "infra" || exit
         ;;
 esac
 
