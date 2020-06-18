@@ -66,7 +66,7 @@ table = 'Cc_bench'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function1'
+fx = 'function3'
 
 # =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
@@ -149,7 +149,9 @@ def run_experiment(thread_numb:int,upper_bound:int):
                 lib.dev_mode_print(f'Invocation with {thread_numb} threads and {err} errors', response.items()) 
             time.sleep(coldtime if not dev_mode else 60)
 
-        thread_numb = thread_numb * 2 if not dev_mode else thread_numb + 2
+        # thread_numb = thread_numb * 2 if not dev_mode else thread_numb + 2
+        thread_numb *= 2 if not dev_mode else thread_numb + 2
+
         if(dev_mode and thread_numb > 14):
             break
                 
