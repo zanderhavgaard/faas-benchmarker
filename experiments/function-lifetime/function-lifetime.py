@@ -141,9 +141,9 @@ def append_result(exp_id:str,
 
 try:
 
-    sleep_time = int(coldtime / 2) if not dev_mode else 60 * 15
+    sleep_time = int(coldtime / 2) 
     start_time = int(time.time())
-    _24hours = 24 * 60 * 60 if not dev_mode else 30 * 60
+    _24hours = 24 * 60 * 60 if not dev_mode else 2 * sleep_time
     init_response = validate(invoke,'first invokation') 
     function_id = init_response['instance_identifier']
 
