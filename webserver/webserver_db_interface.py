@@ -4,7 +4,7 @@ import pymysql
 class DB_interface():
 
     def __init__(self):
-        self.db_host = 'db'
+        self.db_host = '127.0.0.1'
         self.db_port = 3306
         self.db_user = 'root'
         self.db_password = 'faas'
