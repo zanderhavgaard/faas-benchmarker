@@ -1,19 +1,21 @@
 version: 2.1
 
 jobs:
+
   build_and_push_docker:
     machine: true
     steps:
+      - checkout
+      - run:
+          name: "Build docker images"
+          command: bash ci/build_docker.sh
       - run:
           name: "Login in to docker hub"
           command: docker login -u ${DOCKER_LOGIN} -p ${DOCKER_PASSWORD}
-      - checkout
-      - run:
-          name: "Build docker image"
-          command: bash ci/build_docker.sh
       - run:
           name: "Push docker images to docker hub"
           command: bash ci/push_docker.sh
+
   deploy_new_version:
     machine: true
     steps:
@@ -26,13 +28,17 @@ jobs:
 
 
 workflows:
-  main:
+  version: 2
+
+  deploy_docker:
+
     jobs:
       - build_and_push_docker:
           filters:
             branches:
               only:
                 - master
+
       - deploy_new_version:
-        requires:
-          build_and_push_docker:
+          requires:
+            - build_and_push_docker

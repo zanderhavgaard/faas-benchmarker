@@ -29,6 +29,7 @@ resource "null_resource" "root-provisioner" {
       "ufw default allow outgoing",
       "ufw default deny incoming",
       "ufw allow ssh",
+      "ufw allow 7890"
       "ufw --force enable",
       "systemctl enable ufw",
 
