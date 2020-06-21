@@ -3,12 +3,26 @@ version: '3.3'
 volumes:
   mysql_data:
 
+networks:
+  internal:
+
 services:
-  mysql:
+  db:
     image: 'faasbenchmarker/exp_mysql:latest'
     container_name: db
     environment:
       - MYSQL_ROOT_PASSWORD=faas
-    network_mode: host
     volumes:
       - mysql_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      - internal
+
+  webui:
+    image: 'faasbenchmarker/webui:latest'
+    container_name: webui
+    ports:
+      - 7890:7890
+    networks:
+      - internal
