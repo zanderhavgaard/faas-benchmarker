@@ -2,14 +2,23 @@
 
 source "fb_cli/utils.sh"
 
-IMAGE_NAME='faasbenchmarker/client'
-GIT_SHA=$(git rev-parse --short HEAD)
-TAG="$IMAGE_NAME:$GIT_SHA"
+repo_name="faasbenchmarker"
+client_image="$repo_name/client"
+webui_image="$repo_name/webui"
+db_image="$repo_name/exp_mysql"
 
-pmsg "Building new docker images ..."
-docker build -f "Dockerfile" -t "$TAG" .
+git_sha=$(git rev-parse --short HEAD)
 
-pmsg "Tagging new docker image with latest"
-docker tag "$TAG" "$IMAGE_NAME:latest"
+pmsg "Building new client docker image ..."
+docker build -f "Dockerfile" -t "$client_image:$git_sha" .
+docker tag "$client_image:$git_sha" "$client_image:latest"
 
-smsg "Done buidling new image."
+pmsg "Building new webui image ..."
+docker build -f "webserver/Dockerfile" -t "$webui_image:$git_sha" "./webserver"
+docker tag "$webui_image:$git_sha" "$webui_image:latest"
+
+pmsg "Building new database image ..."
+docker build -f "benchmark/docker_mysql/Dockerfile" -t "$db_image:$git_sha" "./benchmark/docker_mysql"
+docker tag "$db_image:$git_sha" "$db_image:latest"
+
+smsg "Done buidling new images."
