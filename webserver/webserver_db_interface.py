@@ -1,0 +1,34 @@
+import pymysql
+
+
+class DB_interface():
+
+    def __init__(self):
+        self.db_host = 'db'
+        self.db_port = 3306
+        self.db_user = 'root'
+        self.db_password = 'faas'
+        self.database = 'Benchmarks'
+
+    def get_experiments(self) -> list:
+
+        # default value to return if no data is retrieved
+        result = "Could not get any data ..."
+
+        query = """select * from Experiment;"""
+
+        try:
+            with pymysql.connect(host=self.db_host,
+                                 user=self.db_user,
+                                 passwd=self.db_password,
+                                 db=self.database,
+                                 port=self.db_port,
+                                 cursorclass=pymysql.cursors.DictCursor
+                                 ) as cursor:
+                cursor.execute(query)
+                result = cursor.fetchall()
+        except Exception() as e:
+            print('Caught an exception when trying to get experiment data from database:')
+            print(e)
+
+        return result
