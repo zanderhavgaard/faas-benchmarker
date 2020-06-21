@@ -14,6 +14,16 @@ jobs:
       - run:
           name: "Push docker images to docker hub"
           command: bash ci/push_docker.sh
+  deploy_new_version:
+    machine: true
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "07:05:17:d4:2e:d4:f6:f5:01:cd:df:56:57:77:bf:81"
+      - run:
+          name: "Deploy new version"
+          command: ssh ${DB_USER}@${DB_HOSTNAME} "docker-compose pull && docker system prune -f && docker-compose up -d"
+
 
 workflows:
   main:
@@ -23,3 +33,6 @@ workflows:
             branches:
               only:
                 - master
+      - deploy_new_version:
+        requires:
+          build_and_push_docker:
