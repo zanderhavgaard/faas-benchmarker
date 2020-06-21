@@ -1,0 +1,19 @@
+version: '3.3'
+
+# volumes:
+  # mysql_data:
+
+services:
+  db:
+    image: 'faasbenchmarker/exp_mysql:webui_dev'
+    container_name: db
+    environment:
+      - MYSQL_ROOT_PASSWORD=faas
+    network_mode: host
+    # volumes:
+      # - mysql_data:/var/lib/mysql
+
+  # webui:
+    # image: 'faasbenchmarker/webui:latest'
+    # container_name: webui
+    # network_mode: host
