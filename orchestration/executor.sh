@@ -50,7 +50,7 @@ case "$platform" in
         experiment_cloud_function_provider="openfaas"
         experiment_client_env="$experiment_context/$experiment_name-openfaas_client_vm.env"
         # check that infrastructure has been created
-        check_lock "$experiment_name" "$experiment_cloud_function_provider" "infra" || exit
+        check_lock "$experiment_name" "$experiment_client_provider" "infra" || exit
         ;;
 esac
 
