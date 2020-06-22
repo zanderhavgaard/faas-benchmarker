@@ -71,6 +71,7 @@ check_that_experiment_is_not_running
 # start the experiment
 run_experiment_aws_lambda
 run_experiment_azure_functions
-run_experiment_openfaas
+# TODO reenable
+# run_experiment_openfaas
 
 pmsg "Experiment results will be avilable on the db server once the experiment is complete."
