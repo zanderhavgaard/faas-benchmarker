@@ -50,5 +50,5 @@ def make_experiment_data_more_readable(experiments: dict):
 def human_readable_time(seconds: float, show_date: bool = False):
     if show_date:
         return time.strftime("%d/%m-%y %H:%M:%S", time.gmtime(seconds))
-    else
-    return time.strftime("%H:%M:%S", time.gmtime(seconds))
+    else:
+        return time.strftime("%H:%M:%S", time.gmtime(seconds))
