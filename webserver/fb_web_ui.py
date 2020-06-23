@@ -40,12 +40,15 @@ def make_experiment_data_more_readable(experiments: dict):
 
     for exp in experiments:
         exp['dev_mode'] = 'true' if exp['dev_mode'] == 1 else 'false'
-        exp['start_time'] = human_readable_time(exp['start_time'])
-        exp['end_time'] = human_readable_time(exp['end_time'])
+        exp['start_time'] = human_readable_time(exp['start_time'], show_date=True)
+        exp['end_time'] = human_readable_time(exp['end_time'], show_date=True)
         exp['total_time'] = human_readable_time(exp['total_time'])
 
     return experiments
 
 
-def human_readable_time(seconds: float):
+def human_readable_time(seconds: float, show_date: bool = False):
+    if show_date:
+        return time.strftime("%d/%m-%y %H:%M:%S", time.gmtime(seconds))
+    else
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
