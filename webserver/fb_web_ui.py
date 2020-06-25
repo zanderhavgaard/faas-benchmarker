@@ -43,6 +43,7 @@ def make_experiment_data_more_readable(experiments: dict):
         exp['start_time'] = human_readable_time(exp['start_time'], show_date=True)
         exp['end_time'] = human_readable_time(exp['end_time'], show_date=True)
         exp['total_time'] = human_readable_time(exp['total_time'])
+        exp['memory'] = f"{round(exp['memory'] / (1024 ** 3), 2)} gb"
 
     return experiments
 

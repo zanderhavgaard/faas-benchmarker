@@ -6,6 +6,17 @@ use Benchmarks;
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
+--  table containing the state of experiments, whether they are running, finished successfully or failed
+CREATE TABLE IF NOT EXISTS `ExperimentStatus` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `experiment_meta_identifier` varchar(100) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `function_provider` varchar(100) NOT NULL,
+  `client_provider` varchar(100) NOT NULL,
+  `status` varchar(100) NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 -- Table of all experiments and its meta data
 CREATE TABLE IF NOT EXISTS `Experiment` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -206,6 +217,3 @@ CREATE TABLE IF NOT EXISTS `Pyramid` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-
-

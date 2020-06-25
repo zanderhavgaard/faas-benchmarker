@@ -15,7 +15,7 @@ class DB_interface():
         # default value to return if no data is retrieved
         result = "Could not get any data ..."
 
-        query = """select * from Experiment;"""
+        query = """select name, experiment_meta_identifier, uuid, start_time, end_time, total_time, cl_provider, cl_client, python_version, cores, memory, invocation_count, dev_mode from Experiment;"""
 
         try:
             with pymysql.connect(host=self.db_host,

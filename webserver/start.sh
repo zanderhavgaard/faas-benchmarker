@@ -18,4 +18,6 @@ elif [ "$mode" = "production" ] ; then
     flask run \
         --port "$port" \
         --host "$host"
+else
+    echo "You must provide an environment, either development or production"
 fi

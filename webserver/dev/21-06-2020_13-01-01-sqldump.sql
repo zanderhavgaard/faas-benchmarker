@@ -18,6 +18,17 @@
 CREATE DATABASE Benchmarks;
 use Benchmarks;
 
+--  table containing the state of experiments, whether they are running, finished successfully or failed
+CREATE TABLE IF NOT EXISTS `ExperimentStatus` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `experiment_meta_identifier` varchar(100) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `function_provider` varchar(100) NOT NULL,
+  `client_provider` varchar(100) NOT NULL,
+  `status` varchar(100) NOT NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 --
 -- Table structure for table `Cc_bench`
 --
