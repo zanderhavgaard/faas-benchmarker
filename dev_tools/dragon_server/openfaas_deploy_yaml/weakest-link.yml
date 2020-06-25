@@ -1,0 +1,45 @@
+version: 1.0
+provider:
+  name: openfaas
+  gateway: http://127.0.0.1:8080
+functions:
+  weakest-link-function1:
+    lang: python3
+    handler: ./function1
+    image: faasbenchmarker/function1:latest
+    build_options:
+      - dev
+    environment:
+      read_timeout: "180s"
+      write_timeout: "180s"
+      timeout_secs: "5000"
+  weakest-link-function2:
+    lang: python3
+    handler: ./function2
+    image: faasbenchmarker/function2:latest
+    build_options:
+      - dev
+    environment:
+      read_timeout: "180s"
+      write_timeout: "180s"
+      timeout_secs: "5000"
+  weakest-link-function3:
+    lang: python3
+    handler: ./function3
+    image: faasbenchmarker/function3:latest
+    build_options:
+      - dev
+    environment:
+      read_timeout: "180s"
+      write_timeout: "180s"
+      timeout_secs: "5000"
+  weakest-link-monolith:
+    lang: python3
+    handler: ./monolith
+    image: faasbenchmarker/monolith:latest
+    build_options:
+      - dev
+    environment:
+      read_timeout: "180s"
+      write_timeout: "180s"
+      timeout_secs: "5000"
