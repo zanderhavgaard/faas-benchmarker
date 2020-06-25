@@ -7,9 +7,13 @@ source "$fbrd/fb_cli/utils.sh"
 function bootstrap {
     experiment_name=$1
     experiment_context="$fbrd/experiments/$experiment_name"
-    experiment_cloud_function_env="$experiment_context/$experiment_name-aws_lambda.env"
-    remote_env_file="/home/ubuntu/$experiment_name-aws_lambda.env"
+    experiment_cloud_function_env="$experiment_context/$experiment_name-openfaas.env"
+    remote_env_file="/home/ubuntu/$experiment_name-openfaas.env"
     experiment_client_env="$experiment_context/$experiment_name-openfaas_client_vm.env"
+
+    pmsg "Generating openfaas .env file from environment variables ..."
+    echo "openfaas_host = $TF_VAR_openfaas_hostname" >> "$experiment_cloud_function_env"
+    echo "openfaas_port = $TF_VAR_openfaas_port" >> "$experiment_cloud_function_env"
 
     cd "$experiment_context/openfaas_client_vm"
 
@@ -20,7 +24,9 @@ function bootstrap {
     terraform apply \
         -auto-approve \
         -compact-warnings \
-        -var-file="$experiment_context/$experiment_name.tfvars"
+        -var-file="$experiment_context/$experiment_name.tfvars" \
+        -var "env_file=$experiment_cloud_function_env" \
+        -var "remote_env_file=$remote_env_file"
 
     pmsg "Outputting variables to $experiment_name-openfaas_client.env ..."
     terraform output > "$experiment_client_env"
@@ -40,13 +46,16 @@ function destroy {
     terraform destroy \
         -auto-approve \
         -compact-warnings \
-        -var-file="$experiment_context/$experiment_name.tfvars"
+        -var-file="$experiment_context/$experiment_name.tfvars" \
+        -var "env_file=$experiment_cloud_function_env" \
+        -var "remote_env_file=$remote_env_file"
 
     smsg "Done destroying client vm."
 
     pmsg "Removing experiment environment files ..."
 
     rm -f "$experiment_client_env"
+    rm -f "$experiment_cloud_function_env"
 
     pmsg "Done removing environment files."
 }

@@ -53,6 +53,10 @@ resource "null_resource" "linux-provisioners" {
     source = "../../../secrets/ssh_keys/experiment_servers"
     destination = "/home/ubuntu/.ssh/id_rsa"
   }
+  provisioner "file" {
+    source = var.env_file
+    destination = var.remote_env_file
+  }
 
   # execute commands on the server
   provisioner "remote-exec" {
