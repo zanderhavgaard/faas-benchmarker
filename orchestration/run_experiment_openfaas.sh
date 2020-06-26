@@ -9,6 +9,13 @@ experiment_name=$1
 # unique experiment idenfifier for the experiments started in parallel for the different cloud providers
 experiment_meta_identifier=$2
 
+function_provider="openfaas"
+client_provider="openfaas_client_vm"
+
+# ==== log experiment status
+
+bash "$fbrd/orchestration/experiment_status_updater.sh" "insert" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
+
 # ===== create client vm
 
 pmsg "Creating openfaas client vm ..."
@@ -31,3 +38,7 @@ pmsg "Removing experiment pidfile"
 rm -f "/tmp/$experiment_name-openfaas.pid"
 
 smsg "Done running experiment orchestration."
+
+# ===== log experiment completed
+
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_completed" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
