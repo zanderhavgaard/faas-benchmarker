@@ -16,19 +16,27 @@ def index():
     # create the ascii banner
     banner = Figlet(width=120).renderText('faas-benchmarker')
 
+    experiment_status = db.get_experiment_status()
+    experiment_status_keys = list(experiment_status[0].keys())
+    experiment_status_table_header = "Experiment Status:"
+
     experiments = db.get_experiments()
-
     experiment_table_header = "Experiments:"
-
     experiment_keys = list(experiments[0].keys())
-
     experiments_human_readable = make_experiment_data_more_readable(experiments)
+
+    data = {
+        'experiment_status': experiment_status,
+        'experiment_status_keys': experiment_status_keys,
+        'experiment_status_table_header': experiment_status_table_header,
+        'experiment_table_header': experiment_table_header,
+        'experiment_keys': experiment_keys,
+        'experiments': experiments,
+    }
 
     page = render_template('index.html',
                            banner=banner,
-                           experiment_table_header=experiment_table_header,
-                           experiment_keys=experiment_keys,
-                           experiments=experiments_human_readable
+                           data=data
                            )
 
     return page

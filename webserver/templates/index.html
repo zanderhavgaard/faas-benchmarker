@@ -16,23 +16,56 @@
 {{banner}}
         </pre>
 
+
+
+
         <!-- experiment table header -->
         <h2>
-            {{ experiment_table_header }}
+            {{ data.experiment_status_table_header }}
         </h2>
 
         <!-- experiment data table -->
         <table>
 
             <tr>
-            {% for key in experiment_keys %}
+            {% for key in data.experiment_status_keys %}
                 <th>
                     {{ key }}
                 </th>
             {% endfor %}
             </tr>
 
-            {% for exp in experiments %}
+            {% for exp in data.experiment_status %}
+            <tr>
+                {% for key,value in exp.items() %}
+                <td>
+                    {{ value }}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+
+
+
+
+        <!-- experiment table header -->
+        <h2>
+            {{ data.experiment_table_header }}
+        </h2>
+
+        <!-- experiment data table -->
+        <table>
+
+            <tr>
+            {% for key in data.experiment_keys %}
+                <th>
+                    {{ key }}
+                </th>
+            {% endfor %}
+            </tr>
+
+            {% for exp in data.experiments %}
             <tr>
                 {% for key,value in exp.items() %}
                 <td>
