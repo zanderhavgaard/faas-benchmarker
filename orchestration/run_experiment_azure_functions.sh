@@ -11,6 +11,13 @@ experiment_name=$1
 # unique experiment idenfifier for the experiments started in parallel for the different cloud providers
 experiment_meta_identifier=$2
 
+function_provider="azure_functions"
+client_provider="aws_ec2"
+
+# ==== log experiment status
+
+bash "$fbrd/orchestration/experiment_status_updater.sh" "insert" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
+
 # ===== create infrastructure
 
 pmsg "Bootstrapping cloud functions ..."
@@ -39,3 +46,7 @@ pmsg "Removing experiment pidfile"
 rm -f "/tmp/$experiment_name-azure_functions.pid"
 
 smsg "Done running experiment orchestration."
+
+# ===== log experiment completed
+
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_completed" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
