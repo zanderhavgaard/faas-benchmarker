@@ -30,7 +30,7 @@ class DB_interface():
             print('Caught an exception when trying to get experiment data from database:')
             print(e)
 
-        return result
+        return result if result else None
 
     def get_experiments(self) -> list:
 
@@ -53,4 +53,4 @@ class DB_interface():
             print('Caught an exception when trying to get experiment data from database:')
             print(e)
 
-        return result
+        return result if result else None

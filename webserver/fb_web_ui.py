@@ -17,14 +17,24 @@ def index():
     banner = Figlet(width=120).renderText('faas-benchmarker')
 
     # prepare experiment status data
-    experiment_status = make_experiment_status_human_readable(db.get_experiment_status())
-    experiment_status_keys = list(experiment_status[0].keys())
+    experiment_status = db.get_experiment_status()
+    if experiment_status is not None:
+        experiment_satus = make_experiment_status_human_readable(experiment_status)
+        experiment_status_keys = list(experiment_status[0].keys())
+    else:
+        experiment_status = {}
+        experiment_status_keys = {}
     experiment_status_table_header = "Experiment Status:"
 
     # prepare experiment data
-    experiments = make_experiment_data_more_readable(db.get_experiments())
+    experiments = db.get_experiments()
+    if experiments is not None:
+        experiments = make_experiment_data_more_readable(experiments)
+        experiment_keys = list(experiments[0].keys())
+    else:
+        experiments = {}
+        experiment_keys = {}
     experiment_table_header = "Experiments:"
-    experiment_keys = list(experiments[0].keys())
 
     data = {
         'experiment_status': experiment_status,
