@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `ExperimentStatus` (
   `function_provider` varchar(100) NOT NULL,
   `client_provider` varchar(100) NOT NULL,
   `status` varchar(100) NOT NULL,
+  `start_time` INT NOT NULL,
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 

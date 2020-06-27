@@ -204,6 +204,7 @@ CREATE TABLE `ExperimentStatus` (
   `function_provider` varchar(100) NOT NULL,
   `client_provider` varchar(100) NOT NULL,
   `status` varchar(100) NOT NULL,
+  `start_time` int NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -214,7 +215,7 @@ CREATE TABLE `ExperimentStatus` (
 
 LOCK TABLES `ExperimentStatus` WRITE;
 /*!40000 ALTER TABLE `ExperimentStatus` DISABLE KEYS */;
-INSERT INTO `ExperimentStatus` VALUES (1,'dev-meta','dev-experiment','aws_lambda','aws_ec2','failed'),(2,'dev-meta2','dev-experiment','aws_lambda','aws_ec2','completed'),(3,'dev-meta','dev-experiment','aws_lambda','aws_ec2','running'),(4,'dev-meta3','dev-experiment','aws_lambda','aws_ec2','running');
+INSERT INTO `ExperimentStatus` VALUES (1,'dev-meta','dev-experiment','aws_lambda','aws_ec2','failed',1593264660),(2,'dev-meta2','dev-experiment','aws_lambda','aws_ec2','completed',1593264660),(3,'dev-meta','dev-experiment','aws_lambda','aws_ec2','running',1593264660),(4,'dev-meta3','dev-experiment','aws_lambda','aws_ec2','running',1593264660);
 /*!40000 ALTER TABLE `ExperimentStatus` ENABLE KEYS */;
 UNLOCK TABLES;
 

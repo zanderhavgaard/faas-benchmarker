@@ -12,9 +12,10 @@ ssh_command="ubuntu@$TF_VAR_db_server_static_ip"
 
 case "$command" in
     insert)
+        start_time=$(date +%s)
         pmsg "Inserting new ExperimentStatus row ..."
         experiment_status="running"
-        ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -uroot -pfaas -h127.0.0.1 -P3306 Benchmarks -e \" insert into ExperimentStatus (name, experiment_meta_identifier, function_provider, client_provider, status) values ('$experiment_name', '$experiment_meta_identifier', '$function_provider', '$client_provider', '$experiment_status') ;  \" "
+        ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -uroot -pfaas -h127.0.0.1 -P3306 Benchmarks -e \" insert into ExperimentStatus (name, experiment_meta_identifier, function_provider, client_provider, start_time, status) values ('$experiment_name', '$experiment_meta_identifier', '$function_provider', '$client_provider', '$start_time', '$experiment_status') ;  \" "
         ;;
     update_completed)
         pmsg "Updating ExperimentStatus row to completed ..."

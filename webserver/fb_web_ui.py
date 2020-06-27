@@ -16,14 +16,15 @@ def index():
     # create the ascii banner
     banner = Figlet(width=120).renderText('faas-benchmarker')
 
-    experiment_status = db.get_experiment_status()
+    # prepare experiment status data
+    experiment_status = make_experiment_status_human_readable(db.get_experiment_status())
     experiment_status_keys = list(experiment_status[0].keys())
     experiment_status_table_header = "Experiment Status:"
 
-    experiments = db.get_experiments()
+    # prepare experiment data
+    experiments = make_experiment_data_more_readable(db.get_experiments())
     experiment_table_header = "Experiments:"
     experiment_keys = list(experiments[0].keys())
-    experiments_human_readable = make_experiment_data_more_readable(experiments)
 
     data = {
         'experiment_status': experiment_status,
@@ -42,8 +43,26 @@ def index():
     return page
 
 
+def make_experiment_status_human_readable(experiment_status: dict) -> dict:
+    for exp_stat in experiment_status:
+        # make start time readable
+        start_time = exp_stat['start_time']
+        exp_stat['start_time'] = human_readable_time(start_time, show_date=True)
+        # add running time if experiment is running
+        status = exp_stat['status']
+        if status == 'running':
+            running_time = human_readable_time(time.time() - start_time)
+            exp_stat['running_time'] = running_time
+        elif status == 'completed':
+            exp_stat['running_time'] = 'completed'
+        elif status == 'failed':
+            exp_stat['running_time'] = 'failed'
+
+    return experiment_status
+
+
 def make_experiment_data_more_readable(experiments: dict):
-    if experiments == None:
+    if experiments is None:
         return None
 
     for exp in experiments:
