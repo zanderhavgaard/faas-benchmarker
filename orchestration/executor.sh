@@ -153,7 +153,7 @@ function check_if_experiment_failed {
             "$experiment_client_provider"
         return 1
     else
-        pmsg "Experiment process exited correctly ..."
+        pmsg "Experiment process completed correctly ..."
         return 0
     fi
 }
