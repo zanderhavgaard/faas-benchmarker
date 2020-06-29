@@ -104,6 +104,8 @@ docker_command="
         $verbose
     >> $logfile 2>&1"
 
+experiment_failed_command="touch /home/$client_user/failed"
+
 scp_logfile_command="scp -o StrictHostKeyChecking=no $logfile $db_server_user@\$DB_HOSTNAME:/home/$client_user/logs/experiments/"
 
 scp_errorlog_command="[ -f \"/home/$client_user/ErrorLogFile.log\" ] && scp -o StrictHostKeyChecking=no /home/$client_user/ErrorLogFile.log \
@@ -115,7 +117,7 @@ openfaas_eks_cluster_name="$experiment_name-$experiment_meta_identifier"
 eks_bootstrap_command="bash \$fbrd/eks_openfaas_orchestration/bootstrap_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1"
 eks_destroy_command="bash \$fbrd/eks_openfaas_orchestration/teardown_openfaas_eks_fargate.sh $openfaas_eks_cluster_name >> $logfile 2>&1"
 
-ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
+ssh_command="nohup bash -c '$docker_command || $experiment_failed_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
 
 
 # =================================
@@ -127,10 +129,30 @@ function check_progress {
         pmsg "Skipping wait for experiment."
     else
         pmsg "Now waiting for experiment to finish ..."
-        until ssh -o "StrictHostKeyChecking=no" -i "$key_path" "$client_user@$client_ip" "[ -f '/home/$client_user/done' ]" ; do
+        until \
+            ssh -o "StrictHostKeyChecking=no" -i "$key_path" "$client_user@$client_ip" "[ -f '/home/$client_user/done' ]" ; do
             echo "$(date) Waiting for experiment to finish ..."
             sleep $check_progress_interval
         done
+    fi
+}
+
+# ======================================
+# report if the experiment code failed
+# ======================================
+
+function check_if_experiment_failed {
+    if ssh -o "StrictHostKeyChecking=no" -i "$key_path" "$client_user@$client_ip" "[ -f '/home/$client_user/failed' ]"
+    then
+        errmsg "Found failed indicator file, updating experiment status to failed ..."
+        bash "$fbrd/orchestration/experiment_status_updater.sh" \
+            "update_failed" \
+            "$experiment_name" \
+            "$experiment_meta_identifier" \
+            "$experiment_cloud_function_provider" \
+            "$experiment_client_provider"
+    else
+        pmsg "Experiment process exited correctly ..."
     fi
 }
 
@@ -167,6 +189,9 @@ case "$platform" in
         # check every interval if the experiment code has finished running and the infrastructure can be destroyed
         check_progress "$option"
 
+        # check if the file experiment process exited
+        check_if_experiment_failed
+
         smsg "Done executing experiment code."
         ;;
 
@@ -184,14 +209,14 @@ case "$platform" in
             ssh_command="nohup bash -c '$eks_destroy_command' >> /dev/null 2>&1 &"
         elif [ "$option" = "run" ] ; then
             pmsg "Will run experiment, and wait for it to finish ..."
-            ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
+            ssh_command="nohup bash -c '$docker_command || $experiment_failed_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
         elif [ "$option" = "skip" ] ; then
             pmsg "Will run experiment, and skip waiting for it to finish ..."
-            ssh_command="nohup bash -c '$docker_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
+            ssh_command="nohup bash -c '$docker_command || $experiment_failed_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
         else
             # this is the default behaviour used in production
             pmsg "Will bootstrap the openfaas eks cluster, run the experiment, wait for it to finish, then destroy the cluster ..."
-            ssh_command="nohup bash -c ' $eks_bootstrap_command ; $docker_command ; $eks_destroy_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
+            ssh_command="nohup bash -c ' $eks_bootstrap_command ; $docker_command || $experiment_failed_command ; $eks_destroy_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
         fi
 
         # start the experiment process on the remote worker server
@@ -201,6 +226,9 @@ case "$platform" in
             # check every interval if the experiment code has finished running and the infrastructure can be destroyed
             check_progress "foo"
         fi
+
+        # check if the file experiment process exited
+        check_if_experiment_failed
 
         smsg "Done executing experiment code."
         ;;

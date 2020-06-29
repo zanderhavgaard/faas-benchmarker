@@ -12,6 +12,15 @@ experiment_meta_identifier=$2
 function_provider="openfaas"
 client_provider="openfaas_client_vm"
 
+function log_experiment_failed {
+    bash "$fbrd/orchestration/experiment_status_updater.sh" \
+        "update_failed" \
+        "$experiment_name" \
+        "$experiment_meta_identifier" \
+        "$function_provider" \
+        "$client_provider"
+}
+
 # ==== log experiment status
 
 bash "$fbrd/orchestration/experiment_status_updater.sh" "insert" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
@@ -19,17 +28,17 @@ bash "$fbrd/orchestration/experiment_status_updater.sh" "insert" "$experiment_na
 # ===== create client vm
 
 pmsg "Creating openfaas client vm ..."
-bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "bootstrap" "openfaas_client_vm"
+bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "bootstrap" "openfaas_client_vm" || log_experiment_failed
 
 # ===== create eks cluster and run experiment
 
 pmsg "Creating eks cluster and then running experiment on worker server ..."
-bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "openfaas"
+bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "openfaas" || log_experiment_failed
 
 # ===== destroy client vm
 
 pmsg "Destorying openfaas client vm ..."
-bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "destroy" "openfaas_client_vm"
+bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "destroy" "openfaas_client_vm" || log_experiment_failed
 
 # ===== remove experiment pid file
 
