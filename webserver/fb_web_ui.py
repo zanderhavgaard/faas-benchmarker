@@ -57,6 +57,11 @@ def make_experiment_status_human_readable(experiment_status: dict) -> dict:
     for exp_stat in experiment_status:
         # make start time readable
         start_time = exp_stat['start_time']
+        end_time = exp_stat['end_time']
+        if end_time == 0:
+            exp_stat['end_time'] = 'n/a'
+        else:
+            exp_stat['end_time'] = human_readable_time(exp_stat['end_time'], show_date=True)
         exp_stat['start_time'] = human_readable_time(start_time, show_date=True)
         # add running time if experiment is running
         status = exp_stat['status']

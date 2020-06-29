@@ -38,9 +38,23 @@
             {% for exp in data.experiment_status %}
             <tr>
                 {% for key,value in exp.items() %}
-                <td>
-                    {{ value }}
-                </td>
+                    {% if value == 'running' %}
+                        <td style='color:yellow;'>
+                            {{ value }}
+                        </td>
+                    {% elif value == 'completed' %}
+                        <td style='color:green;'>
+                            {{ value }}
+                        </td>
+                    {% elif value == 'failed' %}
+                        <td style='color:red;'>
+                            {{ value }}
+                        </td>
+                    {% else %}
+                        <td>
+                            {{ value }}
+                        </td>
+                    {% endif %}
                 {% endfor %}
             </tr>
             {% endfor %}
