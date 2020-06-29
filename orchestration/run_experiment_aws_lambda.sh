@@ -21,6 +21,8 @@ function log_experiment_failed {
         "$experiment_meta_identifier" \
         "$function_provider" \
         "$client_provider"
+    errmsg "Exitting ..."
+    exit
 }
 
 # ==== log experiment status
@@ -38,7 +40,7 @@ bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "bootstrap" "azure
 # ====== run experiment
 
 pmsg "Running experiment ..."
-bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "aws_lambda" || log_experiment_failed
+bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "aws_lambda" || exit
 
 # ====== destroy infrastructure
 

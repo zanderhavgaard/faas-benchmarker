@@ -19,6 +19,8 @@ function log_experiment_failed {
         "$experiment_meta_identifier" \
         "$function_provider" \
         "$client_provider"
+    errmsg "Exitting ..."
+    exit
 }
 
 # ==== log experiment status
@@ -33,7 +35,7 @@ bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "bootstrap" "openf
 # ===== create eks cluster and run experiment
 
 pmsg "Creating eks cluster and then running experiment on worker server ..."
-bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "openfaas" || log_experiment_failed
+bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "openfaas" || exit
 
 # ===== destroy client vm
 

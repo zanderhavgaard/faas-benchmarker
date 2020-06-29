@@ -59,7 +59,7 @@ esac
 # =================================
 
 # the interval to check progress on client in seconds
-check_progress_interval=600
+check_progress_interval=300
 # remote client user
 client_user="ubuntu"
 # user on db server
@@ -151,8 +151,10 @@ function check_if_experiment_failed {
             "$experiment_meta_identifier" \
             "$experiment_cloud_function_provider" \
             "$experiment_client_provider"
+        return 1
     else
         pmsg "Experiment process exited correctly ..."
+        return 0
     fi
 }
 
@@ -190,7 +192,7 @@ case "$platform" in
         check_progress "$option"
 
         # check if the file experiment process exited
-        check_if_experiment_failed
+        check_if_experiment_failed || exit
 
         smsg "Done executing experiment code."
         ;;
@@ -228,7 +230,7 @@ case "$platform" in
         fi
 
         # check if the file experiment process exited
-        check_if_experiment_failed
+        check_if_experiment_failed || exit
 
         smsg "Done executing experiment code."
         ;;
