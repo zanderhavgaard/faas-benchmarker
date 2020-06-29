@@ -9,6 +9,8 @@ import time
 app = Flask(__name__)
 db = DB_interface()
 
+# seconds bewteen screen refresh
+refresh_interval = 5
 
 @app.route('/')
 def index():
@@ -36,7 +38,10 @@ def index():
         experiment_keys = {}
     experiment_table_header = "Experiments:"
 
+    print('ref',refresh_interval)
+
     data = {
+        'refresh_interval': refresh_interval,
         'experiment_status': experiment_status,
         'experiment_status_keys': experiment_status_keys,
         'experiment_status_table_header': experiment_status_table_header,
@@ -64,14 +69,11 @@ def make_experiment_status_human_readable(experiment_status: dict) -> dict:
             exp_stat['end_time'] = human_readable_time(exp_stat['end_time'], show_date=True)
         exp_stat['start_time'] = human_readable_time(start_time, show_date=True)
         # add running time if experiment is running
-        status = exp_stat['status']
-        if status == 'running':
+        if exp_stat['status'] == 'running':
             running_time = human_readable_time(time.time() - start_time)
             exp_stat['running_time'] = running_time
-        elif status == 'completed':
-            exp_stat['running_time'] = 'completed'
-        elif status == 'failed':
-            exp_stat['running_time'] = 'failed'
+        else:
+            exp_stat['running_time'] = human_readable_time(end_time - start_time)
 
     return experiment_status
 

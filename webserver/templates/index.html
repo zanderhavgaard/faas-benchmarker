@@ -1,5 +1,6 @@
 <html>
     <head>
+        <meta http-equiv="refresh" content=" {{ data.refresh_interval }} ">
         <style>
             th, td {
                 border:1px solid black;
@@ -16,6 +17,9 @@
 {{banner}}
         </pre>
 
+        <p>
+            This page automatically refreshses everey {{ data.refresh_interval }} seconds.
+        </p>
 
 
 
