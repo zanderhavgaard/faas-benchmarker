@@ -49,9 +49,9 @@ resource "null_resource" "root-provisioner" {
       "cp /root/.ssh/* /home/ubuntu/.ssh/",
       # TODO maybe uncomment
       # "rm -rf /root/.ssh",
-      "echo export DB_SQL_USER=${var.DB_SQL_USER} >> /home/ubuntu/.bashrc",
-      "echo export DB_SQL_PASS=${var.DB_SQL_PASS} >> /home/ubuntu/.bashrc",
-      "echo export DB_SQL_ROOT_PASS=${var.DB_SQL_ROOT_PASS} >> /home/ubuntu/.bashrc",
+      "echo export DB_SQL_USER=${var.DB_SQL_USER} >> /home/ubuntu/db.env",
+      "echo export DB_SQL_PASS=${var.DB_SQL_PASS} >> /home/ubuntu/db.env",
+      "echo export DB_SQL_ROOT_PASS=${var.DB_SQL_ROOT_PASS} >> /home/ubuntu/db.env",
       "echo \"figlet 'db-server'\" >> /home/ubuntu/.bashrc",
       "echo 'alias mysql_connect=\"docker run --rm -it --network host mysql:5.7 mysql -u\$DB_SQL_USER -p\$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks\"' >> /home/ubuntu/.bashrc",
       "echo 'alias mysql_query=\"docker run --rm -it --network host mysql:5.7 mysql -u\$DB_SQL_USER -p\$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e\"' >> /home/ubuntu/.bashrc",
