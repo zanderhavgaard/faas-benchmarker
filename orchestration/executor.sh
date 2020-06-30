@@ -91,6 +91,8 @@ docker_command="
         --mount type=bind,source=\"/home/$client_user\",target=\"/home/docker/shared\" \
         --mount type=bind,source=\"/home/$client_user/.ssh\",target=\"/home/docker/key\" \
         -e \"DB_HOSTNAME=\$DB_HOSTNAME\" \
+        -e \"DB_SQL_USER=\$DB_SQL_USER\" \
+        -e \"DB_SQL_PASS=\$DB_SQL_PASS\" \
         --network host \
         faasbenchmarker/client:latest \
         python \

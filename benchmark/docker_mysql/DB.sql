@@ -1,4 +1,5 @@
 
+drop database if exists Benchmarks;
 create database Benchmarks;
 use Benchmarks;
 

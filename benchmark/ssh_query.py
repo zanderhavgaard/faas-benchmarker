@@ -30,8 +30,8 @@ class SSH_query:
         else:
             self.ssh_pkey = paramiko.RSAKey.from_private_key_file('/home/docker/key/id_rsa')
         self.remote_bind_address = ('127.0.0.1', 3306)
-        self.db_user = 'root'
-        self.db_password = 'faas'
+        self.db_user = os.getenv('DB_SQL_USER')
+        self.db_password = os.getenv('DB_SQL_PASS')
         self.database = 'Benchmarks'
 
         # comment below lines in if you want to load it from environment variables instead of default

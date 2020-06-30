@@ -15,3 +15,8 @@ variable "username" {
 variable "space_name" {}
 variable "space_key" {}
 variable "space_secret_key" {}
+
+# credentials for database
+variable "DB_SQL_USER" {}
+variable "DB_SQL_PASS" {}
+variable "DB_SQL_ROOT_PASS" {}

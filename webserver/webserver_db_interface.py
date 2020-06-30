@@ -1,4 +1,5 @@
 import pymysql
+import os
 
 
 class DB_interface():
@@ -6,8 +7,8 @@ class DB_interface():
     def __init__(self):
         self.db_host = '127.0.0.1'
         self.db_port = 3306
-        self.db_user = 'root'
-        self.db_password = 'faas'
+        self.db_user = os.getenv('DB_SQL_USER')
+        self.db_password = os.getenv('DB_SQL_PASS')
         self.database = 'Benchmarks'
 
     def get_experiment_status(self) -> list:
