@@ -40,5 +40,10 @@ echo -e "${BOLD}${GREEN}--> $1${NONE}"
 
 # check if element is in a list
 function listContainsElement {
-  [[ " $1 " =~ " $2 " ]] && return 0 || return 1
+  for exp in $1 ; do
+    if [[ "$exp" = "$2" ]] ; then
+      return 0
+    fi
+  done
+  return 1
 }

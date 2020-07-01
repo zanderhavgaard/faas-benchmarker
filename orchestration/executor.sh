@@ -15,8 +15,7 @@ option=$4
 valid_platforms="aws_lambda azure_functions openfaas openfaas_eks"
 # get valid experiment names
 experiments=$(ls -I "*.md" "$fbrd/experiments")
-# TODO fix check experiment
-# if ! listContainsElement "$experiments" "$experiment_name"  ; then errmsg "Invalid experiment" ; exit 1 ; fi
+if ! listContainsElement "$experiments" "$experiment_name"  ; then errmsg "Invalid experiment" ; exit 1 ; fi
 if ! listContainsElement "$valid_platforms" "$platform" ; then errmsg "Invalid platform" ; exit 1 ; fi
 
 # setup the local context of the experiment
