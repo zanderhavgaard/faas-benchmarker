@@ -157,6 +157,7 @@ function runExperiment {
 }
 
 function runAllExperiments {
+  checkIfOrchestrator
   msg "Will run all experiments on all platforms, this will take some time...."
   echo "experiments: $(listExperiments)"
   msg "Would you like to proceed? [yes/no]"
@@ -197,7 +198,6 @@ function checkIfOrchestrator {
     || errmsg "Please do not run experiments locally, ssh to the orchestrator server and run the experiments from the server." && exit
 }
 
-# TODO refactor
 function runExperimentWrapper {
   checkIfOrchestrator
   # choose experiment name to run, if cancelledd will be an empty string
@@ -208,7 +208,6 @@ function runExperimentWrapper {
   runExperiment "$exp"
 }
 
-# TODO refactor
 function runAllExperimentsWrapper {
   checkIfOrchestrator
   runAllExperiments
@@ -315,7 +314,7 @@ function runInteractively {
         ;;
 
       run_all_experiments)
-        runAllExperimentsWrapper
+        runAllExperiments
         ;;
 
       generate_report)

@@ -47,7 +47,7 @@ resource "null_resource" "root-provisioner" {
       "echo \"${var.username}:${random_password.password.result}\" | chpasswd",
       "mkdir /home/ubuntu/.ssh",
       "cp /root/.ssh/* /home/ubuntu/.ssh/",
-      # TODO maybe uncomment
+      # uncomment to disallow root access
       # "rm -rf /root/.ssh",
       "echo export DB_SQL_USER=${var.DB_SQL_USER} >> /home/ubuntu/db.env",
       "echo export DB_SQL_PASS=${var.DB_SQL_PASS} >> /home/ubuntu/db.env",

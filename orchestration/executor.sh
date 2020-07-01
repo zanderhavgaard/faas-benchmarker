@@ -203,7 +203,7 @@ case "$platform" in
 
         ssh_command=""
 
-        # TODO cleanup a bit more
+        # optionally use the option to control the eks cluster through the client worker
         if [ "$option" = "bootstrap" ] ; then
             pmsg "Will only create the eks openfaas cluster ..."
             ssh_command="nohup bash -c '$eks_bootstrap_command' >> /dev/null 2>&1 &"
@@ -235,6 +235,4 @@ case "$platform" in
 
         smsg "Done executing experiment code."
         ;;
-
-
 esac

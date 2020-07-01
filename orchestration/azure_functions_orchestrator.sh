@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# TODO check if disabling creates problems elsewhere
 # remove flag as it conflicts with the until loop
 # set -e
 

@@ -82,7 +82,7 @@ resource "null_resource" "root-provisioner" {
       "echo \"${var.username}:${random_password.password.result}\" | chpasswd",
       "mkdir /home/ubuntu/.ssh",
       "cp /root/.ssh/* /home/ubuntu/.ssh/",
-      # TODO maybe uncomment
+      # uncomment to disallow root access
       # "rm -rf /root/.ssh",
       "mv /root/terraform_env /home/ubuntu/terraform_env",
       "echo \"figlet 'orchestrator'\" >> /home/ubuntu/.bashrc",
