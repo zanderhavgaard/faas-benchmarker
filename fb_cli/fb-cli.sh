@@ -378,7 +378,7 @@ function usage {
   msg "--generate-report : generate report based from result {not implemented yet}"
   msg "--create-experiment [experiment name] : create new experiment with provided [experiment name]"
   msg "--update-experiment-infrastructure-templates : update infrastructure templates for existing experiments"
-  msg "--bootstrap-permamnent-infrastructure : create the orchestrator and database/log servers"
+  msg "--bootstrap-permanent-infrastructure : create the orchestrator and database/log servers"
   msg "--destroy-permanent-infrastructure : destroy the orchestrator and database/log servers"
   msg "--ssh-orchestrator : ssh to the orchestrator server"
   msg "--ssh-db-server : ssh to the database/log server"
@@ -506,7 +506,7 @@ else
         exit
         ;;
 
-      --bootstrap-permamnent-infrastructure)
+      --bootstrap-permanent-infrastructure)
         firstTimeInfrastrutureBootstrap
         exit
         ;;
