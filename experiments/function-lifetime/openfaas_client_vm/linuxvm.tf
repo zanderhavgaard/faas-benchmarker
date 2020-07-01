@@ -30,7 +30,7 @@ resource "azurerm_linux_virtual_machine" "function-lifetime-openfaas-worker" {
   }
 }
 
-# HACK to run provisioners over SSH after instance
+# Run provisioners over SSH after instance
 # has been created and recieved a public ip address
 resource "null_resource" "linux-provisioners" {
   # run the provisioners after the instance has been created
