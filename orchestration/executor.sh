@@ -27,6 +27,8 @@ experiment_context="$fbrd/experiments/$experiment_name"
 
 # choose cloud function and clien provider based on platform input
 
+pmsg "Checking locks ..."
+
 case "$platform" in
     aws_lambda)
         experiment_cloud_function_provider="aws_lambda"

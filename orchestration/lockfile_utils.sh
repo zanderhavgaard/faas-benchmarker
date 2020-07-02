@@ -125,10 +125,10 @@ function check_lock {
     lf="$fbrd/experiments/$en/$p/$lt.lock"
     # pmsg "$en:$p: Checking for $lt lock ..."
     if [ -f "$lf" ] ; then
-        # pmsg "$en:$p: Found $lt lock ..."
+        pmsg "$en:$p: Found $lt lock ..."
         return 0
     else
-        # pmsg "$en:$p: Did not find $lt lock ..."
+        pmsg "$en:$p: Did not find $lt lock ..."
         return 1
     fi
 }
