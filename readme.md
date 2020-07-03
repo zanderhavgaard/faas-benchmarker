@@ -12,7 +12,7 @@ A project to benchmark and test the behavior and capabilities of FaaS offerings 
 The project seeks to increase transparency of closed source FaaS offerings from public cloud providers, by answering questions like: "How long does it take for my function to incur a cold start?", or "When will my function be scaled up due to high demand?".
 Further the project strives to make results comparable between cloud platforms, such that users can choose the one that best suits their needs.
 
-![infrastructure overview](diagrams/experiment_infrastructure-all_infra.png)
+![infrastructure overview](images/experiment_infrastructure-all_infra.png)
 
 ---
 
@@ -50,7 +50,8 @@ Experiment scripts instantiate a Benchmarker object that handles translating and
 Chief amoung these are the 'providers' that implement the AbstractProvider class.
 The providers thus provide the platform specific implementations of `invoke_function` and `invoke_function_concurrently`, the Benchmarker then dispatches method calls to the correct provider based on how the Benchmarker is configured.
 The benchmarker and experiment code is packaged and distributed as a docker image: [faasbencmarker/client](https://hub.docker.com/u/faasbenchmarker) which is used by the client servers when running experiments.
-All docker images are currently being built by a circleci pipeline, and distributed through docker hub. The scripts in the `ci` directory make building the pushing the images easy.
+All docker images are currently being built by a circleci pipeline, and distributed through docker hub.
+The scripts in the `ci` directory make building the pushing the images easy.
 
 
 TODO insert graph of benchmarker classes
@@ -130,7 +131,8 @@ Thus when writing a new experiment only the `<experiment name>.py` file should b
 # Architecture
 The architecture of faas-benchmarker is divided into three main parts, the `permanent infrastructure`, the `cloud functions` and the `experiment infrastructure`.
 
-Currently the permanent infrastructure is hosted on Digital Ocean. Experiments are conducted on mix of AWS and Azure resources. The use of different cloud providers is make the most of the different free/student offerings, as well as to utilize different cloud-specific tools.
+Currently the permanent infrastructure is hosted on Digital Ocean. Experiments are conducted on mix of AWS and Azure resources.
+The use of different cloud providers is make the most of the different free/student offerings, as well as to utilize different cloud-specific tools.
 
 
 ## Permanent Infrastructure
@@ -162,7 +164,7 @@ Each of these environments are created when experiment run starts and destroyed 
 The benchmarker application runs in a docker container to ensure that across experiment runs and cloud providers, that the same environment is used.
 
 ### AWS Lambda
-![AWS Lambda infrastructure overview](diagrams/experiment_infrastructure-aws_lambda_infra.png)
+![AWS Lambda infrastructure overview](images/experiment_infrastructure-aws_lambda_infra.png)
 
 The AWS Lambda environment consists of the four cloud functions as AWS Lambda functions.
 The Lambdas are attached to an AWS API gateway, that creates http endpoints for invoking the functions.
@@ -170,7 +172,7 @@ The Lambdas can invoke other Lambdas using the boto3 python API, thus the API ga
 The client is an Azure Linux vm running ubuntu 20.04.
 
 ### Azure Functions
-![Azure Functions infrastructure overview](diagrams/experiment_infrastructure-azure_functions_infra.png)
+![Azure Functions infrastructure overview](images/experiment_infrastructure-azure_functions_infra.png)
 
 The Azure Functions environment consists of four function apps, each containing one of the 4 cloud functions.
 The reason for using 4 distint function apps instead of four functions in one functionapp, is that each functionapp seem to run synchronously, which means that cyclic invocations are not possible.
@@ -182,7 +184,7 @@ The downside is that it adds the complexity of managing all of these function ap
 The client for the Azure Functions is an AWS ec2 instance running Ubuntu 20.04.
 
 ### OpenFaaS
-![OpenFaaS infrastructure overview](diagrams/experiment_infrastructure-openfaas_infra.png)
+![OpenFaaS infrastructure overview](images/experiment_infrastructure-openfaas_infra.png)
 
 The OpenFaaS environment consists of an Azure linux vm as the client.
 After the client has been provisioned, the client server will then provision an AWS EKS Fargate cluster and deploy OpenFaaS using the Arkade installer.
@@ -248,32 +250,127 @@ See the getting started section for details on setting the environment variables
 
 
 ## webui
+The webui provides a convenient way of monitoring the status of experiments, whether they are running, completed or failed, how long they have been running for or how long the experiment took to complete.
+As well as an overview of completed Experiments metadata.
+The webui runs in a docker container on the db server, and is accessible at port 7890 by default.
 
-
-
+![webui image](images/webui.png)
 
 
 # Results Report
-
-## Generating a Report
 
 TODO
 
 
 # Developement
 
-## Running Experiments Locally
+## Developing New Experiments
+When developing new experiments, start by using the `fb-cli --create-exeriment <experiment name>` to create a new experiment from the template.
+Then edit the `experiments/<experiment name>/<experiment name>.py` python script with the experiment logic.
+If the experiment need to save any experiment-specific data, add a new table to the `benchmark/docker_mysql/DB.sql` database that is used by the docker image on the db server.
+Currently there is no automated way of adding new tables to the running instance, this would be a great improvement to add into the ci pipeline.
+When the experiment code is ready to be tested, you may use the fb-cli to create a local minikube cluster and deploy OpenFaaS on it to test the code.
+Use `fb-cli --dev` and then interactively select the option to bootstrap the cluster.
+When the cluster is ready and the functions have been deployed, you may then interactively select your new experiment to run against the local cluster.
+This will run the experiment in production-like environment, and mainly test that the logic of the experiment works, as the high level Benchmarker interface should work the same when it is then deployed against the different platforms.
 
-
-
+## Improving the faas-benchmarker Framework
+Most of the individual components can be run on their own, and most of the code is written to be as composable and atomic as possible.
+Thus most of the components ca be hacked on locally, and then pushed to the permanent infrastucture for production tests.
+The `dev-experiment` tests all of the different features of the framework, and can be used to test that everything is still working as intended, when changes have been made.
 
 
 # Getting Started
+Starting the project requires accounts for Digial Ocean, AWS and Azure.
+Credentials for these platforms must be stored in a environment file.
+Then an number of SSH keys must be generated for accessing the different infrastucture.
 
 ## Secrets
+All of the project secrets should be stored in directory called `secrets` which is ignored by git, and thus must be created when the project is deployed.
 
 ### Environment variables
+When working with the project the user must set the environment variable `fbrd` (faas-benchmarker root directory) as many of the components use this to find paths to other components.
+For example if using bash on ubuntu, and cloned into home directory, then
+```bash
+echo 'export fbrd=/home/ubuntu/faas-benchmarker' >> /home/ubuntu/.bashrc && source /home/ubuntu/.bashrc
+```
+To add the variable persistently.
 
 #### Terraform Environment
+Terraform requires a number of variables to be set in order to provision and configure the infrastructure.
+These variables should be save in a files called `secrets/terraform_env/terraform_env`
+and should contain the following variables:
+```bash
+# the variable used on the orchestrator server for fbrd
+# faas-benchmarker root directory
+export fbrd="/home/ubuntu/faas-benchmarker"
+
+# =============
+# for terraform
+# =============
+
+# permament infrastructure static ips
+export TF_VAR_orchstrator_static_ip=
+export TF_VAR_db_server_static_ip=
+
+# variables for the sql db
+export TF_VAR_DB_SQL_PASS=
+export TF_VAR_DB_SQL_USER=
+export TF_VAR_DB_SQL_ROOT_PASS=
+export TF_VAR_DB_HOSTNAME=
+export DB_HOSTNAME=
+export DB_SQL_PASS=
+export DB_SQL_USER=
+export DB_SQL_ROOT_PASS=
+
+# permanent aws vpc
+export TF_VAR_subnet_id=
+export TF_VAR_security_group_id=
+
+# digitalocean space
+export SPACE_NAME=
+export SPACE_KEY=
+export SPACE_SECRET_KEY=
+export TF_VAR_space_name=
+export TF_VAR_space_key=
+export TF_VAR_space_secret_key=
+
+# token for digitalocean api
+export TF_VAR_do_token=
+export TF_VAR_do_region=
+
+# creds for aws
+export TF_VAR_aws_datacenter_region=
+export TF_VAR_aws_access_key=
+export TF_VAR_aws_secret_key=
+export TF_VAR_aws_account_id=
+
+# creds for azure
+export TF_VAR_subscription_id=
+export TF_VAR_client_id=
+export TF_VAR_client_secret=
+export TF_VAR_tenant_id=
+export TF_VAR_azure_region=
+
+# ssh keys
+export TF_VAR_db_pvt_key=
+export TF_VAR_db_pub_key=
+export TF_VAR_db_ssh_fingerprint=
+
+export TF_VAR_orch_pvt_key=
+export TF_VAR_orch_pub_key=
+export TF_VAR_orch_ssh_fingerprint=
+
+export TF_VAR_client_pvt_key=
+export TF_VAR_client_pub_key=
+export TF_VAR_client_ssh_fingerprint=
+
+```
 
 ### SSH keys
+The following ssh keys must be generated, eg. with the command:
+```bash
+for key in orchestrator db_server experiment_servers ; do ssh-keygen -t rsa -b 4096 -f "$fbrd/secrets/ssk_keys/$key" ; done
+```
+
+Obviosly you should be careful not to accidentaly push any of the contents of the `secrets` directoty to git!
