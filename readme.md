@@ -155,6 +155,7 @@ Adding support for new cloud function platforms consists of a lab function imple
 
 
 ## Experiment Infrastructure
+![Permanent Infrastructure overview](images/experiment_infrastructure-permanent_infra.png)
 In order to remove as many potential disturbing factors from the experiments, each experiment consists of a number of isolated environments.
 Each of these environment consists of the cloud functions and extra infrastructure that they may require and a server to act as client to these functions.
 Each of the cloud function / server environments run opposite clouds, such that for AWS Lambda the client is an Azure Linux vm, and for Azure Funtions the client is an AWS ec2 instance.
