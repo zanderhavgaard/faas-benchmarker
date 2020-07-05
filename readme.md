@@ -35,7 +35,7 @@ An experiment will be run in the same way against the different FaaS platforms, 
 faas-benchmarker centers around the 'experiment' abstraction.
 The framework allows users to easily create high level experiments that test or benchmark a specific behavior or metric of FaaS platforms.
 The faas-benchmarker framework then handles creating sandboxed environments in which the experiment code is executed against different FaaS platforms.
-The experiment code consists of a python script based on a template, in which the the logic for the experiment and metrics are specified.
+The experiment code consists of a python script based on a template, in which the logic for the experiment and metrics are specified.
 The script utilizes the `Benchmarker` python class which provides a number of commands like 'invoke_function', which will then be translated into actually invoking the specified function on the different platforms.
 The framework handles logging generic data from the experiment invocations.
 Though experiment specific data are stored in their own tables and have to be added manually.
@@ -47,7 +47,7 @@ New experiments are created from a template using the `fb-cli --create-experimen
 
 Experiments use the Benchmarker python application.
 Experiment scripts instantiate a Benchmarker object that handles translating and interfacing with all of the other components.
-Chief amoung these are the 'providers' that implement the AbstractProvider class.
+Chief among these are the 'providers' that implement the AbstractProvider class.
 The providers thus provide the platform specific implementations of `invoke_function` and `invoke_function_concurrently`, the Benchmarker then dispatches method calls to the correct provider based on how the Benchmarker is configured.
 The benchmarker and experiment code is packaged and distributed as a docker image: [faasbencmarker/client](https://hub.docker.com/u/faasbenchmarker) which is used by the client servers when running experiments.
 All docker images are currently being built by a circleci pipeline, and distributed through docker hub.
@@ -119,7 +119,7 @@ response = benchmarker.invoke_function_conccurrently(
 
 Creating a new experiment is done by using the `fb-cli` tool.
 Invoking the `--create-experiment` and providing an experiment name will copy all of the relevant templates and modify them for the experiment.
-The new experiment will consist of a `<experiment name>.py` which is the expreiment logic and a `<experiment name>.tfvars` which are experiment specific tweaks to the terraform templates.
+The new experiment will consist of a `<experiment name>.py` which is the experiment logic and a `<experiment name>.tfvars` which are experiment specific tweaks to the terraform templates.
 As well as a number of directories containing the experiment specific infrastructure.
 In order ensure that experiments are as reproducible as possible, each experiment has it's own infrastructure.
 Thus when an experiment is run, fresh cloud function instances and client servers are created to conduct the experiment.
@@ -137,16 +137,16 @@ The use of different cloud providers is make the most of the different free/stud
 
 ## Permanent Infrastructure
 The permanent infrastructure consists of two servers, the `orchestrator` and the `database` servers, as well as a blob storage.
-The purpose of the orchestrator is to orchestrate the experiments; managing experiment lifecycles, bootstrapping and destroying experiment infrastucture, running experiment code.
+The purpose of the orchestrator is to orchestrate the experiments; managing experiment life cycles, bootstrapping and destroying experiment infrastructure, running experiment code.
 The database server hosts a sql database with experiment results and log files from experiment runs.
-The permanent infrastructure is currently hosted on two Digital Ocean droplets (linux vms), though if desired these could easily be moved to another cloud provider, or even self hosted.
+The permanent infrastructure is currently hosted on two Digital Ocean droplets (Linux vms), though if desired these could easily be moved to another cloud provider, or even self hosted.
 
 
 ## Cloud Functions
-Currently faas-benchmarker supports `AWS lambda`, `Azure Functions` and `OpenFaaS`. 'Support' for a cloud function platform consists of an implemtation of the 'lab functions' as described above, as well as a 'provider' python class to interface the framework with the cloud function platform.
-The different cloud funtions are created as needed from templates using terraform.
+Currently faas-benchmarker supports `AWS lambda`, `Azure Functions` and `OpenFaaS`. 'Support' for a cloud function platform consists of an implementation of the 'lab functions' as described above, as well as a 'provider' python class to interface the framework with the cloud function platform.
+The different cloud functions are created as needed from templates using terraform.
 AWS Lambda and Azure Functions run on their respective clouds, OpenFaaS is bootstrapped into a AWS EKS Fargate cluster.
-EKS on Fargate is AWS managed kubernetes but running purely in Fargate containers, which means that the cluster is 'serverless'.
+EKS on Fargate is AWS managed Kubernetes but running purely in Fargate containers, which means that the cluster is 'serverless'.
 Which means that OpenFaaS function containers can be scaled independently of the rest of the cluster, thus providing the most 'serverless' way of running OpenFaaS
 We use this specific deployment in order to have the most comparable deployment of OpenFaaS with AWS Lambda and Azure Functions.
 
@@ -159,8 +159,8 @@ Adding support for new cloud function platforms consists of a lab function imple
 
 In order to remove as many potential disturbing factors from the experiments, each experiment consists of a number of isolated environments.
 Each of these environment consists of the cloud functions and extra infrastructure that they may require and a server to act as client to these functions.
-Each of the cloud function / server environments run opposite clouds, such that for AWS Lambda the client is an Azure Linux vm, and for Azure Funtions the client is an AWS ec2 instance.
-This is to create a realistic scenario where the functions have to communicate with something outside of the datacenter, and to elimnitate any internal optimizations or benefits the different cloud providers might implement.
+Each of the cloud function / server environments run opposite clouds, such that for AWS Lambda the client is an Azure Linux vm, and for Azure Functions the client is an AWS ec2 instance.
+This is to create a realistic scenario where the functions have to communicate with something outside of the data center, and to eliminate any internal optimizations or benefits the different cloud providers might implement.
 Each of these environments are created when experiment run starts and destroyed when the experiment has been conducted.
 
 The benchmarker application runs in a docker container to ensure that across experiment runs and cloud providers, that the same environment is used.
@@ -171,16 +171,16 @@ The benchmarker application runs in a docker container to ensure that across exp
 The AWS Lambda environment consists of the four cloud functions as AWS Lambda functions.
 The Lambdas are attached to an AWS API gateway, that creates http endpoints for invoking the functions.
 The Lambdas can invoke other Lambdas using the boto3 python API, thus the API gateway is only for handling external requests.
-The client is an Azure Linux vm running ubuntu 20.04.
+The client is an Azure Linux vm running Ubuntu 20.04.
 
 ### Azure Functions
 ![Azure Functions infrastructure overview](images/experiment_infrastructure-azure_functions_infra.png)
 
 The Azure Functions environment consists of four function apps, each containing one of the 4 cloud functions.
-The reason for using 4 distint function apps instead of four functions in one functionapp, is that each functionapp seem to run synchronously, which means that cyclic invocations are not possible.
+The reason for using 4 distinct function apps instead of four functions in one functionapp, is that each functionapp seem to run synchronously, which means that cyclic invocations are not possible.
 For example if I want function1 to invoke function2, and they are in the same function app, the request will never terminate, as the invocation of function1 will block until that request is finished, thus the nested invocation of function2 will never be accepted, as the functionapp is locked until function1 finishes.
 Therefore in order to allow nested invocations, each function is inside it's own function app.
-Interestingly this is a surprisingly viable pattern, as the cost of invoking functions remains the same whether they are spread out in different functionapps or in the same one, but it will give you potential for more efficient utilization, as none of the functions will have to wait for other functions in the same function app to finishe before computing.
+Interestingly this is a surprisingly viable pattern, as the cost of invoking functions remains the same whether they are spread out in different functionapps or in the same one, but it will give you potential for more efficient utilization, as none of the functions will have to wait for other functions in the same function app to finish before computing.
 The downside is that it adds the complexity of managing all of these function apps, instead of just the one.
 
 The client for the Azure Functions is an AWS ec2 instance running Ubuntu 20.04.
@@ -188,7 +188,7 @@ The client for the Azure Functions is an AWS ec2 instance running Ubuntu 20.04.
 ### OpenFaaS
 ![OpenFaaS infrastructure overview](images/experiment_infrastructure-openfaas_infra.png)
 
-The OpenFaaS environment consists of an Azure linux vm as the client.
+The OpenFaaS environment consists of an Azure Linux vm as the client.
 After the client has been provisioned, the client server will then provision an AWS EKS Fargate cluster and deploy OpenFaaS using the Arkade installer.
 After running the experiment, the client will then destroy the EKS cluster.
 The OpenFaaS deployment uses the defaults that come with the Arkade installer, apart from that it enables the faas-idler to allow for scaling functions down to 0, and tweaks the faas-idler intervals, as these seem to be creating race conditions with the default values.
@@ -196,26 +196,26 @@ The OpenFaaS deployment uses the defaults that come with the Arkade installer, a
 
 # Orchestration
 
-Orchestration of faas-benchmarker is handled by the `orchestrator` server, and only requires human input to start exerriments using the `fb-cli`.
+Orchestration of faas-benchmarker is handled by the `orchestrator` server, and only requires human input to start experiments using the `fb-cli`.
 
 Experiment orchestration starts with the user starting an experiment by using the fb-cli, either interactively or by using the `-r <experiment name>` flag.
 When an experiment is started the fb-cli will validate that the experiment is not already running, and then start a sub process for each platform, for example if running the `function-lifetime` experiment, three processes will be started each running the platform specific orchestration script `orchestration/run_experiment_<platform name>`.
 Each of these orchestration scripts will then use the `orchestration/orchestrator.sh` script to provision the experiment specific infrastructure.
-The Orchestrator script manages the lifecycle of the different terraform environments related to the experiment, and creates and removes a .lock file to indicate the state of the infrastructure.
+The Orchestrator script manages the life cycle of the different terraform environments related to the experiment, and creates and removes a .lock file to indicate the state of the infrastructure.
 When the infrastructure has been provisioned, the orchestration script will use the `orchestration/executor.sh` script to execute the experiment code on the client vm.
 The executor will then monitor the client vm, and wait for the client to create a file named `done`.
-When the done file is found the orchestration script will use the orchestartor script will then destroy the experiment specific infrastructure and release the locks.
+When the done file is found the orchestration script will use the orchestrator script will then destroy the experiment specific infrastructure and release the locks.
 
 ## Terraform
 Terraform is used to allow all of the infrastructure used in faas-benchmarker to be kept 'as code'.
 The directory `infrastrastructure` contains all of the terraform files for the permanent infrastructure as well as all of the `templates` that are used to generate the experiment specific infrastructure files.
-When changes have been made to the infrastrucutre templates the fb-cli command `fb-cli --udpate-experiment-infrastrucutre-templates` to generate the new version of the templates for each experiment present.
+When changes have been made to the infrastructure templates the fb-cli command `fb-cli --udpate-experiment-infrastrucutre-templates` to generate the new version of the templates for each experiment present.
 
 ## fb-cli
 The `fb-cli` is used to control faas-benchmarker and to allow for automation of different tasks.
-The main features are orhcestrating experiments.
+The main features are orchestrating experiments.
 
-Invoke the fb-cli from inside the root of the faas-benchmaker repository.
+Invoke the fb-cli from inside the root of the faas-benchmarker repository.
 Before starting the fb-cli, make sure that you have set the `fbrd` environment variable to point at the path to the local faas-benchmarker repository, eg `export fbrd=/home/ubuntu/faas-benchmarker >> /home/ubuntu/.bashrc && source /home/ubuntu/.bashrc`.
 fb-cli is setup as a symlink to the script file `fb_cli/fb-cli.sh`.
 When invoking fb-cli it will check that it can find values for all of the environment variables it needs to orchestrate faas-benchmarker, and will exit and prompt the user to set them, if any are not found.
@@ -264,7 +264,7 @@ The webui runs in a docker container on the db server, and is accessible at port
 TODO
 
 
-# Developement
+# Development
 
 ## Developing New Experiments
 When developing new experiments, start by using the `fb-cli --create-exeriment <experiment name>` to create a new experiment from the template.
@@ -278,21 +278,21 @@ This will run the experiment in production-like environment, and mainly test tha
 
 ## Improving the faas-benchmarker Framework
 Most of the individual components can be run on their own, and most of the code is written to be as composable and atomic as possible.
-Thus most of the components ca be hacked on locally, and then pushed to the permanent infrastucture for production tests.
+Thus most of the components ca be hacked on locally, and then pushed to the permanent infrastructure for production tests.
 The `dev-experiment` tests all of the different features of the framework, and can be used to test that everything is still working as intended, when changes have been made.
 
 
 # Getting Started
-Starting the project requires accounts for Digial Ocean, AWS and Azure.
+Starting the project requires accounts for Digital Ocean, AWS and Azure.
 Credentials for these platforms must be stored in a environment file.
-Then an number of SSH keys must be generated for accessing the different infrastucture.
+Then an number of SSH keys must be generated for accessing the different infrastructure.
 
 ## Secrets
 All of the project secrets should be stored in directory called `secrets` which is ignored by git, and thus must be created when the project is deployed.
 
 ### Environment variables
 When working with the project the user must set the environment variable `fbrd` (faas-benchmarker root directory) as many of the components use this to find paths to other components.
-For example if using bash on ubuntu, and cloned into home directory, then
+For example if using bash on Ubuntu, and cloned into home directory, then
 ```bash
 echo 'export fbrd=/home/ubuntu/faas-benchmarker' >> /home/ubuntu/.bashrc && source /home/ubuntu/.bashrc
 ```
@@ -311,7 +311,7 @@ export fbrd="/home/ubuntu/faas-benchmarker"
 # for terraform
 # =============
 
-# permament infrastructure static ips
+# permanent infrastructure static ips
 export TF_VAR_orchstrator_static_ip=
 export TF_VAR_db_server_static_ip=
 
@@ -372,7 +372,7 @@ export TF_VAR_client_ssh_fingerprint=
 ### SSH keys
 The following ssh keys must be generated, eg. with the command:
 ```bash
-for key in orchestrator db_server experiment_servers ; do ssh-keygen -t rsa -b 4096 -f "$fbrd/secrets/ssk_keys/$key" ; done
+for key in orchestrator db_server experiment_servers ; do ssh-keygen -t rsa -b 4096 -f "$fbrd/secrets/ssh_keys/$key" ; done
 ```
 
-Obviosly you should be careful not to accidentaly push any of the contents of the `secrets` directoty to git!
+Obviously you should be careful not to accidentally push any of the contents of the `secrets` directory to git!
