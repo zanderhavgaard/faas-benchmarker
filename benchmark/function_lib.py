@@ -24,6 +24,8 @@ def reduce_dict_by_keys(args):
 # def wrappped_reduce_dict_by_keys(x:str,y:str, z:tuble, err=None):
 #     return iterator_wrapper(reduce_dict_by_keys, x, y, z, err)
 
+def flatten_list(acc, args:list):
+    return reduce(lambda x,y: x+y,[acc]+args)
 
 def get_dict(data: dict) -> dict:
     root = data['root_identifier']

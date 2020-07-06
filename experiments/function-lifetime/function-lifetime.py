@@ -141,6 +141,8 @@ def append_result(exp_id:str,
 
 try:
 
+    lib.baseline(run_time=300,sleep_time=10,functions=[lambda x: validate(invoke,x)], args=[('invoking baseline')])
+
     sleep_time = int(coldtime / 2) 
     start_time = int(time.time())
     _24hours = 24 * 60 * 60 if not dev_mode else 2 * sleep_time

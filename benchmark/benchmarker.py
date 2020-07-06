@@ -11,6 +11,9 @@ from provider_azure_functions import AzureFunctionsProvider
 from provider_openfaas import OpenFaasProvider
 from experiment import Experiment
 from mysql_interface import SQL_Interface as db_interface
+import threading as th
+from concurrent import futures
+import traceback
 
 from pprint import pprint
 
@@ -31,6 +34,12 @@ class Benchmarker:
         self.dev_mode = dev_mode
         self.verbose = verbose
         self.invocation_count = 0
+        self.futures = []
+        self.idx = 0
+        self.append_lock = th.Lock()
+        self.future_lock = th.Lock()
+        self.sync_flag = True
+        self.futures_parsed = True
 
         # get function execution provider
         self.provider = self.get_provider(
@@ -43,6 +52,8 @@ class Benchmarker:
                                      client_provider,
                                      experiment_description,
                                      dev_mode)
+        
+        self.background_sync()
 
         print('\n=================================================')
         print('FaaS Benchmarker --> Starting Experiment ...')
@@ -84,7 +95,7 @@ class Benchmarker:
     # log the total time of running an experiment
     # call this method as the last thing in experiment clients
     def log_experiment_running_time(self) -> None:
-        (end_time, total_time) = self.experiment.end_experiment(self.invocation_count)
+        (end_time, total_time) = self.experiment.end_experiment()
         # experiment_running_time = end_time - self.start_time
         print('=================================================')
         print(f'Experiment end time: {time.ctime(int(end_time))}')
@@ -97,17 +108,18 @@ class Benchmarker:
     def dump_data(self):
         # store all data from experiment in database
         db = db_interface(self.dev_mode)
-        db.log_experiment(self.experiment)
+        db.log_experiment(self.experiment.uuid, self.experiment.log_experiment())
 
 
         if self.dev_mode:
             print('\n\n')
+            print('dev mode --------------------------------------')
             invocations_orig = self.experiment.get_invocations_original_form()
             print('Experiment:', self.experiment.name, 'invoked', len(
                 invocations_orig), 'times from its provider:', self.experiment.cl_provider)
-            invocations = self.experiment.get_invocations()
+            invocations = self.experiment.get_invocations(self.provider)
             print('EXPERIMENT META DATA')
-            print(self.experiment.dev_print())
+            # print(self.experiment.dev_print())
             print()
             print('SQL query for experiment:')
             print(self.experiment.get_experiment_query_string())
@@ -123,13 +135,17 @@ class Benchmarker:
                     print('SQL query for invocation')
                     print(invo.get_query_string())
                     print('-------------------------------------------')
+            print('----------------------------------------------')
 
     def end_experiment(self, invocation_count:int= None) -> None:
         if invocation_count != None:
             self.invocation_count = invocation_count
+        self.kill_background_sync()
         # log the experiment running time, and print to log
         self.log_experiment_running_time()
         self.dump_data()
+        self.provider.close()
+        
         
 
     # main method to be used by experiment clients
@@ -151,38 +167,87 @@ class Benchmarker:
             response[identifier]['invocation_total'] = response[identifier]['invocation_end'] - response[identifier]['invocation_start']
             response[identifier]['execution_total'] = response[identifier]['execution_end'] - response[identifier]['execution_start']
 
-        self.experiment.add_invocation(response)
+        self.experiment.add_invocations((self.idx,response))
+        self.idx += 1
 
         return response
 
     def invoke_function_conccurrently(self,
                                       function_name: str,
                                       numb_threads: int = 1,
-                                      function_args:dict= None
+                                      function_args:dict= None,
+                                      parse: bool = True,
                                       ) -> None:
        
-        response_list = self.provider.invoke_function_conccrently(function_name=function_name,
-                                                                  numb_threads=numb_threads,
-                                                                  function_args=function_args
+        response = self.provider.invoke_function_conccrently(function_name=function_name,
+                                                                  numb_requests=numb_threads,
+                                                                  function_args=function_args,
+                                                                  parse=parse,
                                                                   )
-
-        if response_list is None:
+        if response is None:
             raise EmptyResponseError(
                 'Error: Empty response from cloud function invocation.')
+       
+        if parse:
+            with self.append_lock:
+                self.experiment.add_invocations((self.idx, response))
+        else:
+            with self.future_lock:
+                self.futures.append((self.idx,response))
+                self.futures_parsed = False
+        self.idx += 1
+        return response if parse else None
 
-        self.experiment.add_invocations_list(response_list)
 
-        return response_list
+    def background_sync(self):
 
-    # def get_delay_between_experiment_iterations(self):
-    #     provider = self.experiment.get_cl_provider()
-    #     delay = self.db.get_delay_between_experiment(provider)
-    #     return delay if delay != None else 35 * 60
+        def sync_wrapper(bench):
+            try:
+                while(bench.sync_flag):
+                    while(not bench.futures_parsed):
+                       
+                        idx = None
+                        future = None
+                        with bench.future_lock:
+                            if len(bench.futures) > 0:
+                                val = self.futures.pop(0)
+                                idx = val[0]
+                                future = val[1]
+                            else:
+                                bench.futures_parsed = True
+                                print('breaking')
+                                break    
+                        
+                        print('still in loop')        
+                        result_list = list(map(lambda x: bench.provider.parse_data(x[0],x[1],x[2]),
+                                                            [d.result() for d in future.result()] ))
+                    
+                        with bench.append_lock:
+                            bench.experiment.add_invocations((idx, result_list))
+    
+            except Exception as e:
+                print('Exception caught in background sync')
+                print(str(type(e)))
+                print(str(e))
+                print(traceback.format_exc())
+                print('---------------------------------')
+        
+        background_thread = th.Thread(target=sync_wrapper, args=[self])
+        background_thread.start()
+
+    def kill_background_sync(self):
+        self.sync_flag = False
+        self.ensure_futures()
+        
+    
+    def ensure_futures(self):
+        while(not self.futures_parsed):
+            time.sleep(1)
 
 
 # create exception class for empty responses
-
 # do something smarter here
 class EmptyResponseError(RuntimeError):
     def __init__(self, error_msg: str):
         super(error_msg)
+

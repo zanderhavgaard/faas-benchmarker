@@ -5,8 +5,12 @@ import time
 import platform
 from functools import reduce
 from invocation import Invocation
+import function_lib as lib
 # remove for production
 from pprint import pprint
+import aiohttp
+import asyncio
+
 
 
 class Experiment:
@@ -37,35 +41,41 @@ class Experiment:
     def dev_print(self) -> None:
         pprint(vars(self))
 
-    def get_invocations(self) -> list:
-        return reduce(lambda x, y: x+y, self.invocations) if len(self.invocations) != 0 \
-            else [] and print('Error! no invocations') 
+    # def get_invocations(self) -> list:
+    #     return self.transform_invocations if len(self.invocations) != 0 \
+    #         else [] and print('Error! no invocations')     
 
+    # depreicated and never used
     def get_invocations_original_form(self) -> list:
         return self.invocations
 
     # make Invocation object out of function invocation dict and append to experiment list
-    def add_invocation(self, invocations: dict) -> None:
+    def add_invocations(self, args) -> None:
+        self.invocations.append(args)
+    
+
+    def get_invocations(self,dev:bool=False):
+    
+        self.invocations.sort(key=lambda tup: tup[0])
+        invocations_flattened = lib.flatten_list([],list(map(lambda x: x[1],self.invocations)))
+        
+        # print('invocations_flattened',invocations_flattened)
         invocation_list = []
-        root = invocations.pop('root_identifier')
+        
+        for val in invocations_flattened:
+            root = val.pop('root_identifier')
 
-        for x in invocations.keys():
-            invocation_list.append(Invocation(self.uuid, root, invocations[x]))
-
-        self.invocations.append(invocation_list)
-        invocations['root_identifier'] = root
-
-    # for concurrent invoked function runs that returns a list of invocation dicts
-    def add_invocations_list(self, invocations: list) -> None:
-        for i in invocations:
-            self.add_invocation(i)
+            for x in val.keys():
+                invocation_list.append(Invocation(self.uuid, root, val[x]) if not dev else val[x])
+            val['root_identifier'] = root
+        
+        return invocation_list
+        
 
     # end experiment, log time and return some data to benchmarker
-    def end_experiment(self, invocation_count:int):
+    def end_experiment(self):
         self.end_time = time.time()
         self.total_time = self.end_time - self.start_time
-        if invocation_count != 0:
-            self.invocation_count = invocation_count
         return (self.end_time, self.total_time)
 
     def get_experiment_query_string(self) -> str:
@@ -77,4 +87,6 @@ class Experiment:
         return 'INSERT INTO Experiment ({0}) VALUES ({1});'.format(keys[:-1], vals[:-1])
 
     def log_experiment(self):
+        # invocations = [x if type(x)__name__ == 'dict' else providor.parse_data( x.result()) for x in self.get_invocations()]
+        # [self.parse_data(a,b,c) for (a,b,c) in map(lambda x: x.result(), tasks)]
         return ([self.get_experiment_query_string()], list(reduce(lambda x,y: x+y, [i.get_query_string() for i in self.get_invocations()])) )

@@ -13,14 +13,17 @@ class SQL_Interface:
     def __init__(self, dev_mode: bool = False):
         self.tunnel = SSH_query(dev_mode)
 
-    def log_experiment(self, experiment) -> None:
+    def log_experiment(self, uuid, queries) -> None:
         # a tuble of lists, first the query of the experiment, second arbitrary many invocations
-        (experiment_query, invocation_queries) = experiment.log_experiment()
-        if(self.tunnel.insert_queries(experiment_query)):
+        (experiment_query, invocation_queries) = queries
+       
+        flag = self.tunnel.insert_queries(experiment_query)
+        print('flag',flag)
+        if(flag):
             was_successful = self.tunnel.insert_queries(invocation_queries)
             print(
                 '|------------------------- INSERTING EXPERIMENT DATA IN DB -------------------------|')
-            print('Experiment with UUID:', experiment.uuid,
+            print('Experiment with UUID:', uuid,
                   'successfully inserted data in DB:', was_successful)
             print()
 

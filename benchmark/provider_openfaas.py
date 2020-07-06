@@ -5,15 +5,16 @@ import dotenv
 import os
 from provider_abstract import AbstractProvider
 import traceback
-import sys
 import http
 from pprint import pprint
+import aiohttp
+import asyncio
 
 
 class OpenFaasProvider(AbstractProvider):
 
     def __init__(self, experiment_name: str, env_file_path: str) -> None:
-
+        AbstractProvider.__init__(self)
         #log some metadata
         self.experiment_name = experiment_name
         self.env_file_path = env_file_path
@@ -26,70 +27,92 @@ class OpenFaasProvider(AbstractProvider):
             'Content-Type': 'application/json'
         }
 
-    def invoke_function(self,
-                        function_name:str,
-                        function_args:dict = None
+    
+    async def invoke_wrapper(self,
+                        url:str,
+                        data,
+                        aiohttp_session,
                         ) -> dict:
-        
-        # set default value for sleep if not present in function_args
-        # if function_args is not None:
-        #     sleep = function_args["sleep"] if "sleep" in function_args.keys() else 0.0
-        # else:
-        #     sleep = 0.0
-
-        # paramters, the only required paramter is the statuscode
-        if function_args is None:
-            function_args = {"StatusCode":200}
-        else:
-            function_args["StatusCode"] = 200
-            
-
-        # for openfaas we do not need the endpoint, as it is always the same
-        # create url of function to invoke
-        invoke_url = f'http://localhost:8080/function/{function_name}'
 
         # log start time of invocation
         start_time = time.time()
 
         try:
-            # the invocation might fail if it is a cold start,
-            # seems to be some timeout issue, so in that case we try again
-            for i in range(5):
-                try:
-                    # invoke the function
-                    response = requests.post(
-                        url=invoke_url,
+            # async with aiohttp.ClientSession() as session:
+            response_code = 0
+            res = None
+            async with aiohttp_session as session:
+                for i in range(5):
+                    async with session.post(
+                        url=url,
                         headers=self.headers,
-                        data=json.dumps(function_args),
+                        data=json.dumps(data),
                         timeout=self.request_timeout
-                    )
-                    if response.status_code == 200:
-                        break
-                    print(f'Invocation attempt {i} Did not get a 200 statuscode, retrying ...')
-                except Exception as e:
-                    print(
-                        f"Caught an error for attempt {i}, retrying invocation ...")
-                    print(e)
-                    continue
-            else:
-                print('Reached max number of incovation retries, continueing experiment ...')
-                response = None
+                    ) as response:
+                        response_code = response.status
+                        if response_code == 200:
+                            res = await response.json()
+                            break
+                        else:
+                            res = await response.text()
+                            print(f'E001 : A non 200 response code recieved at iteration {i}. \
+                                    Response_code: {response.status}, message: {res}')
+                            
+            return (res, start_time,time.time()) if response_code == 200 \
+                                                else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time())
+        except Exception as e:
+            return self.error_response(start_time=start_time, exception=e)  
+    
+    def invoke_function(self,
+                        function_name:str,
+                        function_args:dict = None,
+                        ) -> dict:
+        
+        if function_args is None:
+            function_args = {"StatusCode":200}
+        else:
+            function_args["StatusCode"] = 200
+        
+        # set default value for sleep if not present in function_args
+        if 'sleep' not in function_args:
+            function_args["sleep"] = 0.0
+        
+        try:
+            
+            # for openfaas we do not need the endpoint, as it is always the same
+            # create url of function to invoke
+            invoke_url = self.get_url(function_name)
 
-            # log the end time of the invocation
-            end_time = time.time()
+            loop = asyncio.get_event_loop()
+            
+            tasks = [asyncio.ensure_future(self.invoke_wrapper(invoke_url,
+                                        function_args, 
+                                        aiohttp.ClientSession()))]
 
-            # if succesfull invocation parse response
-            if (response != None) and (response.status_code == 200):
+            loop.run_until_complete(asyncio.wait(tasks))
 
-                response_json = json.loads(response.content.decode())
+            (response,start_time,end_time) = tasks[0].result()
+        
+            return self.parse_data(response,start_time,end_time)
+        
+        except Exception as e:
+            return self.error_response(start_time=time.time(),exception=e)
 
+
+    
+    def parse_data(self, response:dict, start_time:float, end_time:float) -> dict:
+        try:
+        
+            if (response != None) and (response['statusCode'] == 200):
+                    
                 # get the identifier
-                identifier = response_json['identifier']
+                # identifier = response_json['identifier']
+                identifier = response['identifier']
 
                 # parse response body
-                response_data = json.loads(response_json['body'])
+                response_data = json.loads(response['body'])
 
-                # insert thread_id and total number of threads for the sake of format fot database
+                # insert thread_id and total number of threads for the sake of format for database
                 for val in response_data:
                     response_data[val]['numb_threads'] = 1
                     response_data[val]['thread_id'] = 1
@@ -102,14 +125,16 @@ class OpenFaasProvider(AbstractProvider):
                 return response_data
 
             else:
+                statuscode = response['statusCode']
+                message = response['message']
                 error_dict = {
                     f'StatusCode-error-provider_openfaas-{self.experiment_name}-{str(end_time)}': {
                         'identifier': f'StatusCode-error-provider_openfaas-{self.experiment_name}-{str(end_time)}',
                         'uuid': None,
                         'function_name': self.experiment_name,
-                        'error': {'trace': f'None 200 code in provider_openfaas: {str(response.status_code)}', 'type': 'StatusCodeException', 'message': 'statuscode: {str(response.status_code)}'},
+                        'error': {'trace': f'None 200 code in provider_openfaas: {str(statuscode)}', 'type': 'StatusCodeException', 'message': message},
                         'parent': None,
-                        'sleep': 0.0,
+                        'sleep': response['sleep'],
                         'numb_threads': 1,
                         'thread_id': 1,
                         'python_version': None,
@@ -126,26 +151,35 @@ class OpenFaasProvider(AbstractProvider):
                 return error_dict
 
         except Exception as e:
-            end_time = time.time()
-            error_dict = {
-                f'exception-provider_openfaas-{self.experiment_name}-{end_time}': {
-                    'identifier': f'exception-provider_openfaas-{self.experiment_name}-{end_time}',
-                    'uuid': None,
-                    'function_name': self.experiment_name,
-                    'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
-                    'parent': None,
-                    'sleep': 0.0,
-                    'numb_threads': 1,
-                    'thread_id': 1,
-                    'python_version': None,
-                    'level': None,
-                    'memory': None,
-                    'instance_identifier': None,
-                    'execution_start': None,
-                    'execution_end': None,
-                    'invocation_start': start_time,
-                    'invocation_end': end_time
-                },
-                'root_identifier': f'exception-provider_openfaas-{self.experiment_name}-{end_time}'
-            }
-            return error_dict
+            return self.error_response(start_time=start_time, exception=e)
+
+
+    def error_response(self, start_time, exception):
+        end_time = time.time()
+        error_dict = {
+            f'exception-provider_openfaas-{self.experiment_name}-{end_time}': {
+                'identifier': f'exception-provider_openfaas-{self.experiment_name}-{end_time}',
+                'uuid': None,
+                'function_name': self.experiment_name,
+                'error': {"trace": traceback.format_exc(), "type": str(type(exception).__name__), 'message': str(exception)},
+                'parent': None,
+                'sleep': 0.0,
+                'numb_threads': 1,
+                'thread_id': 1,
+                'python_version': None,
+                'level': None,
+                'memory': None,
+                'instance_identifier': None,
+                'execution_start': None,
+                'execution_end': None,
+                'invocation_start': start_time,
+                'invocation_end': end_time
+            },
+            'root_identifier': f'exception-provider_openfaas-{self.experiment_name}-{end_time}'
+        }
+        return error_dict
+    
+
+    def get_url(self,function_name:str):
+        return f'http://localhost:8080/function/{function_name}'
+
