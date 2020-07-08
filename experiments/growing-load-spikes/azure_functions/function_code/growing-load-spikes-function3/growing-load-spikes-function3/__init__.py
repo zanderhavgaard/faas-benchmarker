@@ -42,11 +42,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         # parse request json
         req_json = json.loads(req.get_body())
 
-        # make sure that things are working...
-        if req_json['StatusCode'] != 200:
-            raise StatusCodeException(
-                'StatusCode: '+str(req_json['StatusCode']))
-
         if 'parent' not in req_json:
             # if first in chain mark as root
             body[identifier]['parent'] = 'root'
@@ -64,8 +59,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         if 'sleep' in req_json:
             time.sleep(req_json['sleep'])
             body[identifier]['sleep'] = req_json['sleep']
-        else:
-            body[identifier]['sleep'] = 0.0
 
         if 'throughput_time' in req_json:
             random.seed(req_json['throughput_time'] * 100)
@@ -83,12 +76,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['throughput_time'] = req_json['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = req_json['throughput_time'] * 100
-        else:
-            body[identifier]['throughput_running_time'] = None
-            body[identifier]['throughput'] = 0.0
-            body[identifier]['throughput_time'] = None
-            body[identifier]['throughput_process_time'] = None
-            body[identifier]['random_seed'] = None
+     
 
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
@@ -214,8 +202,8 @@ def invoke_nested_function(function_name: str,
     except Exception as e:
         end_time = time.time()
         return {
-            "error-"+function_name+'-nested_invocation-'+str(end_time): {
-                "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
+            f"error-{function_name}-nested_invocation-{end_time}": {
+                "identifier": f"error-{function_name}-nested_invocation-{end_time}",
                 "uuid": None,
                 "function_name": 'function1',
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
@@ -241,6 +229,3 @@ def invoke_nested_function(function_name: str,
             }
         }
 
-
-class StatusCodeException(Exception):
-    pass
