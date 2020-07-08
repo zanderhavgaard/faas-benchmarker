@@ -84,15 +84,6 @@ class AWSLambdaProvider(AbstractProvider):
                         function_args:dict = None
                         ) -> dict:
 
-        # paramters, the only required paramter is the statuscode
-        if function_args is None:
-            function_args = {"StatusCode": 200}
-        else:
-            function_args["StatusCode"] = 200
-
-        # set default value for sleep if not present in function_args
-        if 'sleep' not in function_args:
-            function_args["sleep"] = 0.0
         
         try:
 
@@ -103,7 +94,7 @@ class AWSLambdaProvider(AbstractProvider):
 
             tasks = [asyncio.ensure_future(self.invoke_wrapper(
                                                 url=invoke_url,
-                                                data=function_args, 
+                                                data=function_args if function_args != None else {}, 
                                                 aiohttp_session=aiohttp.ClientSession(),
                                                 thread_number=1,
                                                 number_of_threads=1))]

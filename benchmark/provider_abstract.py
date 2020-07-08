@@ -48,10 +48,6 @@ class AbstractProvider(ABC):
                                     function_args:dict= None,
                                     parse:bool = True) -> list:
         try:
-            if function_args is None:
-                function_args = {"StatusCode": 200}
-            else:
-                function_args["StatusCode"] = 200
 
             invoke_url = self.get_url(function_name)
 
@@ -67,7 +63,7 @@ class AbstractProvider(ABC):
                 for i in range(numb_requests):
                     tasks.append(asyncio.ensure_future(bench.invoke_wrapper(
                                                 url=url,
-                                                data=function_args, 
+                                                data=function_args if function_args != None else {}, 
                                                 aiohttp_session=aiohttp.ClientSession(),
                                                 thread_number=i,
                                                 number_of_threads=numb_requests)))
@@ -86,14 +82,15 @@ class AbstractProvider(ABC):
 
             
     def print_error(self, *args, exception: Exception) -> None:
+        if args != None:
             for arg in args:
                 print(args)
-            print('type:', str(type(exception)))
-            print('message: ', str(exception))
-            print('-----------------------------------------------------------------')
-            print('trace:')
-            print(traceback.format_exc())
-            print('-----------------------------------------------------------------')
+        print('type:', str(type(exception)))
+        print('message: ', str(exception))
+        print('-----------------------------------------------------------------')
+        print('trace:')
+        print(traceback.format_exc())
+        print('-----------------------------------------------------------------')
 
 # auxiliary method for running X number of threads on a core/cpu
 
