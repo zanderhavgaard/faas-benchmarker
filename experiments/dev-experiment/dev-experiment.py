@@ -6,6 +6,8 @@ from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
 import uuid
+from datetime import datetime
+
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -218,11 +220,9 @@ def sequential_sanity_check():
     # =====================================================================================
 
 def concurrent_sanity_check():
-    benchmarker = create_benchmarker(experiment_name, 'run with different thread counts')
-    response = benchmarker.invoke_function_conccurrently(function_name='function1',numb_threads=8)
-    pprint(response)
-    print()
-
+    
+    benchmarker = create_benchmarker(experiment_name+str(1), 'run with different thread counts')
+    
     response = benchmarker.invoke_function_conccurrently(function_name='function1',numb_threads=1)
     pprint(response)
     print()
@@ -450,9 +450,158 @@ def db_interface_sanity_check():
 
 # ============================================================
 # run the tests - comment out to leave out
+def low_level_conccurent():
+    import function_lib as lib
+    from functools import reduce
+    num_invo = 30
+    benchmarker1 = create_benchmarker(experiment_name+str(1), 'run with different thread counts')
+    benchmarker2 = create_benchmarker(experiment_name+str(2), 'run with different thread counts')
+    benchmarker3 = create_benchmarker(experiment_name+str(3), 'run with different thread counts')
+    benchmarker4 = create_benchmarker(experiment_name+str(4), 'run with different thread counts')
+    benchmarker5 = create_benchmarker(experiment_name+str(5), 'run with different thread counts')
+    start_times = []
+
+    def bench(fx,b):
+        ts = time.time()
+        response = fx()
+        te = time.time()
+        start_times.append((ts,te,b))
+        print('bench time',te-ts)
+    
+    def print_dev(args,end=True,pr=False):
+       
+        (ts,te,benchmarker) = args
+        print('futures parsed pre',benchmarker.futures_parsed)
+        benchmarker.ensure_futures()
+        print('futures parsed post',benchmarker.futures_parsed)
+        responses = benchmarker.experiment.get_invocations(dev=True)
+
+        # pprint(res)
+        print()
+        # responses = list(map(lambda x: lib.get_dict(x),res))
+        if pr:
+            print('printing responses')
+            pprint(responses)
+            print()
+        # pprint(responses)
+        print('running time',datetime.fromtimestamp(te-ts))
+        print('length of responselist',len(responses))
+        filtered = list(filter(lambda x: 'error' not in x, responses))
+        errors = len(responses) - len(filtered)
+        filtered = errors if len(filtered) == 0 else filtered
+        print('number of errors',errors)
+        # latency = lib.reduce_dict_by_keys((list(map(lambda x: lib.get_dict(x),responses)),('execution_start','invocation_start')))
+        print()
+        latency = list(map(lambda x: x['execution_start']-x['invocation_start'],filtered) ) 
+        print('latency',latency)
+        avg_latency = reduce(lambda x,y: x+y,latency)/len(latency)
+        print('avg latency',datetime.fromtimestamp(avg_latency))
+        print()
+        invocation_start = list(map(lambda x: x['invocation_start'],filtered))
+        print('invocation_start',invocation_start)
+        print()
+        avg_invo_start = reduce(lambda x,y: x+y, invocation_start) / len(invocation_start)
+        print('avg_invocation_start',datetime.fromtimestamp( avg_invo_start))
+        print()
+        invocation_time_offset = list(map(lambda x: x-ts,invocation_start))
+        print('invocation_time_offset',invocation_time_offset)
+        print()
+        print('avg invocation_time_offset',datetime.fromtimestamp( avg_invo_start - ts))
+        print()
+        time_from_start = list(map(lambda x: x['invocation_start']-ts,filtered))
+        print('time_from_start',time_from_start)
+        print()
+        avg_time_from_start = reduce(lambda x,y: x+y, time_from_start) / len(time_from_start)
+        print('avg_time_from_start',datetime.fromtimestamp(avg_time_from_start))
+        print()
+        time_to_exc_end = list(map(lambda x: x['execution_end']-ts,filtered))
+        print('time_to_exc_end',time_to_exc_end)
+        avg_time_to_exc_end = reduce(lambda x,y: x+y, time_to_exc_end) / len(time_to_exc_end)
+        print('avg_time_to_exc_end',datetime.fromtimestamp(avg_time_to_exc_end))
+        print()
+        if end:
+            print('ending experiment')
+            benchmarker.end_experiment()
+        print('----------------------------------------------------')
+    
+    bench(lambda : benchmarker1.invoke_function_conccurrently(function_name='function1',numb_threads=num_invo,parse=True),benchmarker1)
+    bench(lambda : benchmarker2.invoke_function_conccurrently(function_name='function1',numb_threads=num_invo,parse=False),benchmarker2)
+    time.sleep(30)
+    num_invo = 20
+    bench(lambda : benchmarker3.invoke_function_conccurrently(function_name='function1',numb_threads=num_invo,parse=False),benchmarker3)
+    time.sleep(30)
+    num_invo = 30
+    print()
+    print('divider')
+    print()
+    bench(lambda: [benchmarker4.invoke_function('function1') for i in range(num_invo)],benchmarker4)
+    time.sleep(60)
+    print('start_times')
+    for idx,(t,te,b) in enumerate(start_times):
+        if idx == 0:
+            print('first', t)
+        else:
+            print('time_between', t-start_times[idx-1][0])
+
+    print()
+    
+    for idx,x in enumerate(start_times):
+        print(f'--------- benchmarker {idx+1} ---------------------')
+        print_dev(x,end=True)
+    
+    print()
+    num_invo = 10
+    # time.sleep(5)
+    # print()
+    print('last round')
+    start_times = []
+    for i in range(5):
+        bench(lambda : benchmarker5.invoke_function_conccurrently(function_name='function1',numb_threads=num_invo,parse=False),benchmarker5)
+        # if i == 1:
+        #     time.sleep(20)
+    for idx,(t,te,b) in enumerate(start_times):
+        if idx == 0:
+            print('first', t)
+        else:
+            print('time_between', t-start_times[idx-1][0])
+
+    print()
+    for idx,x in enumerate(start_times):
+        print(f'--------- multi! benchmarker {idx+1} ---------------------')
+        print_dev(x,end=False)
+        # if i == 0:
+        #     benchmarker5.experiment.invocations = []
+
+
+
+    # print()
+    # print('length of starttime',len(start_times))
+    # print('starttimes')
+    # for idx,(t,te,b) in enumerate(start_times):
+    #     if idx == 0:
+    #         print('first', t)
+    #     else:
+    #         print('time_between', t-start_times[idx-1][0])
+    
+    # print()
+    # time.sleep(20)
+    # for idx,x in enumerate(start_times):
+    #     print('print_dev for',idx,'!!!!!!!!!!!!!!!!!!!!!!!!!')
+    #     print_dev(x,False)
+    
+    # =====================================================================================
+    # end of the experiment
+    (a,b,c) = start_times[0]
+    c.end_experiment()
+    # =====================================================================================
+
 sequential_sanity_check()
 concurrent_sanity_check()
 test_monolith()
 db_interface_sanity_check()
+
+# only relevant if changes to concurrent implementation is made
+# low_level_conccurent()
+
 db.delete_dev_mode_experiments()
 

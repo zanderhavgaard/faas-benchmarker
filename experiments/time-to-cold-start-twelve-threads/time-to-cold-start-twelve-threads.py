@@ -199,7 +199,7 @@ try:
     # increment for each iteration
     increment = sleep_time
     # granularity of result
-    granularity = 10
+    granularity = 20
     # value for last response latency
     latest_latency_time = avg_warmtime
 
