@@ -38,10 +38,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
             },
         }
 
-        # make sure that things are working...
-        if event['StatusCode'] != 200:
-            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
-
         # set parent (previous invocation) of this invocation
         if 'parent' not in event:
             # if first in chain mark as root
@@ -60,8 +56,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
         if 'sleep' in event:
             time.sleep(event['sleep'])
             body[identifier]['sleep'] = event['sleep']
-        else:
-            body[identifier]['sleep'] = 0.0
+        
 
         if 'throughput_time' in event:
             random.seed(event['throughput_time'] * 100)
@@ -79,12 +74,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
             body[identifier]['throughput_time'] = event['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = event['throughput_time'] * 100
-        else:
-            body[identifier]['throughput'] = 0.0
-            body[identifier]['throughput_running_time'] = None
-            body[identifier]['throughput_time'] = None
-            body[identifier]['throughput_process_time'] = None
-            body[identifier]['random_seed'] = None
+        
 
         # add invocation metadata to response
         if context is None:
@@ -235,41 +225,4 @@ def invoke_lambda(lambda_name: str,
         }
 
 
-class StatusCodeException(Exception):
-    pass
 
-
-# call the method if running locally
-#  if __name__ == "__main__":
-
-    #  simplest invoke
-    #  test_event = {"StatusCode": 200}
-
-    #  invoke with sleep
-    #  test_event = {"StatusCode": 200, 'sleep': 1.5}
-
-    #  invoke with nested invocations
-    #  test_event = {"StatusCode": 200,
-    #  "invoke_nested": [
-    #  {
-    #  "function_name": "dev2-python",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  "sleep": 0.5,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  {
-    #  "function_name": "dev3-python",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  ],
-    #  }
-
-    #  test_context = None
-
-    #  response = lambda_handler(test_event, test_context)
-    #  print(response)
