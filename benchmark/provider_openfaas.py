@@ -14,6 +14,7 @@ import asyncio
 class OpenFaasProvider(AbstractProvider):
 
     def __init__(self, experiment_name: str, env_file_path: str) -> None:
+        # Create executor service
         AbstractProvider.__init__(self)
         #log some metadata
         self.experiment_name = experiment_name
@@ -30,8 +31,10 @@ class OpenFaasProvider(AbstractProvider):
     
     async def invoke_wrapper(self,
                         url:str,
-                        data,
-                        aiohttp_session,
+                        data:dict,
+                        aiohttp_session:aiohttp.ClientSession,
+                        thread_number:int,
+                        number_of_threads:int
                         ) -> dict:
 
         # log start time of invocation
@@ -58,10 +61,11 @@ class OpenFaasProvider(AbstractProvider):
                             print(f'E001 : A non 200 response code recieved at iteration {i}. \
                                     Response_code: {response.status}, message: {res}')
                             
-            return (res, start_time,time.time()) if response_code == 200 \
-                                                else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time())
+            return (res, start_time, time.time(), thread_number, number_of_threads) if response_code == 200 \
+                    else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time(), thread_number, number_of_threads)
+
         except Exception as e:
-            return self.error_response(start_time=start_time, exception=e)  
+            return ({'statusCode': 9999999, 'message': str(e)}, time.time(), time.time(), thread_number, number_of_threads)
     
     def invoke_function(self,
                         function_name:str,
@@ -85,22 +89,25 @@ class OpenFaasProvider(AbstractProvider):
 
             loop = asyncio.get_event_loop()
             
-            tasks = [asyncio.ensure_future(self.invoke_wrapper(invoke_url,
-                                        function_args, 
-                                        aiohttp.ClientSession()))]
+            tasks = [asyncio.ensure_future(self.invoke_wrapper(
+                                                url=invoke_url,
+                                                data=function_args, 
+                                                aiohttp_session=aiohttp.ClientSession(),
+                                                thread_number=1,
+                                                number_of_threads=1))]
 
             loop.run_until_complete(asyncio.wait(tasks))
 
-            (response,start_time,end_time) = tasks[0].result()
-        
-            return self.parse_data(response,start_time,end_time)
+            (response,start_time,end_time, thread_number, number_of_threads) = tasks[0].result()
+
+            return self.parse_data(response,start_time,end_time, thread_number, number_of_threads)
         
         except Exception as e:
             return self.error_response(start_time=time.time(),exception=e)
 
 
     
-    def parse_data(self, response:dict, start_time:float, end_time:float) -> dict:
+    def parse_data(self, response:dict, start_time:float, end_time:float, thread_number:int, number_of_threads:int) -> dict:
         try:
         
             if (response != None) and (response['statusCode'] == 200):
@@ -114,8 +121,8 @@ class OpenFaasProvider(AbstractProvider):
 
                 # insert thread_id and total number of threads for the sake of format for database
                 for val in response_data:
-                    response_data[val]['numb_threads'] = 1
-                    response_data[val]['thread_id'] = 1
+                    response_data[val]['numb_threads'] = thread_number
+                    response_data[val]['thread_id'] = number_of_threads
 
                 # add invocation metadata to response
                 response_data[identifier]['invocation_start'] = start_time
@@ -134,7 +141,7 @@ class OpenFaasProvider(AbstractProvider):
                         'function_name': self.experiment_name,
                         'error': {'trace': f'None 200 code in provider_openfaas: {str(statuscode)}', 'type': 'StatusCodeException', 'message': message},
                         'parent': None,
-                        'sleep': response['sleep'],
+                        'sleep': 0.0,
                         'numb_threads': 1,
                         'thread_id': 1,
                         'python_version': None,

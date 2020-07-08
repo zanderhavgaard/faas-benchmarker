@@ -219,7 +219,7 @@ class Benchmarker:
                                 bench.futures_parsed = True
                                 break       
 
-                        result_list = list(map(lambda x: bench.provider.parse_data(x[0],x[1],x[2]),
+                        result_list = list(map(lambda x: bench.provider.parse_data(x[0],x[1],x[2],x[3],x[4]),
                                                             future.result() ))
                         
                         with bench.append_lock:

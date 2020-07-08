@@ -221,7 +221,7 @@ def sequential_sanity_check():
 
 def concurrent_sanity_check():
     
-    benchmarker = create_benchmarker(experiment_name+str(1), 'run with different thread counts')
+    benchmarker = create_benchmarker(experiment_name, 'run with different thread counts')
     
     response = benchmarker.invoke_function_conccurrently(function_name='function1',numb_threads=1)
     pprint(response)

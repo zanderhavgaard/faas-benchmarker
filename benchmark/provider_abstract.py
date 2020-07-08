@@ -65,9 +65,12 @@ class AbstractProvider(ABC):
                 tasks = []
 
                 for i in range(numb_requests):
-                    tasks.append(asyncio.ensure_future(bench.invoke_wrapper(url,
-                                                function_args, 
-                                                aiohttp.ClientSession())))
+                    tasks.append(asyncio.ensure_future(bench.invoke_wrapper(
+                                                url=url,
+                                                data=function_args, 
+                                                aiohttp_session=aiohttp.ClientSession(),
+                                                thread_number=i,
+                                                number_of_threads=numb_requests)))
                 
                 loop.run_until_complete(asyncio.wait(tasks))
                 loop.close()
@@ -76,7 +79,7 @@ class AbstractProvider(ABC):
             
             future = self.executor.submit(asyncio_execution, self, invoke_url, numb_requests, function_args)
 
-            return future if not parse else [self.parse_data(a,b,c) for (a,b,c) in  future.result()]
+            return future if not parse else [self.parse_data(a,b,c,d,e) for (a,b,c,d,e) in  future.result()]
         
         except Exception as e:
             self.print_error(function_args,e)

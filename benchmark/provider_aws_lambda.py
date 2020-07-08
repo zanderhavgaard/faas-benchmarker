@@ -14,6 +14,8 @@ import asyncio
 class AWSLambdaProvider(AbstractProvider):
 
     def __init__(self, experiment_name: str, env_file_path: str) -> None:
+        # Create executor service
+        AbstractProvider.__init__(self)
 
         # name of experiment to conduct
         self.experiment_name = experiment_name
@@ -30,6 +32,7 @@ class AWSLambdaProvider(AbstractProvider):
             'Content-Type': 'application/json'
         }
 
+
     # load .env file and parse values
     def load_env_vars(self, env_file_path: str) -> None:
         dotenv.load_dotenv(dotenv_path=env_file_path)
@@ -38,8 +41,10 @@ class AWSLambdaProvider(AbstractProvider):
     
     async def invoke_wrapper(self,
                         url:str,
-                        data,
-                        aiohttp_session,
+                        data:dict,
+                        aiohttp_session:aiohttp.ClientSession,
+                        thread_number:int,
+                        number_of_threads:int
                         ) -> dict:
 
         # log start time of invocation
@@ -66,10 +71,10 @@ class AWSLambdaProvider(AbstractProvider):
                             print(f'E001 : A non 200 response code recieved at iteration {i}. \
                                     Response_code: {response.status}, message: {res}')
                             
-            return (res, start_time,time.time()) if response_code == 200 \
-                                                else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time())
+            return (res, start_time, time.time(), thread_number, number_of_threads) if response_code == 200 \
+                    else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time(), thread_number, number_of_threads)
         except Exception as e:
-            return self.error_response(start_time=start_time, exception=e) 
+            return ({'statusCode': 9999999, 'message': str(e)}, time.time(), time.time(), thread_number, number_of_threads)
 
     # in the case of AWS Lambda the name actually references
     # the api endpoint where the funcion is attached:
@@ -96,18 +101,23 @@ class AWSLambdaProvider(AbstractProvider):
 
             loop = asyncio.get_event_loop()
 
-            tasks = [asyncio.ensure_future(self.invoke_wrapper(invoke_url,
-                                        function_args, 
-                                        aiohttp.ClientSession()))]
+            tasks = [asyncio.ensure_future(self.invoke_wrapper(
+                                                url=invoke_url,
+                                                data=function_args, 
+                                                aiohttp_session=aiohttp.ClientSession(),
+                                                thread_number=1,
+                                                number_of_threads=1))]
 
-            (response,start_time,end_time) = tasks[0].result()
+            loop.run_until_complete(asyncio.wait(tasks))
 
-            return self.parse_data(response,start_time,end_time)
+            (response,start_time,end_time, thread_number, number_of_threads) = tasks[0].result()
+
+            return self.parse_data(response,start_time,end_time, thread_number, number_of_threads)
         
         except Exception as e:
-            return self.error_response(start_time=time.time(),exception=e)
+            return (self.error_response(start_time=start_time, exception=e),start_time, time.time(), thread_number, number_of_threads)
            
-    def parse_data(self, response:dict, start_time:float, end_time:float) -> dict:
+    def parse_data(self, response:dict, start_time:float, end_time:float, thread_number:int, number_of_threads:int) -> dict:
         try:
             # if succesfull invocation parse response
             if (response != None) and (response['statusCode'] == 200):
@@ -120,8 +130,8 @@ class AWSLambdaProvider(AbstractProvider):
 
                 # insert thread_id and total number of threads for the sake of format fot database
                 for val in response_data:
-                    response_data[val]['numb_threads'] = 1
-                    response_data[val]['thread_id'] = 1
+                    response_data[val]['thread_id'] = thread_number
+                    response_data[val]['numb_threads'] = number_of_threads
 
                 # add invocation metadata to response
                 response_data[identifier]['invocation_start'] = start_time
@@ -140,7 +150,7 @@ class AWSLambdaProvider(AbstractProvider):
                         'function_name': self.experiment_name,
                         'error': {'trace': f'None 200 code in provider_openfaas: {str(statuscode)}', 'type': 'StatusCodeException', 'message': message},
                         'parent': None,
-                        'sleep': response['sleep'],
+                        'sleep': 0.0,
                         'numb_threads': 1,
                         'thread_id': 1,
                         'python_version': None,
