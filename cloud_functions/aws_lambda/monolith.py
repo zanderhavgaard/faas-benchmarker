@@ -82,9 +82,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
             },
         }
 
-        # make sure that things are working...
-        if event['StatusCode'] != 200:
-            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
+        
 
         # set parent (previous invocation) of this invocation
         if 'parent' not in event:
@@ -104,8 +102,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
         if 'sleep' in event:
             time.sleep(event['sleep'])
             body[identifier]['sleep'] = event['sleep']
-        else:
-            body[identifier]['sleep'] = 0.0
+       
 
         if 'throughput_time' in event:
             random.seed(event['throughput_time'] * 100)
@@ -123,12 +120,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
             body[identifier]['throughput_time'] = event['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = event['throughput_time'] * 100
-        else:
-            body[identifier]['throughput'] = 0.0
-            body[identifier]['throughput_running_time'] = None
-            body[identifier]['throughput_time'] = None
-            body[identifier]['throughput_process_time'] = None
-            body[identifier]['random_seed'] = None
+        
 
         # add invocation metadata to response
         if context is None:
@@ -1956,8 +1948,8 @@ def invoke_lambda(lambda_name: str,
     except Exception as e:
         end_time = time.time()
         return {
-            "error-"+lambda_name+'-nested_invocation-'+str(end_time): {
-                "identifier": "error-"+lambda_name+'-nested_invocation-'+str(end_time),
+            f"error-{lambda_name}-nested_invocation-{end_time}": {
+                "identifier": f"error-{lambda_name}-nested_invocation-{end_time}",
                 "uuid": None,
                 "function_name": 'monolith',
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
@@ -1982,8 +1974,5 @@ def invoke_lambda(lambda_name: str,
             }
         }
 
-
-class StatusCodeException(Exception):
-    pass
 
 

@@ -9,10 +9,6 @@ import random
 
 
 def handle(req):
-    """handle a request to the function
-    Args:
-        req (str): request body
-    """
 
     # get start time
     start_time = time.time()
@@ -42,9 +38,6 @@ def handle(req):
         # load json to string to dict
         event = json.loads(req)
 
-        # make sure that things are working...
-        if event['StatusCode'] != 200:
-            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
 
          # set parent (previous invocation) of this invocation
         if 'parent' not in event:
@@ -64,8 +57,6 @@ def handle(req):
         if 'sleep' in event:
             time.sleep(event['sleep'])
             body[identifier]['sleep'] = event['sleep']
-        else:
-            body[identifier]['sleep'] = 0.0
 
         if 'throughput_time' in event:
             random.seed(event['throughput_time'] * 100)
@@ -83,12 +74,6 @@ def handle(req):
             body[identifier]['throughput_time'] = event['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = event['throughput_time'] * 100
-        else:
-            body[identifier]['throughput'] = 0.0
-            body[identifier]['throughput_running_time'] = None
-            body[identifier]['throughput_time'] = None
-            body[identifier]['throughput_process_time'] = None
-            body[identifier]['random_seed'] = None
 
         # add ip address of container to uniqely differentiate container instances
         body[identifier]['instance_identifier'] = str(
@@ -213,8 +198,8 @@ def invoke_nested_function(function_name: str,
     except Exception as e:
         end_time = time.time()
         return {
-            "error-"+function_name+'-nested_invocation-'+str(end_time): {
-                "identifier": "error-"+function_name+'-nested_invocation-'+str(end_time),
+            f"error-{function_name}-nested_invocation-{end_time}": {
+                "identifier": f"error-{function_name}-nested_invocation-{end_time}",
                 "uuid": None,
                 "function_name": 'function1',
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
@@ -240,5 +225,3 @@ def invoke_nested_function(function_name: str,
         }
 
 
-class StatusCodeException(Exception):
-    pass

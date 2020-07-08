@@ -28,9 +28,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
     identifier = f'{function_name}-{invocation_uuid}'
 
     try:
-        # make sure that things are working...
-        if event['StatusCode'] != 200:
-            raise StatusCodeException('StatusCode: '+str(event['StatusCode']))
 
         # create a dict that will be parsed to json
         body = {
@@ -59,8 +56,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
         if 'sleep' in event:
             time.sleep(event['sleep'])
             body[identifier]['sleep'] = event['sleep']
-        else:
-            body[identifier]['sleep'] = 0.0
+    
 
         if 'throughput_time' in event:
             random.seed(event['throughput_time'] * 100)
@@ -77,13 +73,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
             body[identifier]['throughput_time'] = event['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = event['throughput_time'] * 100
-
-        else:
-            body[identifier]['throughput'] = 0.0
-            body[identifier]['throughput_running_time'] = None
-            body[identifier]['throughput_time'] = None
-            body[identifier]['throughput_process_time'] = None
-            body[identifier]['random_seed'] = None
 
         # add invocation metadata to response
         if context is None:

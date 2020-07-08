@@ -102,16 +102,6 @@ class AzureFunctionsProvider(AbstractProvider):
                         function_args: dict = None
                         ) -> dict:
 
-
-        # paramters, the only required paramter is the statuscode
-        if function_args is None:
-            function_args = {"StatusCode": 200}
-        else:
-            function_args["StatusCode"] = 200
-        
-        # set default value for sleep if not present in function_args
-        if 'sleep' not in function_args:
-            function_args["sleep"] = 0.0
      
         try:
 
@@ -122,7 +112,7 @@ class AzureFunctionsProvider(AbstractProvider):
 
             tasks = [asyncio.ensure_future(self.invoke_wrapper(
                                                 url=invoke_url,
-                                                data=function_args, 
+                                                data=function_args if function_args != None else {}, 
                                                 aiohttp_session=aiohttp.ClientSession(),
                                                 thread_number=1,
                                                 number_of_threads=1))]
@@ -189,30 +179,6 @@ class AzureFunctionsProvider(AbstractProvider):
         except Exception as e:
             return self.error_response(start_time=start_time, exception=e)
 
-        except Exception as e:
-            end_time = time.time()
-            error_dict = {
-                f'exception-provider_azure_functions-{self.experiment_name}-{str(end_time)}': {
-                    'identifier': f'exception-provider_azure_functions-{self.experiment_name}-{str(end_time)}',
-                    'uuid': None,
-                    'function_name': self.experiment_name,
-                    'error': {"trace": traceback.format_exc(), "type": str(type(e).__name__), 'message': str(e)},
-                    'parent': None,
-                    'sleep': sleep,
-                    'numb_threads': 1,
-                    'thread_id': 1,
-                    'python_version': None,
-                    'level': None,
-                    'memory': None,
-                    'instance_identifier': None,
-                    'execution_start': None,
-                    'execution_end': None,
-                    'invocation_start': start_time,
-                    'invocation_end': end_time,
-                },
-                'root_identifier': f'exception-provider_azure_functions-{self.experiment_name}-{str(end_time)}'
-            }
-            return error_dict
 
     def error_response(self, start_time, exception):
             end_time = time.time()
