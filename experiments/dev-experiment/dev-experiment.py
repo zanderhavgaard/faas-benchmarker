@@ -520,12 +520,13 @@ def low_level_conccurent():
         print('avg_time_to_exc_end',datetime.fromtimestamp(avg_time_to_exc_end))
         print()
         if end:
+            print('ending experiment')
             benchmarker.end_experiment()
         print('----------------------------------------------------')
     
     bench(lambda : benchmarker1.invoke_function_conccurrently(function_name='function1',numb_threads=num_invo,parse=True),benchmarker1)
     bench(lambda : benchmarker2.invoke_function_conccurrently(function_name='function1',numb_threads=num_invo,parse=False),benchmarker2)
-    # time.sleep(3)
+    time.sleep(30)
     num_invo = 20
     bench(lambda : benchmarker3.invoke_function_conccurrently(function_name='function1',numb_threads=num_invo,parse=False),benchmarker3)
     time.sleep(30)
@@ -544,7 +545,8 @@ def low_level_conccurent():
 
     print()
     
-    for x in start_times:
+    for idx,x in enumerate(start_times):
+        print(f'--------- benchmarker {idx+1} ---------------------')
         print_dev(x,end=True)
     
     print()
@@ -564,8 +566,9 @@ def low_level_conccurent():
             print('time_between', t-start_times[idx-1][0])
 
     print()
-    for x in start_times:   
-        print_dev(x,False)
+    for idx,x in enumerate(start_times):
+        print(f'--------- multi! benchmarker {idx+1} ---------------------')
+        print_dev(x,end=False)
         # if i == 0:
         #     benchmarker5.experiment.invocations = []
 
@@ -592,12 +595,13 @@ def low_level_conccurent():
     c.end_experiment()
     # =====================================================================================
 
-# concurrent_sanity_check()
-# test_monolith()
-# db_interface_sanity_check()
+sequential_sanity_check()
+concurrent_sanity_check()
+test_monolith()
+db_interface_sanity_check()
 
 # only relevant if changes to concurrent implementation is made
-low_level_conccurent()
+# low_level_conccurent()
 
-# db.delete_dev_mode_experiments()
+db.delete_dev_mode_experiments()
 

@@ -41,11 +41,7 @@ class Experiment:
     def dev_print(self) -> None:
         pprint(vars(self))
 
-    # def get_invocations(self) -> list:
-    #     return self.transform_invocations if len(self.invocations) != 0 \
-    #         else [] and print('Error! no invocations')     
-
-    # depreicated and never used
+  
     def get_invocations_original_form(self) -> list:
         return self.invocations
 
@@ -57,9 +53,9 @@ class Experiment:
     def get_invocations(self,dev:bool=False):
     
         self.invocations.sort(key=lambda tup: tup[0])
+       
         invocations_flattened = lib.flatten_list([],list(map(lambda x: x[1],self.invocations)))
         
-        # print('invocations_flattened',invocations_flattened)
         invocation_list = []
         
         for val in invocations_flattened:

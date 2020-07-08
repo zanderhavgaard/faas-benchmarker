@@ -17,9 +17,7 @@ class SQL_Interface:
         # a tuble of lists, first the query of the experiment, second arbitrary many invocations
         (experiment_query, invocation_queries) = queries
        
-        flag = self.tunnel.insert_queries(experiment_query)
-        print('flag',flag)
-        if(flag):
+        if(self.tunnel.insert_queries(experiment_query)):
             was_successful = self.tunnel.insert_queries(invocation_queries)
             print(
                 '|------------------------- INSERTING EXPERIMENT DATA IN DB -------------------------|')

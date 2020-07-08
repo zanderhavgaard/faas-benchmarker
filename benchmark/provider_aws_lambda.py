@@ -61,7 +61,7 @@ class AWSLambdaProvider(AbstractProvider):
                         if response_code == 200:
                             res = await response.json()
                             break
-                        else:
+                        elif i == 4:
                             res = await response.text()
                             print(f'E001 : A non 200 response code recieved at iteration {i}. \
                                     Response_code: {response.status}, message: {res}')
@@ -110,7 +110,7 @@ class AWSLambdaProvider(AbstractProvider):
     def parse_data(self, response:dict, start_time:float, end_time:float) -> dict:
         try:
             # if succesfull invocation parse response
-            if (response != None) and (response.status_code == 200):
+            if (response != None) and (response['statusCode'] == 200):
 
                 # get the identifier
                 identifier = response['identifier']

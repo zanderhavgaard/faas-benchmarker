@@ -47,35 +47,40 @@ class AbstractProvider(ABC):
                                     numb_requests:int=1,
                                     function_args:dict= None,
                                     parse:bool = True) -> list:
+        try:
+            if function_args is None:
+                function_args = {"StatusCode": 200}
+            else:
+                function_args["StatusCode"] = 200
 
-        if function_args is None:
-            function_args = {"StatusCode": 200}
-        else:
-            function_args["StatusCode"] = 200
+            invoke_url = self.get_url(function_name)
 
-        invoke_url = self.get_url(function_name)
 
-        def asyncio_execution(self, url, numb_requests, function_args):
+            def asyncio_execution(bench, url, numb_requests, function_args):
+                
+
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                tasks = []
+
+                for i in range(numb_requests):
+                    tasks.append(asyncio.ensure_future(bench.invoke_wrapper(url,
+                                                function_args, 
+                                                aiohttp.ClientSession())))
+                
+                loop.run_until_complete(asyncio.wait(tasks))
+                loop.close()
+
+                return [x.result() for x in tasks]
             
+            future = self.executor.submit(asyncio_execution, self, invoke_url, numb_requests, function_args)
 
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            
-            tasks = []
-
-            for i in range(numb_requests):
-                tasks.append(asyncio.ensure_future(self.invoke_wrapper(url,
-                                            function_args, 
-                                            aiohttp.ClientSession())))
-            
-            loop.run_until_complete(asyncio.wait(tasks))
-            loop.close()
-
-            return tasks
+            return future if not parse else [self.parse_data(a,b,c) for (a,b,c) in  future.result()]
         
-        future = self.executor.submit(asyncio_execution, self, invoke_url, numb_requests, function_args)
+        except Exception as e:
+            self.print_error(function_args,e)
 
-        return future if not parse else [self.parse_data(a,b,c) for (a,b,c) in map(lambda x: x.result(), future.result())]
             
     def print_error(self, *args, exception: Exception) -> None:
             for arg in args:

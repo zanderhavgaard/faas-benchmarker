@@ -15,6 +15,8 @@ import threading as th
 from concurrent import futures
 import traceback
 
+
+from datetime import datetime
 from pprint import pprint
 
 
@@ -166,9 +168,9 @@ class Benchmarker:
         if ('StatusCode-error' not in identifier) and ('exception-provider' not in identifier):
             response[identifier]['invocation_total'] = response[identifier]['invocation_end'] - response[identifier]['invocation_start']
             response[identifier]['execution_total'] = response[identifier]['execution_end'] - response[identifier]['execution_start']
-
-        self.experiment.add_invocations((self.idx,response))
-        self.idx += 1
+        with self.append_lock:
+                self.experiment.add_invocations((self.idx, [response]))
+                self.idx += 1
 
         return response
 
@@ -215,13 +217,11 @@ class Benchmarker:
                                 future = val[1]
                             else:
                                 bench.futures_parsed = True
-                                print('breaking')
-                                break    
-                        
-                        print('still in loop')        
+                                break       
+
                         result_list = list(map(lambda x: bench.provider.parse_data(x[0],x[1],x[2]),
-                                                            [d.result() for d in future.result()] ))
-                    
+                                                            future.result() ))
+                        
                         with bench.append_lock:
                             bench.experiment.add_invocations((idx, result_list))
     

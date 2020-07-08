@@ -53,7 +53,7 @@ class OpenFaasProvider(AbstractProvider):
                         if response_code == 200:
                             res = await response.json()
                             break
-                        else:
+                        elif (i == 4):
                             res = await response.text()
                             print(f'E001 : A non 200 response code recieved at iteration {i}. \
                                     Response_code: {response.status}, message: {res}')
