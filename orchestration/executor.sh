@@ -221,7 +221,9 @@ case "$platform" in
         else
             # this is the default behaviour used in production
             pmsg "Will bootstrap the openfaas eks cluster, run the experiment, wait for it to finish, then destroy the cluster ..."
-            ssh_command="nohup bash -c ' $eks_bootstrap_command ; $docker_command || $experiment_failed_command ; $eks_destroy_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
+            # TODO reenable eks
+            # ssh_command="nohup bash -c ' $eks_bootstrap_command ; $docker_command || $experiment_failed_command ; $eks_destroy_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
+            ssh_command="nohup bash -c ' $docker_command || $experiment_failed_command ; $scp_logfile_command ; $scp_errorlog_command ; $create_done_file' >> /dev/null 2>&1 &"
         fi
 
         # start the experiment process on the remote worker server
