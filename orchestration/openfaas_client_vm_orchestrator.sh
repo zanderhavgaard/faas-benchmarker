@@ -12,8 +12,8 @@ function bootstrap {
     experiment_client_env="$experiment_context/$experiment_name-openfaas_client_vm.env"
 
     pmsg "Generating openfaas .env file from environment variables ..."
-    echo "openfaas_host = $TF_VAR_openfaas_hostname" >> "$experiment_cloud_function_env"
-    echo "openfaas_port = $TF_VAR_openfaas_port" >> "$experiment_cloud_function_env"
+    echo "openfaas_hostname = $openfaas_hostname" >> "$experiment_cloud_function_env"
+    echo "openfaas_port = $openfaas_port" >> "$experiment_cloud_function_env"
 
     cd "$experiment_context/openfaas_client_vm"
 

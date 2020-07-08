@@ -23,11 +23,16 @@ class OpenFaasProvider(AbstractProvider):
         # timeout for invoking function
         self.request_timeout = 600
 
+        # load openfaas envrionment variables
+        self.load_env_vars(env_file_path)
+
         # http headers, contains authentication and data type
         self.headers = {
             'Content-Type': 'application/json'
         }
 
+    def load_env_vars(self, env_file_path: str) -> None:
+        dotenv.load_dotenv(dotenv_path=env_file_path)
     
     async def invoke_wrapper(self,
                         url:str,
@@ -36,6 +41,8 @@ class OpenFaasProvider(AbstractProvider):
                         thread_number:int,
                         number_of_threads:int
                         ) -> dict:
+
+        print('url', url)
 
         # log start time of invocation
         start_time = time.time()
@@ -188,5 +195,7 @@ class OpenFaasProvider(AbstractProvider):
     
 
     def get_url(self,function_name:str):
-        return f'http://localhost:8080/function/{function_name}'
-
+        openfaas_hostname = os.getenv('openfaas_hostname')
+        openfaas_port = os.getenv('openfaas_port')
+        return f'http://{openfaas_hostname}:{openfaas_port}/function/{self.experiment_name}-{function_name}'
+        
