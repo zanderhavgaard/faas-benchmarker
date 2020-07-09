@@ -60,7 +60,6 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         if 'sleep' in req_json:
             time.sleep(req_json['sleep'])
             body[identifier]['sleep'] = req_json['sleep']
-      
 
         if 'throughput_time' in req_json:
             random.seed(req_json['throughput_time'] * 100)
@@ -78,7 +77,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['throughput_time'] = req_json['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = req_json['throughput_time'] * 100
-     
+      
 
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
@@ -205,7 +204,7 @@ def invoke_nested_function(function_name: str,
         end_time = time.time()
         return {
             f"error-{function_name}-nested_invocation-{end_time}": {
-                f"error-{function_name}-nested_invocation-{end_time}",
+                "identifier": f"error-{function_name}-nested_invocation-{end_time}",
                 "uuid": None,
                 "function_name": 'function1',
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
@@ -229,6 +228,4 @@ def invoke_nested_function(function_name: str,
                 "process_time": time.process_time()
             }
         }
-
-
 
