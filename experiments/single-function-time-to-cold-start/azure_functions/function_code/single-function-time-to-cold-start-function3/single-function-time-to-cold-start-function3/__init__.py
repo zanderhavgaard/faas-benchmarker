@@ -138,7 +138,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": None,
                 "sleep": None,
-                "function_cores": psutil.cpu_count(),
+                "function_cores": 0,
                 "throughput": None,
                 "throughput_time": None,
                 "throughput_process_time": None,

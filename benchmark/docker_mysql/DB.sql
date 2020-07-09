@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS `Invocation` (
   `level` INT DEFAULT 0,
   `sleep` DOUBLE DEFAULT 0.0,
   `instance_identifier` varchar(100) NOT NULL,
-  `python_version` varchar(50) 'unknown',
+  `python_version` varchar(50) DEFAULT 'unknown',
   `function_cores` INT DEFAULT 0,
   `memory` BIGINT DEFAULT 0,
   `throughput` BIGINT DEFAULT 0.0,

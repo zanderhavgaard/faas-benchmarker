@@ -38,6 +38,7 @@ class AWSLambdaProvider(AbstractProvider):
         dotenv.load_dotenv(dotenv_path=env_file_path)
         self.api_key = os.getenv('api_key')
         self.gateway_url = os.getenv('invoke_url')
+        print('key',self.api_key, 'url', self.gateway_url)
     
     async def invoke_wrapper(self,
                         url:str,
