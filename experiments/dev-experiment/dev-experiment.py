@@ -378,6 +378,7 @@ def db_interface_sanity_check():
     print('lifetime check')
     db.log_lifetime(benchmarker.experiment.uuid, 
                     lib.get_dict(response)['identifier'], 
+                    lib.get_dict(response)['identfier'],
                     10, 
                     25, 
                     12, 

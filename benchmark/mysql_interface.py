@@ -177,14 +177,15 @@ class SQL_Interface:
 
     def log_lifetime(self,exp_id:str, 
                     instance_identifier:str, 
+                    orig_identifier:str,
                     hours:int, 
                     minutes:int, 
                     sec:int, 
                     sleep_time:int, 
                     reclaimed:bool) -> bool:
 
-        query = """INSERT INTO Function_lifetime (exp_id,instance_identifier,hours,minutes,seconds,sleep_time,reclaimed) 
-        VALUES ('{0}','{1}',{2},{3},{4},{5},{6});""".format(exp_id,instance_identifier,hours,minutes,sec,sleep_time,reclaimed)
+        query = f"""INSERT INTO Function_lifetime (exp_id, orig_identifier, instance_identifier, hours, minutes, seconds, sleep_time, reclaimed) 
+        VALUES ('{exp_id}','{orig_identifier}','{instance_identifier}',{hours},{minutes},{sec},{sleep_time},{reclaimed})"""
         return self.tunnel.insert_queries([query])
     
 
