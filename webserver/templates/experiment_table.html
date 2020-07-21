@@ -1,0 +1,21 @@
+<!-- experiment data table -->
+<table id='experiment_table'>
+
+    <tr>
+    {% for key in data.experiment_keys %}
+        <th>
+            {{ key }}
+        </th>
+    {% endfor %}
+    </tr>
+
+    {% for exp in data.experiments %}
+    <tr>
+        {% for key,value in exp.items() %}
+        <td>
+            {{ value }}
+        </td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>

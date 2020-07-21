@@ -1,0 +1,37 @@
+<!-- experiment status table -->
+<table id='experiment_status_table'>
+
+    <!-- table keys -->
+    <tr>
+    {% for key in data.experiment_status_keys %}
+        <th>
+            {{ key }}
+        </th>
+    {% endfor %}
+    </tr>
+
+    <!-- table values -->
+    {% for exp in data.experiment_status %}
+    <tr>
+        {% for _,value in exp.items() %}
+            {% if value == 'running' %}
+                <td style='color:yellow;'>
+                    {{ value }}
+                </td>
+            {% elif value == 'completed' %}
+                <td style='color:green;'>
+                    {{ value }}
+                </td>
+            {% elif value == 'failed' %}
+                <td style='color:red;'>
+                    {{ value }}
+                </td>
+            {% else %}
+                <td>
+                    {{ value }}
+                </td>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    {% endfor %}
+</table>

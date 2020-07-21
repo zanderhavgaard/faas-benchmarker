@@ -8,7 +8,10 @@ services:
     image: 'faasbenchmarker/exp_mysql:webui_dev'
     container_name: db
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_SQL_PASS}
+      - MYSQL_ROOT_PASSWORD=${DB_SQL_ROOT_PASS}
+      - MYSQL_USER=${DB_SQL_USER}
+      - MYSQL_PASSWORD=${DB_SQL_PASS}
+      - MYSQL_DATABASE=Benchmarks
     network_mode: host
     # volumes:
       # - mysql_data:/var/lib/mysql

@@ -1,6 +1,6 @@
 <html>
     <head>
-        <meta http-equiv="refresh" content=" {{ data.refresh_interval }} ">
+        <!-- <meta http-equiv="refresh" content=" {{ data.refresh_interval }} "> -->
         <style>
             th, td {
                 border:1px solid black;
@@ -9,90 +9,55 @@
         <title>
             faas-benchmarker web ui
         </title>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
+
+<script type="text/javascript" charset="utf-8">
+
+    //var socket = io();
+    var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+    // update table html with new data when recieved message
+    socket.on('update_data', function(data) {
+        //console.log(data.experiment_status_table_html);
+        //console.log(data.experiment_table_html);
+        document.getElementById("experiment_status_table").innerHTML = data.experiment_status_table_html
+        document.getElementById("experiment_table").innerHTML = data.experiment_table_html
+    });
+
+    // ms to wait between updating table data
+    var update_interval = 5000;
+
+    // update table data every interval ms
+    window.setInterval(function() {
+        socket.emit("update_data");
+    }, update_interval);
+
+
+</script>
+
     </head>
-    <body>
+    <body >
 
         <!-- ascii banner -->
         <pre>
 {{banner}}
         </pre>
 
-        <p>
-            This page automatically refreshses every {{ data.refresh_interval }} seconds.
-        </p>
-
-
-
-        <!-- experiment table header -->
+        <!-- experiment status table header -->
         <h2>
             {{ data.experiment_status_table_header }}
         </h2>
 
-        <!-- experiment data table -->
-        <table>
-
-            <tr>
-            {% for key in data.experiment_status_keys %}
-                <th>
-                    {{ key }}
-                </th>
-            {% endfor %}
-            </tr>
-
-            {% for exp in data.experiment_status %}
-            <tr>
-                {% for key,value in exp.items() %}
-                    {% if value == 'running' %}
-                        <td style='color:yellow;'>
-                            {{ value }}
-                        </td>
-                    {% elif value == 'completed' %}
-                        <td style='color:green;'>
-                            {{ value }}
-                        </td>
-                    {% elif value == 'failed' %}
-                        <td style='color:red;'>
-                            {{ value }}
-                        </td>
-                    {% else %}
-                        <td>
-                            {{ value }}
-                        </td>
-                    {% endif %}
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-
-
-
+        <!-- experiment staus table -->
+        {% include 'experiment_status_table.html' %}
 
         <!-- experiment table header -->
         <h2>
             {{ data.experiment_table_header }}
         </h2>
 
-        <!-- experiment data table -->
-        <table>
-
-            <tr>
-            {% for key in data.experiment_keys %}
-                <th>
-                    {{ key }}
-                </th>
-            {% endfor %}
-            </tr>
-
-            {% for exp in data.experiments %}
-            <tr>
-                {% for key,value in exp.items() %}
-                <td>
-                    {{ value }}
-                </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
+        {% include 'experiment_table.html' %}
 
     </body>
 </html>
