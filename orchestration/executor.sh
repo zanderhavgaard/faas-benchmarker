@@ -97,6 +97,7 @@ docker_command="
         --network host \
         faasbenchmarker/client:latest \
         python \
+        -u \
         $docker_experiment_code_path \
         $experiment_name \
         $experiment_meta_identifier \
