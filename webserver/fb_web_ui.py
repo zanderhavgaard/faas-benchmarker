@@ -136,7 +136,10 @@ def human_readable_time(seconds: float, show_date: bool = False):
     if show_date:
         return time.strftime("%d/%m-%y %H:%M:%S", time.gmtime(seconds))
     else:
-        return time.strftime("%H:%M:%S", time.gmtime(seconds))
+        if seconds > 86400:
+            return time.strftime("%d days %H:%M:%S", time.gmtime(seconds))
+        else:
+            return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
 if __name__ == '__main__':
     socketio.run(app, port=7890, host='0.0.0.0')
