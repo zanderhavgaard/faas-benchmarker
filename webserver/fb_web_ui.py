@@ -137,7 +137,7 @@ def human_readable_time(seconds: float, show_date: bool = False):
         return time.strftime("%d/%m-%y %H:%M:%S", time.gmtime(seconds))
     else:
         if seconds > 86400:
-            return time.strftime("%d days %H:%M:%S", time.gmtime(seconds))
+            return f'{int(seconds // 86400)} days ' + time.strftime("%H:%M:%S", time.gmtime(seconds))
         else:
             return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
