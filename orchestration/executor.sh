@@ -80,7 +80,7 @@ docker_env_file_path="/home/docker/shared/$experiment_name-$experiment_cloud_fun
 # path to experiment python file inside docker container on experiment client server
 docker_experiment_code_path="/home/docker/faas-benchmarker/experiments/$experiment_name/$experiment_name.py"
 # name of experiment log file
-logfile="/home/$client_user/$timestamp-$experiment_meta_identifier-$experiment_cloud_function_provider-$experiment_name.log"
+logfile="/home/$client_user/$experiment_name-$timestamp-$experiment_meta_identifier-$experiment_cloud_function_provider.log"
 
 # =================================
 # compose ssh command

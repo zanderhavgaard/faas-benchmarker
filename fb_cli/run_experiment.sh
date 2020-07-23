@@ -31,7 +31,8 @@ function check_that_experiment_is_not_running {
 
 function run_experiment_aws_lambda {
   stmsg "Starting experiment for AWS Lambda ..."
-  aws_lambda_log="$fbrd/logs/$timestamp-$experiment_meta_identifier-$experiment_name-aws_lambda.log"
+  platform="aws_lambda"
+  aws_lambda_log="$fbrd/logs/$experiment_name-$timestamp-$experiment_meta_identifier-$platform.log"
   pmsg "Logging orchestration to file: $aws_lambda_log"
   nohup bash -c " \
       bash \"$fbrd/orchestration/run_experiment_aws_lambda.sh\" \"$experiment_name\" \"$experiment_meta_identifier\" > $aws_lambda_log 2>&1 \
@@ -42,7 +43,8 @@ function run_experiment_aws_lambda {
 
 function run_experiment_azure_functions {
   stmsg "Starting experiment for Azure Functions ..."
-  azure_functions_log="$fbrd/logs/$timestamp-$experiment_meta_identifier-$experiment_name-azure_functions.log"
+  platform="azure_functions"
+  azure_functions_log="$fbrd/logs/$experiment_name-$timestamp-$experiment_meta_identifier-$platform.log"
   pmsg "Logging orchestration to file: $azure_functions_log"
   nohup bash -c " \
       bash \"$fbrd/orchestration/run_experiment_azure_functions.sh\" \"$experiment_name\" \"$experiment_meta_identifier\" > $azure_functions_log 2>&1 \
@@ -53,7 +55,8 @@ function run_experiment_azure_functions {
 
 function run_experiment_openfaas {
   stmsg "Starting experiment for OpenFaas ..."
-  openfaas_log="$fbrd/logs/$timestamp-$experiment_meta_identifier-$experiment_name-openfaas.log"
+  platform="openfaas"
+  openfaas_log="$fbrd/logs/$experiment_name-$timestamp-$experiment_meta_identifier-$platform.log"
   pmsg "Logging orchestration to file: $openfaas_log"
   nohup bash -c " \
       bash \"$fbrd/orchestration/run_experiment_openfaas.sh\" \"$experiment_name\" \"$experiment_meta_identifier\" > $openfaas_log 2>&1 \
