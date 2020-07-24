@@ -71,5 +71,5 @@ resource "aws_lambda_function" "weakest-link1-python" {
   source_code_hash = filesha256(data.archive_file.weakest-link1-lambda-code.output_path)
   publish = true
   layers = [aws_lambda_layer_version.weakest-link-lambda-layer.arn]
-  timeout = 10
+  timeout = 60
 }

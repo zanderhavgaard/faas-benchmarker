@@ -71,5 +71,5 @@ resource "aws_lambda_function" "scenario-pyramid2-python" {
   source_code_hash = filesha256(data.archive_file.scenario-pyramid2-lambda-code.output_path)
   publish = true
   layers = [aws_lambda_layer_version.scenario-pyramid-lambda-layer.arn]
-  timeout = 10
+  timeout = 60
 }

@@ -71,5 +71,5 @@ resource "aws_lambda_function" "concurrency-benchmarking2-python" {
   source_code_hash = filesha256(data.archive_file.concurrency-benchmarking2-lambda-code.output_path)
   publish = true
   layers = [aws_lambda_layer_version.concurrency-benchmarking-lambda-layer.arn]
-  timeout = 10
+  timeout = 60
 }

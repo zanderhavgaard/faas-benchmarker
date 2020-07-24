@@ -71,5 +71,5 @@ resource "aws_lambda_function" "dev-experiment1-python" {
   source_code_hash = filesha256(data.archive_file.dev-experiment1-lambda-code.output_path)
   publish = true
   layers = [aws_lambda_layer_version.dev-experiment-lambda-layer.arn]
-  timeout = 10
+  timeout = 60
 }
