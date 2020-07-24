@@ -71,4 +71,5 @@ resource "aws_lambda_function" "time-to-cold-start-twelve-threads3-python" {
   source_code_hash = filesha256(data.archive_file.time-to-cold-start-twelve-threads3-lambda-code.output_path)
   publish = true
   layers = [aws_lambda_layer_version.time-to-cold-start-twelve-threads-lambda-layer.arn]
+  timeout = 10
 }

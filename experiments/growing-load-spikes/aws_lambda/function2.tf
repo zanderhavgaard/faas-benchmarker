@@ -71,4 +71,5 @@ resource "aws_lambda_function" "growing-load-spikes2-python" {
   source_code_hash = filesha256(data.archive_file.growing-load-spikes2-lambda-code.output_path)
   publish = true
   layers = [aws_lambda_layer_version.growing-load-spikes-lambda-layer.arn]
+  timeout = 10
 }
