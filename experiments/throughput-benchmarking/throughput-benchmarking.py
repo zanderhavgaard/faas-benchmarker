@@ -122,25 +122,27 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 
 try:
 
-    throughput_times = [0.1,0.2,0.4,0.8,1.2,1.6,2.4] if not dev_mode else [0.1,0.2,0.4,0.8]
+    throughput_times = [0.1,0.2,0.4,0.8,1.2,1.6,2.4,5,10,20]
     for t in throughput_times:
         for i in range(5):
-            validate(invoke,f'invoking sequantially with {t} throughput_time', {'throughput_time':t})
             if verbose:
                 print(f'invoking sequantially with {t} throughput_time')
+            validate(invoke,f'invoking sequantially with {t} throughput_time', {'throughput_time':t})
     
     for t in throughput_times[:-2]:
         for i in range(5):
-            validate(invoke_concurrently, f'invoking concurrently with {t} throughput_time', ({'throughput_time':t}, 12))
             if verbose:
                 print(f'invoking concurrently with {t} throughput_time')
+            validate(invoke_concurrently, f'invoking concurrently with {t} throughput_time', ({'throughput_time':t}, 12))
     
     # change endpoint to monolith function and invoke throughput in terms of matrix multiplication
 
-    matrix_size = [40,80,120,160,200,240] if not dev_mode else [40,80,120,160]
+    matrix_size = [100,120,140,180,200,220]
     function = 'monolith'
     for n in matrix_size:
         for i in range(5):
+            if verbose:
+                print(f'invoking monolith with args {n}')
             validate(invoke, 
                     f'invoking monolith with args {n}', 
                     {
@@ -148,11 +150,11 @@ try:
                     'run_function': 'matrix_mult',
                     'args': n
                     })
-            if verbose:
-                print(f'invoking monolith with args {n}')
     
     for n in matrix_size[:-3]:
         for i in range(3):
+            if verbose:
+                print(f'invoking monolith concurrently with args {n}')
             validate(invoke_concurrently, 
                     f'invoking monolith with args {n}', 
                     ({
@@ -160,8 +162,6 @@ try:
                     'run_function': 'matrix_mult',
                     'args': n
                     }, 12))
-            if verbose:
-                print(f'invoking monolith with args {n}')
 
 
    # =====================================================================================
@@ -172,8 +172,7 @@ try:
     lib.log_experiment_specifics(experiment_name,
                                 experiment_uuid, 
                                 len(errors), 
-                                True)
-
+                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
 except Exception as e:
     # this will print to logfile
     print(f'Ending experiment {experiment_name} due to fatal runtime error')

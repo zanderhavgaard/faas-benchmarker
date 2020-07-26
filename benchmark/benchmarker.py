@@ -32,6 +32,9 @@ class Benchmarker:
                  dev_mode: bool = False,
                  verbose: bool = False) -> None:
 
+        # if verbosity is true, setting this to true will print all data at the end of the experiment
+        self.print_all_data = False
+
         # do not log anything if running in dev mode
         self.dev_mode = dev_mode
         self.verbose = verbose
@@ -119,7 +122,7 @@ class Benchmarker:
             invocations_orig = self.experiment.get_invocations_original_form()
             print('Experiment:', self.experiment.name, 'invoked', len(
                 invocations_orig), 'times from its provider:', self.experiment.cl_provider)
-            invocations = self.experiment.get_invocations(self.provider)
+            invocations = self.experiment.get_invocations()
             print('EXPERIMENT META DATA')
             # print(self.experiment.dev_print())
             print()
@@ -127,7 +130,7 @@ class Benchmarker:
             print(self.experiment.get_experiment_query_string())
             print()
             print('Number of functions invoked in total:', len(invocations))
-            if self.verbose:
+            if self.verbose and self.print_all_data:
                 print('--- DATA OF EACH INVOCATION ---')
                 for invo in invocations:
                     print()

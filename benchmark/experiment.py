@@ -50,7 +50,7 @@ class Experiment:
         self.invocations.append(args)
     
 
-    def get_invocations(self,dev:bool=False):
+    def get_invocations(self):
     
         self.invocations.sort(key=lambda tup: tup[0])
        
@@ -62,7 +62,7 @@ class Experiment:
             root = val.pop('root_identifier')
 
             for x in val.keys():
-                invocation_list.append(Invocation(self.uuid, root, val[x]) if not dev else val[x])
+                invocation_list.append(Invocation(self.uuid, root, val[x]))
             val['root_identifier'] = root
         
         return invocation_list

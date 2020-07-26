@@ -87,7 +87,7 @@ errors = []
 # * comment below function out and other invoke     *
 # * function in if experiment is concurrent invoked *
 # ***************************************************
-def invoke(aegs:dict= None):
+def invoke(args:dict= None):
     response = lib.get_dict(
         benchmarker.invoke_function(function_name=fx, function_args=args))
     return response if 'error' not in response else errors.append(response)
