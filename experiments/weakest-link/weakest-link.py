@@ -101,9 +101,9 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 
 def create_nesting(functions:list):
     nested = {
-        "function_name": functions[0],
+        "function_name": f"{experiment_name}-{functions[0]}",
         "invoke_payload": {
-                "StatusCode": 200,
+                "throughput_time": 1,
                 }
         }
     if(len(functions)-1 != 0):
