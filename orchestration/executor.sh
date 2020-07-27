@@ -68,7 +68,7 @@ db_server_user="ubuntu"
 # toggle development mode
 dev_mode="False"
 # print sql queries
-verbose="False"
+verbose="True"
 # path to the ssh key to connect to experiment client server
 key_path="$fbrd/secrets/ssh_keys/experiment_servers"
 # timestamp for when experiment execution started
