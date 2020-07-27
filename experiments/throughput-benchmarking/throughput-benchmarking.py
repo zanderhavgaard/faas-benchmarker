@@ -38,7 +38,13 @@ verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: <description>
+{experiment_name}: This experiment benchmarks the computational throughput of each platform.
+First functions are invoked with increasing values for the 'throughput' argument,
+which will do as many computations as possible in the time alloted. These invocations
+are then repeated with concurrency. 
+Followed by invocations of the monolith function using it's matrix multiplication function
+to check how long the function spends on computing the multiplication of increasingly
+larger matrices. These invocations are then repeated concurrently. 
 """
 
 # =====================================================================================
