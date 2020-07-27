@@ -60,7 +60,7 @@ class Experiment:
         invocations_flattened = lib.flatten_list([],list(map(lambda x: x[1],self.invocations)))
         
         invocation_list = []
-        
+       
         for val in invocations_flattened:
             root = val.pop('root_identifier')
 

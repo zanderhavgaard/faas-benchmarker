@@ -301,4 +301,3 @@ def get_ntp_time():
 class EmptyResponseError(RuntimeError):
     def __init__(self, error_msg: str):
         super(error_msg)
-

@@ -172,6 +172,15 @@ class SQL_Interface:
         ORDER BY id LIMIT 1;""".format(uuid if uuid != None else latest_cold_q)
         res = np.array(self.tunnel.retrive_query(query)).tolist()
         return None if res == [] else res[0][0]
+    
+    def get_invocations_experiment_type(self,experiment_name, args:str = None, flag: bool = True):
+        fields = f"""name,cl_provider,total_time,experiment_uuid, {args}""" if args != None else "*"
+        query = f"""SELECT {fields} from (select name, cl_provider, total_time, uuid as experiment_uuid from Experiment 
+                where name = '{experiment_name}') x left join Invocation i on i.exp_id=x.experiment_uuid;"""
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res).tolist()
+        
+
 
     
     # Function lifetime experiment specific
