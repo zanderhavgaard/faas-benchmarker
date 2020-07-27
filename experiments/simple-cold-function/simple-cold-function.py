@@ -118,7 +118,7 @@ try:
     warm_times = [invoke() for x in range(10)]
     avg_warm_time = reduce(lambda x,y: x+y, list(map(lambda x: x['execution_start'] - x['invocation_start']))) / len(warm_times)
 
-    cutofftime = 27 * 60
+    cutofftime = 28 * 60
     sleep_time = 300
 
 
@@ -136,8 +136,9 @@ try:
         print('cutoff time reached!!!!!!')
         print('sleep_time',sleep_time)
         sys.exit()
+
     count = 3
-    while(count > 3 and sleep_time < cutofftime):
+    while(count > 0 and sleep_time < cutofftime):
         print('sleep_time',sleep_time)
         print('benchmark',benchmark)
         print('avg_warm_time',avg_warm_time)
@@ -148,6 +149,8 @@ try:
         if(invocation_latency < benchmark):
             sleep_time += 60
             count = 3
+        else:
+           count -= 1
 
     if(sleep_time < cutofftime):
         print('cutoff time reached!!!!!!')
