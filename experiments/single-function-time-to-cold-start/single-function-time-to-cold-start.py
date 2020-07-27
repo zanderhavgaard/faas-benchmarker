@@ -282,7 +282,7 @@ try:
             increment *= 2
             sleep_time += increment
             set_cold_values()
-            5 if not dev_mode else 2
+            iter_count = 5 if not dev_mode else 2
         
         iter_count -= 1
 
