@@ -56,12 +56,6 @@ resource "aws_api_gateway_usage_plan" "simple-cold-function" {
     stage  = aws_api_gateway_deployment.simple-cold-function-prod.stage_name
   }
 
-  quota_settings {
-    limit  = 2000
-    offset = 0
-    period = "DAY"
-  }
-
   throttle_settings {
     burst_limit = 1000
     rate_limit  = 1000

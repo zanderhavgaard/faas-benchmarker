@@ -56,12 +56,6 @@ resource "aws_api_gateway_usage_plan" "time-to-cold-start-twelve-threads" {
     stage  = aws_api_gateway_deployment.time-to-cold-start-twelve-threads-prod.stage_name
   }
 
-  quota_settings {
-    limit  = 2000
-    offset = 0
-    period = "DAY"
-  }
-
   throttle_settings {
     burst_limit = 1000
     rate_limit  = 1000

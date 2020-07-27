@@ -56,12 +56,6 @@ resource "aws_api_gateway_usage_plan" "function-lifetime" {
     stage  = aws_api_gateway_deployment.function-lifetime-prod.stage_name
   }
 
-  quota_settings {
-    limit  = 2000
-    offset = 0
-    period = "DAY"
-  }
-
   throttle_settings {
     burst_limit = 1000
     rate_limit  = 1000
