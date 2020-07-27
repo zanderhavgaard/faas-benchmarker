@@ -65,7 +65,7 @@ experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3), or 'monolith' 
 fx_name = 'function1'
-fx = f'{experiment_name}-{fx_num}'
+fx = f'{experiment_name}-{fx_name}'
 
 
 

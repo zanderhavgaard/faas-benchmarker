@@ -197,8 +197,8 @@ CREATE TABLE IF NOT EXISTS `Function_lifecycle` (
   `distribution` DOUBLE NOT NULL,
   `error_dist` DOUBLE NOT NULL,
   `diff_from_orig` INT NOT NULL,
-  `identifiers` varchar(700) NOT NULL,
-  `repeats_from_orig` varchar(700) NOT NULL,
+  `identifiers` varchar(7000) NOT NULL,
+  `repeats_from_orig` varchar(7000) NOT NULL,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`exp_id`) REFERENCES Experiment(uuid) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
