@@ -133,7 +133,6 @@ def set_init_values(th_numb:int):
 # parse data that needs to be logged to database.
 # can take whatever needed arguments but has to return/append a dict
 def append_result(errors:int, start_thread_numb:int, th_numb:int, vals:list, orig:list) -> None:
-    
     repeats_from_orig = [x for x in set(vals) if x in orig]
     diff_from_orig = len([x for x in set(vals) if x not in orig])
     unique_instances = len(set(vals))
@@ -160,34 +159,33 @@ def append_result(errors:int, start_thread_numb:int, th_numb:int, vals:list, ori
 # =====================================================================================
 # The actual logic if the experiment
 
-try:
 
 # runs the logic experiment with a specified number of concurrent requests
-    def run_experiment(th_threads):
-        global throughput_time
-        throughput_time = 0.2
+def run_experiment(th_threads):
+    global throughput_time
+    throughput_time = 0.2
 
-        (err_count,invocations) = set_init_values(th_threads)
-        orig = invocations
-        append_result(err_count,th_threads, th_threads, orig, [])
+    (err_count,invocations) = set_init_values(th_threads)
+    orig = invocations
+    append_result(err_count,th_threads, th_threads, orig, [])
 
-        if verbose:
-            lib.dev_mode_print(context=f'orig identifiers with {th_threads} threads',
-            values=[('throughput_time',throughput_time)]+orig)
-        
-        for i in range(10):
-            local_thread_numb = th_threads - (i * int(th_threads / 10))
-            
-            for i in range(5):
-                time.sleep(10)
-                (err,ids) = validate(invoke,f'invoking with {local_thread_numb} threads',local_thread_numb)
-                append_result(err, th_threads, local_thread_numb, get_identifiers(ids), orig)
-                
-                if verbose:
-                    lib.dev_mode_print(context=f'identifiers with {local_thread_numb} threads, iter: {i}',
-                    values=[('throughput_time',throughput_time),('errors: ',err)]+get_identifiers(ids))
+    if verbose:
+        lib.dev_mode_print(context=f'orig identifiers with {th_threads} threads',
+        values=[('throughput_time',throughput_time)]+orig)
     
-
+    for i in range(10):
+        local_thread_numb = th_threads - (i * int(th_threads / 10))
+        
+        for i in range(5):
+            time.sleep(30)
+            (err,ids) = validate(invoke,f'invoking with {local_thread_numb} threads',local_thread_numb)
+            append_result(err, th_threads, local_thread_numb, get_identifiers(ids), orig)
+            
+            if verbose:
+                lib.dev_mode_print(context=f'identifiers with {local_thread_numb} threads, iter: {i}',
+                values=[('throughput_time',throughput_time),('errors: ',err)]+get_identifiers(ids))
+    
+try:
     run_experiment(10)
 
     if dev_mode:
@@ -196,9 +194,10 @@ try:
                                 experiment_uuid, 
                                 len(errors), 
                                 db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
-        lib.dev_mode_print(
-            f'Experiment {experiment_name} with UUID: {experiment_uuid} ended due to dev_mode. {len(errors)} errors occured.', 
-            ['Queries for experiment:']+[lib.dict_to_query(x, table) for x in results])
+        if benchmarker.print_all_data:
+            lib.dev_mode_print(
+                f'Experiment {experiment_name} with UUID: {experiment_uuid} ended due to dev_mode. {len(errors)} errors occured.', 
+                ['Queries for experiment:']+[lib.dict_to_query(x, table) for x in results])
         sys.exit()
 
 
