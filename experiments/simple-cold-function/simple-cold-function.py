@@ -113,7 +113,7 @@ try:
     benchmark = (init_invoke['execution_start'] - init_invoke['invocation_start'] ) * 0.90
 
     warm_times = [invoke() for x in range(10)]
-    avg_warm_time = reduce(lambda x,y: x+y, list(map(lambda x: x['execution_start'] - x['invocation_start']))) / len(warm_times)
+    avg_warm_time = reduce(lambda x,y: x+y, list(map(lambda x: x['execution_start'] - x['invocation_start'], warm_times))) / len(warm_times)
 
     cutofftime = 28 * 60
     sleep_time = 300
