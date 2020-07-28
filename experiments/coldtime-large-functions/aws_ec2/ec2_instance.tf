@@ -49,7 +49,7 @@ resource "null_resource" "ec2-provisioners" {
       "mv .bashrc.new .bashrc",
 
       "sudo apt-get update -q",
-      "sudo apt-get install -qq docker-compose",
+      "sudo apt-get install -qq moreutils docker-compose",
       "sudo systemctl enable --now docker",
       "sudo usermod -aG docker ubuntu",
       "sudo docker pull -q faasbenchmarker/client:latest"

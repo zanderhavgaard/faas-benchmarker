@@ -71,7 +71,7 @@ resource "null_resource" "linux-provisioners" {
 
       # install docker and other tools
       "sudo apt-get update -q",
-      "sudo apt-get install -y -qq unzip git python3 python3-dev python3-venv docker-compose",
+      "sudo apt-get install -y -qq moreutils unzip git python3 python3-dev python3-venv docker-compose",
       "sudo systemctl enable --now docker",
       "sudo usermod -aG docker ubuntu",
       "sudo docker pull -q faasbenchmarker/client:latest",
