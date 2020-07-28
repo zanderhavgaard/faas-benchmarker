@@ -115,12 +115,12 @@ try:
     warm_times = [invoke() for x in range(10)]
     avg_warm_time = reduce(lambda x,y: x+y, list(map(lambda x: x['execution_start'] - x['invocation_start'], warm_times))) / len(warm_times)
 
-    cutofftime = 28 * 60
+    cutofftime = 45 * 60
     sleep_time = 300
 
 
     while(sleep_time < cutofftime):
-        print(f'sleeping for {sleep_time} minutes')
+        print(f'sleeping for {sleep_time // 60} minutes')
         time.sleep(sleep_time)
         invocation = invoke()
         invocation_latency = invocation['execution_start'] - invocation['invocation_start']
@@ -129,10 +129,11 @@ try:
         else:
             break
     
-    if(sleep_time < cutofftime):
+    if(sleep_time > cutofftime):
         print('cutoff time reached!!!!!!')
         print('sleep_time',sleep_time)
-        sys.exit()
+        benchmarker.end_experiment()
+        sys.exit(1)
 
     count = 3
     while(count > 0 and sleep_time < cutofftime):
@@ -149,7 +150,7 @@ try:
         else:
            count -= 1
 
-    if(sleep_time < cutofftime):
+    if(sleep_time > cutofftime):
         print('cutoff time reached!!!!!!')
         print('sleep_time',sleep_time)
     else:
