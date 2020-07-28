@@ -106,6 +106,7 @@ docker_command="
         $docker_env_file_path \
         $dev_mode \
         $verbose
+    | ts
     >> $logfile 2>&1"
 
 experiment_failed_command="touch /home/$client_user/failed"
