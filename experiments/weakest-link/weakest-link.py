@@ -121,7 +121,7 @@ def run_experiment(iterations:int, invoke_order:list, hot_instances:int, nested:
             hot_response = validate(f'prewarming {invoke_order[0]}', invoke_order[0])
         
             if verbose:
-                print('Response from prewarming function {invoke_order[n]} at level {n}')
+                print(f'Response from prewarming function {invoke_order[n]} at level {n}')
                 pprint(hot_response)
 
         # invoke function 1, that will invoke function 2, which will invoke funcion 3
@@ -133,6 +133,7 @@ def run_experiment(iterations:int, invoke_order:list, hot_instances:int, nested:
             pprint(response)
             print()
 
+        # TODO is this supposed to be here, or unindented 1 ?
         time.sleep(coldtime if not dev_mode else 20)    
 
         
@@ -142,23 +143,23 @@ try:
         "invoke_nested": [create_nesting(func_list[1:])]
     }
 
-    run_experiment(10,func_list,0,args)
+    run_experiment(5,func_list,0,args)
 
-    run_experiment(10,func_list,1,args)
+    run_experiment(5,func_list,1,args)
 
-    run_experiment(10,func_list,2,args)
+    run_experiment(5,func_list,2,args)
 
-    run_experiment(10,func_list,3,args)
+    run_experiment(5,func_list,3,args)
 
-    run_experiment(10,func_list,4,args)
+    run_experiment(5,func_list,4,args)
 
     func_list = func_list[::-1]
   
     args["invoke_nested"] = [create_nesting(func_list[1:])]
 
-    run_experiment(10,func_list,1,args)
+    run_experiment(5,func_list,1,args)
 
-    run_experiment(10,func_list,2,args)
+    #  run_experiment(10,func_list,2,args)
 
 
     # =====================================================================================
