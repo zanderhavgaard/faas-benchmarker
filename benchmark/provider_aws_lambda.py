@@ -91,7 +91,12 @@ class AWSLambdaProvider(AbstractProvider):
             # create url of function to invoke
             invoke_url = self.get_url(function_name) 
 
-            loop = asyncio.get_event_loop()
+            # fix for experimetns that use threads, since each thread need to have an event loop
+            # overhead of creating new loops should be negligable
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            # was 
+            # loop = asyncio.get_event_loop()
 
             tasks = [asyncio.ensure_future(self.invoke_wrapper(
                                                 url=invoke_url,
@@ -101,6 +106,9 @@ class AWSLambdaProvider(AbstractProvider):
                                                 number_of_threads=1))]
 
             loop.run_until_complete(asyncio.wait(tasks))
+
+            # close created loop
+            loop.close()
 
             (response,start_time,end_time, thread_number, number_of_threads) = tasks[0].result()
 

@@ -90,8 +90,7 @@ errors = []
 # * function in if experiment is concurrent invoked *
 # ***************************************************
 def invoke(fx:str, args:dict= None):
-    response = lib.get_dict(
-        benchmarker.invoke_function(function_name=fx, function_args=args))
+    response = lib.get_dict(benchmarker.invoke_function(function_name=fx, function_args=args))
     return response if 'error' not in response else errors.append(response)
 
 def invoke_function_conccurrently(fx:str, thread_numb:int, args:dict= None):
@@ -126,133 +125,136 @@ def append_result(*values_to_log) -> None:
 
 # =====================================================================================
 
-try:
-    # list to append futures to when executing 
-    futures = []
 
-    # this is needed to ensure that all threads have finished when moving to next execution or the experiment is finished
-    def get_futures():
-        # sleep to mitigate potential network overhead that could interfere with getting results from futures 
-        time.sleep(300)
-        # results of futures
-        invocation_results = []
-        global futures
-        
-        for fu in futures:
-            for i in range(20):
-                if not fu.done():
-                    time.sleep(0.5)
-                else:
-                    invocation_results.append(fu.result())
-                    break
-        # flatmap results
-        futures = reduce(lambda x,y: x+y,map(lambda x: x if not isinstance(x,dict) else [x],invocation_results))    
-        
+# this is needed to ensure that all threads have finished when moving to next execution or the experiment is finished
+def get_futures():
+     # sleep to mitigate potential network overhead that could interfere with getting results from futures 
+     # TODO uncomment
+     #  time.sleep(300)
 
-    # builds and executes pyramid  
-    def invoke_pyramid(function_names:list, args:list, increment:int, peak:int, run_time:int):
-        # from microbenchmarking it found that the overhead of executing a thread is below time
-        avg_tread_time = 0.0016
-        # threadpool for executing each invocation as a thread
-        pool = ThreadPoolExecutor(peak)
+     # results of futures
+     invocation_results = []
+     global futures
+     
+     for fu in futures:
+         for i in range(20):
+             if not fu.done():
+                 time.sleep(0.5)
+                 #  print('sleeping')
+             elif i == 19:
+                #  print('did not get a result ...')
+             else:
+                 invocation_results.append(fu.result())
+                 break
+     #  print(invocation_results)
+     # flatmap results
+     # futures = reduce(lambda x,y: x+y,map(lambda x: x if not isinstance(x,dict) else [x],invocation_results))
+  
 
-        # aux function to produce new tuple with concurrent execution and new sleeptime
-        def set_concurrent(vals:tuple):
-            invo_count = vals[0]
-            thread_numb = 1
-            sleep = vals[1]
-            while(sleep < 0.1):
-                thread_numb += 1
-                invo_count = int(vals[0] / thread_numb)
-                sleep = vals[2] / invo_count - avg_tread_time
-            fxs = [lambda args,fx=f, n=thread_numb: futures.append(pool.submit(invoke_function_conccurrently,fx,n,args)) for f in function_names] 
-            return (vals[2],sleep,fxs,args,thread_numb,vals[0])
+# builds and executes pyramid  
+def invoke_pyramid(function_names:list, args:list, increment:int, peak:int, run_time:int):
+     # from microbenchmarking it found that the overhead of executing a thread is below time
+     avg_thread_time = 0.0016
+     # threadpool for executing each invocation as a thread
+     pool = ThreadPoolExecutor(50)
 
-        # lambdas for sequantial execution (base case)
-        sequantial_functions = [lambda x,fx=f: futures.append(pool.submit(invoke, fx, x)) for f in function_names]
+     # aux function to produce new tuple with concurrent execution and new sleeptime
+     def set_concurrent(vals:tuple):
+         invo_count = vals[0]
+         thread_numb = 1
+         sleep = vals[1]
+         while(sleep < 0.1):
+             thread_numb += 1
+             invo_count = int(vals[0] / thread_numb)
+             sleep = vals[2] / invo_count - avg_thread_time
+         fxs = [lambda args,fx=f, n=thread_numb: futures.append(pool.submit(invoke_function_conccurrently,fx,n,args)) for f in function_names] 
+         return (vals[2],sleep,fxs,args,thread_numb,vals[0])
 
-        # create parameters for pyramid
-        invo_ascending = [(x+1)*increment for x in range(int(peak / increment))]
-        sleep_times = [ (run_time / len(invo_ascending) / x) - avg_tread_time for x in invo_ascending ]
-        times = [run_time/len(invo_ascending)]*len(invo_ascending)
-        # zip parameters for further use
-        zipped = list(zip(invo_ascending,sleep_times,times))
-        # map each zipped value to a sequantial or concurrent execution
-        mapped = list(map(lambda x: (x[2],x[1],sequantial_functions,args,1,x[0]) if x[1] > 0.1 else \
-            set_concurrent(x), zipped))
-        # append reversed version of mapped values to the mapped values to finish the pyramid structure
-        pyramid_vals = mapped + mapped[:-1][::-1]
+     # lambdas for sequantial execution (base case)
+     sequential_functions = [lambda x,fx=f: futures.append(pool.submit(invoke, fx, x)) for f in function_names]
 
-        
-        # number of invocations that should ideally have been invoked
-        invocation_count = reduce(lambda x,y: x+y, invo_ascending) * 2 - peak
-        
-        # execute the baseline for 60 seconds
-        lib.baseline(run_time=60, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
+     # create parameters for pyramid
+     invo_ascending = [(x+1)*increment for x in range(int(peak / increment))]
+     sleep_times = [ (run_time / len(invo_ascending) / x) - avg_thread_time for x in invo_ascending ]
+     times = [run_time/len(invo_ascending)]*len(invo_ascending)
+     # zip parameters for further use
+     zipped = list(zip(invo_ascending,sleep_times,times))
+     # map each zipped value to a sequantial or concurrent execution
+     mapped = list(map(lambda x: (x[2],x[1],sequential_functions,args,1,x[0]) if x[1] > 0.1 else set_concurrent(x), zipped))
+     # append reversed version of mapped values to the mapped values to finish the pyramid structure
+     pyramid_vals = mapped + mapped[:-1][::-1]
+     
+     # number of invocations that should ideally have been invoked
+     invocation_count = reduce(lambda x,y: x+y, invo_ascending) * 2 - peak
+     
+     # execute the baseline for 60 seconds
+     lib.baseline(run_time=60, sleep_time=0.333-avg_thread_time, functions=sequential_functions, args=args)
+
+     # execute the pyramid
+     for (rt,st,fxs,argv,tn,ic) in pyramid_vals:
+         lib.baseline(run_time=rt,sleep_time=st,functions=fxs,args=argv)
+         if verbose:
+             print('meta for pyramid:',run_time,invocation_count,increment,peak)
+             print('iteration',rt,st,tn,ic)
     
-        # execute the pyramid
-        for (rt,st,fxs,argv,tn,ic) in pyramid_vals:
-            lib.baseline(run_time=rt,sleep_time=st,functions=fxs,args=argv)
-            if dev_mode:
-                print('meta for pyramid:',run_time,invocation_count,increment,peak)
-                print('iteration',rt,st,tn,ic)
-       
 
-        # execute baselien as tail
-        lib.baseline(run_time=60, sleep_time=0.333-avg_tread_time, functions=sequantial_functions, args=args)
+     # execute baseline as tail
+     lib.baseline(run_time=60, sleep_time=0.333-avg_thread_time, functions=sequential_functions, args=args)
 
-        get_futures()
+     # ensure that all invocations have completed before moving on
+     get_futures()
 
-        # log metadata for pyramid
-        
-        for (rt,st,fxs,argv,tn,ic) in pyramid_vals:
-            append_result(run_time,
-                        invocation_count,
-                        increment,
-                        peak,
-                        ','.join(function_names),
-                        rt,
-                        st,
-                        tn,
-                        ic)
-            
-        errors = []
+     # log metadata for pyramid
+     for (rt,st,fxs,argv,tn,ic) in pyramid_vals:
+         append_result(run_time,
+                     invocation_count,
+                     increment,
+                     peak,
+                     ','.join(function_names),
+                     rt,
+                     st,
+                     tn,
+                     ic)
+         
+     errors = []
 
     ########################################
     # execute the logic of this experiment #
     ########################################    
 
-    invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],5,50,45)
+# list to append futures to when executing 
+futures = []
 
-    if dev_mode:
-        # invoke_pyramid(['function1','function2'],[{"throughput_time":0.1}],3,30,30)
+try:
 
-        benchmarker.end_experiment()
-        lib.log_experiment_specifics(experiment_name,
-                                experiment_uuid, 
-                                len(errors), 
-                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
-        sys.exit()
+    invoke_pyramid(['function1', 'function2'], [{"throughput_time":0.1}], 5, 50, 45)
 
-
+    if verbose:
+       print(f'sleeping {coldtime} ...')
     time.sleep(coldtime)
     
     invoke_pyramid(invoke_pyramid(['function1'],[{"throughput_time":0.05}],5,200,300))
 
+    if verbose:
+       print(f'sleeping {coldtime} ...')
     time.sleep(coldtime)
 
     invoke_pyramid(invoke_pyramid(['function2'],[{"throughput_time":0.05}],5,200,180))
 
+    if verbose:
+       print(f'sleeping {coldtime} ...')
     time.sleep(coldtime)
     
     invoke_pyramid(invoke_pyramid(['function3'],[{"throughput_time":0.05}],5,200,60))
 
+    if verbose:
+       print(f'sleeping {coldtime} ...')
     time.sleep(coldtime)
 
     invoke_pyramid(invoke_pyramid(['function1'],[{"throughput_time":0.05}],10,1000,600))
 
 
-   # =====================================================================================
+    # =====================================================================================
     # end of the experiment, results are logged to database
     benchmarker.end_experiment()
     # =====================================================================================
