@@ -121,6 +121,7 @@ def baseline(run_time:int,
                 functions[invocation_count % len(functions)](args[invocation_count % len(args)])
             invocation_count += 1
             time.sleep(sleep_time)
+      
     except Exception as e:
         print(f'Error in baseline function')
         print(str(datetime.now()))

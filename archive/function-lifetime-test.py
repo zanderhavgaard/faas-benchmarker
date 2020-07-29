@@ -102,27 +102,17 @@ errors = []
 # invoke function and return the result dict
 # if thread_numb > 1 it will be done concurrently and the result averaged
 
-# uid = 'test_uuid'
-# val = 0
-# def invoke():
-#     global val
-#     if(val != 0):
-#         val = random.randint(0,20)
-#     # response = lib.get_dict(benchmarker.invoke_function(function_name=fx))
-#     response = {
-#         'instance_identifier': uuid.uuid4() if val == 1 else uid,
-#         'execution_start': time.time()
-#     }
-#     print('invoke',response)
-#     print('-----------------')
-#     val += 1
-#     return response if 'error' not in response else errors.append(response)
+
 def invoke():
     response = lib.get_dict(benchmarker.invoke_function(function_name=fx))
-    # print('invoke')
-    # pprint(response)
-    # print('-----------')
+    if random.randint(0,20) == 10:
+        response['instance_identifier'] = 'test_uuid'
+ 
     return response if 'error' not in response else errors.append(response)
+# def invoke():
+#     response = lib.get_dict(benchmarker.invoke_function(function_name=fx))
+ 
+#     return response if 'error' not in response else errors.append(response)
     
 
 # the wrapper ends the experiment if any it can not return a valid value
@@ -172,7 +162,7 @@ try:
 
     sleep_time = 10
     start_time = int(time.time())
-    _24hours = 10 * 60 if not dev_mode else 2 * sleep_time
+    _24hours = 10 * 60 
     init_response = validate(invoke,'first invokation') 
     function_id = init_response['instance_identifier']
 
@@ -181,8 +171,10 @@ try:
     while( last_recorded < start_time + _24hours ):
         response = validate(invoke,'invokation from loop')
         last_recorded = int(response['execution_start'])
+        print('function_id',function_id,'last_recorded',response['instance_identifier'])
         
         if(response['instance_identifier'] != function_id):
+            print('found new id, ')
             instance_latest = datetime.fromtimestamp(last_recorded)
             start_time_datetime = datetime.fromtimestamp(start_time)
 
@@ -204,11 +196,13 @@ try:
                                 experiment_uuid, 
                                 len(errors), 
                                 db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
+            print('RESULTS')
             pprint(results)
             if verbose:
                 print('result found')
                 print(results[len(results)-1])
                 print()
+            print('exiting !!!!')
             sys.exit()
 
         time.sleep(sleep_time)
