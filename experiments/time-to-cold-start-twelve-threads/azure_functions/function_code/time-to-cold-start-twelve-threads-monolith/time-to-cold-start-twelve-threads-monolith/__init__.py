@@ -1920,7 +1920,7 @@ def invoke_nested_function(function_name: str,
             'Content-Type': 'application/json'
         }
 
-        function_app_name = f'https://{function_name}-python.azurewebsites.net'
+        function_app_name = f'https://{function_name}.azurewebsites.net'
 
         invocation_url = f'{function_app_name}/api/{function_name}?code={code}'
 
