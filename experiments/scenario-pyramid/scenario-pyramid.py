@@ -224,31 +224,31 @@ futures = []
 
 try:
 
-    invoke_pyramid(['function1', 'function2'], [{"throughput_time":0.1}], 5, 50, 45)
+    #  invoke_pyramid(['function1', 'function2'], [{"throughput_time":0.1}], 5, 50, 45)
+
+    #  if verbose:
+       #  print(f'sleeping {coldtime} ...')
+    #  time.sleep(coldtime)
+    
+    invoke_pyramid(['function1', 'function2'], [{"throughput_time":0.05}],5,200,300)
+
+    if verbose:
+       print(f'sleeping {coldtime} ...')
+    time.sleep(coldtime)
+
+    invoke_pyramid(['function2', 'function3'], [{"throughput_time":0.05}],5,200,180)
 
     if verbose:
        print(f'sleeping {coldtime} ...')
     time.sleep(coldtime)
     
-    invoke_pyramid(invoke_pyramid(['function1'],[{"throughput_time":0.05}],5,200,300))
+    invoke_pyramid(['function3', 'function1'], [{"throughput_time":0.05}],5,200,60)
 
     if verbose:
        print(f'sleeping {coldtime} ...')
     time.sleep(coldtime)
 
-    invoke_pyramid(invoke_pyramid(['function2'],[{"throughput_time":0.05}],5,200,180))
-
-    if verbose:
-       print(f'sleeping {coldtime} ...')
-    time.sleep(coldtime)
-    
-    invoke_pyramid(invoke_pyramid(['function3'],[{"throughput_time":0.05}],5,200,60))
-
-    if verbose:
-       print(f'sleeping {coldtime} ...')
-    time.sleep(coldtime)
-
-    invoke_pyramid(invoke_pyramid(['function1'],[{"throughput_time":0.05}],10,1000,600))
+    invoke_pyramid(['function1', 'function3'], [{"throughput_time":0.05}],10,1000,600)
 
 
     # =====================================================================================
