@@ -133,8 +133,9 @@ def run_experiment(iterations:int, invoke_order:list, hot_instances:int, nested:
             pprint(response)
             print()
 
-        # TODO is this supposed to be here, or unindented 1 ?
-        time.sleep(coldtime if not dev_mode else 20)    
+        if verbose:
+            print(f'Now waiting {coldtime} ...')
+        time.sleep(coldtime if not dev_mode else 20)
 
         
 try:
@@ -158,8 +159,6 @@ try:
     args["invoke_nested"] = [create_nesting(func_list[1:])]
 
     run_experiment(5,func_list,1,args)
-
-    #  run_experiment(10,func_list,2,args)
 
 
     # =====================================================================================
