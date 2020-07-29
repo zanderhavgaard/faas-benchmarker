@@ -68,7 +68,7 @@ class OpenFaasProvider(AbstractProvider):
                             res = await response.text()
                             print(f'E001 : A non 200 response code recieved at iteration {i}. \
                                     Response_code: {response.status}, message: {res}')
-                            
+             
             return (res, start_time, time.time(), thread_number, number_of_threads) if response_code == 200 \
                     else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time(), thread_number, number_of_threads)
 
@@ -190,6 +190,6 @@ class OpenFaasProvider(AbstractProvider):
         openfaas_hostname = os.getenv('openfaas_hostname')
         openfaas_port = os.getenv('openfaas_port')
         # TODO remove experiment name from invoke url when back to running on EKS
-        #  return f'http://{openfaas_hostname}:{openfaas_port}/function/{function_name}'
+        # return f'http://{openfaas_hostname}:{openfaas_port}/function/{function_name}'
         return f'http://{openfaas_hostname}:{openfaas_port}/function/{self.experiment_name}-{function_name}'
         

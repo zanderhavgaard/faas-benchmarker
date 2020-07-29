@@ -136,8 +136,9 @@ class Benchmarker:
             if self.verbose and self.print_all_data:
                 print('--- DATA OF EACH INVOCATION ---')
                 for invo in invocations:
+                
                     print()
-                    print('INVOCATION META DATA FOR identifier:', invo.identifier)
+                    print('INVOCATION META DATA FOR identifier:', invo['identifier']) 
                     print(invo.dev_print())
                     print()
                     print('SQL query for invocation')

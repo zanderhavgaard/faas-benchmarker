@@ -35,6 +35,7 @@ def get_dict(data: dict) -> dict:
 def iterator_wrapper(func, error_point:str, experiment_name: str, args=None, err_func=None):
   
     try:
+        # breakpoint()
         for i in range(5):
             val = func(args) if args != None else func()
             if(list(filter(None, [val])) != []):
@@ -109,17 +110,26 @@ def baseline(run_time:int,
             special_args= None,
             dist:float= None,
             ):
+    try: 
+        starttime = time.time()
+        invocation_count = 0
 
-    starttime = time.time()
-    invocation_count = 0
+        while(run_time > time.time() - starttime ):
+            if(dist != None and invocation_count % dist == dist-1 and special_func != None):
+                special_func(special_args)
+            else:
+                functions[invocation_count % len(functions)](args[invocation_count % len(args)])
+            invocation_count += 1
+            time.sleep(sleep_time)
+      
+    except Exception as e:
+        print(f'Error in baseline function')
+        print(str(datetime.now()))
+        print('function args:', str(args))
+        print('Error message: ', str(e))
+        print(f'Trace: {traceback.format_exc()}')
+        print('----------------------------------------------------------------------')
 
-    while(run_time > time.time() - starttime ):
-        if(dist != None and invocation_count % dist == dist-1 and special_func != None):
-            special_func(special_args)
-        else:
-            functions[invocation_count % len(functions)](args[invocation_count % len(args)])
-        invocation_count += 1
-        time.sleep(sleep_time)
   
 
 def invocation_pattern(iterations:int, 
