@@ -140,9 +140,6 @@ def get_futures():
          for i in range(20):
              if not fu.done():
                  time.sleep(0.5)
-                 #  print('sleeping')
-             elif i == 19:
-                #  print('did not get a result ...')
              else:
                  invocation_results.append(fu.result())
                  break
