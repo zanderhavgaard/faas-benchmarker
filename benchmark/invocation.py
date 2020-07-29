@@ -20,11 +20,9 @@ class Invocation:
     def get_data(self):
         return self.__dict__
 
-    # def is_error(self) -> bool:
-    #     return self.is_error
 
     def dev_print(self):
-        pprint(vars(self))  # use get_data
+        pprint(self.get_data())  
 
     def parse_data(self, data: dict):
         for i in map(lambda x: setattr(self, x, data[x]), list(data)):
