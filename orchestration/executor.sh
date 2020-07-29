@@ -88,7 +88,6 @@ logfile="/home/$client_user/$experiment_name-$timestamp-$experiment_meta_identif
 
 docker_command="
     docker run \
-        --rm \
         --mount type=bind,source=\"/home/$client_user\",target=\"/home/docker/shared\" \
         --mount type=bind,source=\"/home/$client_user/.ssh\",target=\"/home/docker/key\" \
         -e \"DB_HOSTNAME=$DB_HOSTNAME\" \
