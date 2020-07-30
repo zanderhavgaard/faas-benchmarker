@@ -3,26 +3,24 @@ import time
 import uuid
 import json
 import platform
-import requests
 import psutil
-import traceback
 import random
-from math import sqrt
-from functools import reduce
-import collections
-import pandas as pd
-import numpy as np
-
-import calendar
+#  import traceback
+#  import requests
 import sys
-from datetime import datetime, timedelta
-from datetime import tzinfo as dt_tzinfo
-from math import trunc
 
-from dateutil import tz as dateutil_tz
-from dateutil.relativedelta import relativedelta
-
-from arrow import formatter, locales, parser, util
+#  from math import sqrt
+#  from functools import reduce
+#  import collections
+#  import pandas as pd
+#  import numpy as np
+#  import calendar
+#  from datetime import datetime, timedelta
+#  from datetime import tzinfo as dt_tzinfo
+#  from math import trunc
+#  from dateutil import tz as dateutil_tz
+#  from dateutil.relativedelta import relativedelta
+#  from arrow import formatter, locales, parser, util
 
 
 def handle(req):
@@ -121,8 +119,7 @@ def handle(req):
             body[identifier]['random_seed'] = event['throughput_time'] * 100
 
         # add ip address of container to uniqely differentiate container instances
-        body[identifier]['instance_identifier'] = str(
-            psutil.net_if_addrs()['eth0'][0][1])+'-'+str(platform.node())
+        body[identifier]['instance_identifier'] = str(psutil.net_if_addrs()['eth0'][0][1])+'-'+str(platform.node())
 
         # add total memory of pod to metadata
         body[identifier]['memory'] = psutil.virtual_memory()[0]
@@ -143,6 +140,8 @@ def handle(req):
         
         
         def matrix_mult(n,z):
+            from math import sqrt
+            from functools import reduce
 
             throughput_t_start = time.time()
             process_t_start = time.process_time()
@@ -160,6 +159,7 @@ def handle(req):
             return result
         
         def fib():
+            from math import sqrt
             n = random.randint(0,20)
             return ((1+sqrt(5))**n-(1-sqrt(5))**n)/(2**n*sqrt(5))
         
@@ -264,6 +264,7 @@ def handle(req):
             return(root)
         
         def zigzagLevelOrder(root: TreeNode):
+            import collections
             if not root:
                 return []
             
@@ -499,6 +500,8 @@ def handle(req):
             return sliced
         
         class Arrow2(object):
+            from datetime import datetime, timedelta
+
             """An :class:`Arrow2 <Arrow2.arrow.Arrow>` object.
             Implements the ``datetime`` interface, behaving as an aware ``datetime`` while implementing
             additional functionality.
@@ -537,6 +540,11 @@ def handle(req):
             def __init__(
                 self, year, month, day, hour=0, minute=0, second=0, microsecond=0, tzinfo=None
             ):
+                from dateutil import tz as dateutil_tz
+                from dateutil.relativedelta import relativedelta
+                from datetime import datetime, timedelta
+                from datetime import tzinfo as dt_tzinfo
+                from arrow import formatter, locales, parser, util
                 if tzinfo is None:
                     tzinfo = dateutil_tz.tzutc()
                 # detect that tzinfo is a pytz object (issue #626)
@@ -558,6 +566,8 @@ def handle(req):
 
             @classmethod
             def now(cls, tzinfo=None):
+                from dateutil import tz as dateutil_tz
+                from datetime import datetime
                 """Constructs an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object, representing "now" in the given
                 timezone.
                 :param tzinfo: (optional) a ``tzinfo`` object. Defaults to local time.
@@ -583,6 +593,8 @@ def handle(req):
 
             @classmethod
             def utcnow(cls):
+                from dateutil import tz as dateutil_tz
+                from datetime import datetime, timedelta
                 """ Constructs an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object, representing "now" in UTC
                 time.
                 Usage::
@@ -605,6 +617,10 @@ def handle(req):
 
             @classmethod
             def fromtimestamp(cls, timestamp, tzinfo=None):
+                from dateutil import tz as dateutil_tz
+                from datetime import datetime, timedelta
+                from arrow import formatter, locales, parser, util
+
                 """ Constructs an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object from a timestamp, converted to
                 the given timezone.
                 :param timestamp: an ``int`` or ``float`` timestamp, or a ``str`` that converts to either.
@@ -636,6 +652,9 @@ def handle(req):
 
             @classmethod
             def utcfromtimestamp(cls, timestamp):
+                from dateutil import tz as dateutil_tz
+                from datetime import datetime, timedelta
+                from arrow import formatter, locales, parser, util
                 """Constructs an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object from a timestamp, in UTC time.
                 :param timestamp: an ``int`` or ``float`` timestamp, or a ``str`` that converts to either.
                 """
@@ -660,6 +679,9 @@ def handle(req):
 
             @classmethod
             def fromdatetime(cls, dt, tzinfo=None):
+                from dateutil import tz as dateutil_tz
+                from datetime import datetime, timedelta
+                from arrow import formatter, locales, parser, util
                 """ Constructs an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object from a ``datetime`` and
                 optional replacement timezone.
                 :param dt: the ``datetime``
@@ -691,6 +713,9 @@ def handle(req):
 
             @classmethod
             def fromdate(cls, date, tzinfo=None):
+                from dateutil import tz as dateutil_tz
+                from datetime import datetime, timedelta
+                from arrow import formatter, locales, parser, util
                 """ Constructs an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object from a ``date`` and optional
                 replacement timezone.  Time values are set to 0.
                 :param date: the ``date``
@@ -704,6 +729,9 @@ def handle(req):
 
             @classmethod
             def strptime(cls, date_str, fmt, tzinfo=None):
+                from dateutil import tz as dateutil_tz
+                from datetime import datetime, timedelta
+                from arrow import formatter, locales, parser, util
                 """ Constructs an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object from a date string and format,
                 in the style of ``datetime.strptime``.  Optionally replaces the parsed timezone.
                 :param date_str: the date string.
@@ -734,6 +762,7 @@ def handle(req):
 
             @classmethod
             def range(cls, frame, start, end=None, tz=None, limit=None):
+                from dateutil.relativedelta import relativedelta
                 """ Returns an iterator of :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` objects, representing
                 points in time between two inputs.
                 :param frame: The timeframe.  Can be any ``datetime`` property (day, hour, minute...).
@@ -963,6 +992,7 @@ def handle(req):
 
             @property
             def timestamp(self):
+                import calendar
                 """ Returns a timestamp representation of the :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object, in
                 UTC time.
                 Usage::
@@ -1032,6 +1062,7 @@ def handle(req):
                 return self.fromdatetime(current)
 
             def shift(self, **kwargs):
+                from dateutil.relativedelta import relativedelta
                 """ Returns a new :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object with attributes updated
                 according to inputs.
                 Use pluralized property names to relatively shift their current value:
@@ -1078,6 +1109,8 @@ def handle(req):
                 return self.fromdatetime(current)
 
             def to(self, tz):
+                from datetime import tzinfo as dt_tzinfo
+                from arrow import formatter, locales, parser, util
                 """ Returns a new :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object, converted
                 to the target timezone.
                 :param tz: A :ref:`timezone expression <tz-expr>`.
@@ -1121,6 +1154,7 @@ def handle(req):
                     )
 
             def span(self, frame, count=1, bounds="[)"):
+                from dateutil.relativedelta import relativedelta
                 """ Returns two new :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` objects, representing the timespan
                 of the :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object in a given timeframe.
                 :param frame: the timeframe.  Can be any ``datetime`` property (day, hour, minute...).
@@ -1208,6 +1242,7 @@ def handle(req):
             # string output and formatting.
 
             def format(self, fmt="YYYY-MM-DD HH:mm:ssZZ", locale="en_us"):
+                from arrow import formatter
                 """ Returns a string representation of the :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object,
                 formatted according to a format string.
                 :param fmt: the format string.
@@ -1225,8 +1260,13 @@ def handle(req):
                 return formatter.DateTimeFormatter(locale).format(self._datetime, fmt)
 
             def humanize(
-                self, other=None, locale="en_us", only_distance=False, granularity="auto"
-            ):
+                self, other=None, locale="en_us", only_distance=False, granularity="auto"):
+                from datetime import datetime, timedelta
+                from datetime import tzinfo as dt_tzinfo
+                from math import trunc
+                from dateutil import tz as dateutil_tz
+                from dateutil.relativedelta import relativedelta
+                from arrow import formatter, locales, parser, util
                 """ Returns a localized, humanized representation of a relative difference in time.
                 :param other: (optional) an :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` or ``datetime`` object.
                     Defaults to now in the current :class:`Arrow2 <Arrow2.Arrow2.Arrow2>` object's timezone.
@@ -1479,7 +1519,8 @@ def handle(req):
             # math
 
             def __add__(self, other):
-
+                from datetime import datetime, timedelta
+                from dateutil.relativedelta import relativedelta
                 if isinstance(other, (timedelta, relativedelta)):
                     return self.fromdatetime(self._datetime + other, self._datetime.tzinfo)
 
@@ -1489,7 +1530,8 @@ def handle(req):
                 return self.__add__(other)
 
             def __sub__(self, other):
-
+                from datetime import datetime, timedelta
+                from dateutil.relativedelta import relativedelta
                 if isinstance(other, (timedelta, relativedelta)):
                     return self.fromdatetime(self._datetime - other, self._datetime.tzinfo)
 
@@ -1502,7 +1544,7 @@ def handle(req):
                 return NotImplemented
 
             def __rsub__(self, other):
-
+                from datetime import datetime
                 if isinstance(other, datetime):
                     return other - self._datetime
 
@@ -1511,6 +1553,7 @@ def handle(req):
             # comparisons
 
             def __eq__(self, other):
+                from datetime import datetime
 
                 if not isinstance(other, (Arrow2, datetime)):
                     return False
@@ -1518,6 +1561,7 @@ def handle(req):
                 return self._datetime == self._get_datetime(other)
 
             def __ne__(self, other):
+                from datetime import datetime
 
                 if not isinstance(other, (Arrow2, datetime)):
                     return True
@@ -1525,6 +1569,7 @@ def handle(req):
                 return not self.__eq__(other)
 
             def __gt__(self, other):
+                from datetime import datetime
 
                 if not isinstance(other, (Arrow2, datetime)):
                     return NotImplemented
@@ -1532,6 +1577,7 @@ def handle(req):
                 return self._datetime > self._get_datetime(other)
 
             def __ge__(self, other):
+                from datetime import datetime
 
                 if not isinstance(other, (Arrow2, datetime)):
                     return NotImplemented
@@ -1539,6 +1585,7 @@ def handle(req):
                 return self._datetime >= self._get_datetime(other)
 
             def __lt__(self, other):
+                from datetime import datetime
 
                 if not isinstance(other, (Arrow2, datetime)):
                     return NotImplemented
@@ -1546,6 +1593,7 @@ def handle(req):
                 return self._datetime < self._get_datetime(other)
 
             def __le__(self, other):
+                from datetime import datetime
 
                 if not isinstance(other, (Arrow2, datetime)):
                     return NotImplemented
@@ -1553,6 +1601,7 @@ def handle(req):
                 return self._datetime <= self._get_datetime(other)
 
             def __cmp__(self, other):
+                from datetime import datetime
                 if sys.version_info[0] < 3:  # pragma: no cover
                     if not isinstance(other, (Arrow2, datetime)):
                         raise TypeError(
@@ -1715,6 +1764,9 @@ def handle(req):
 
             @staticmethod
             def _get_tzinfo(tz_expr):
+                from datetime import tzinfo as dt_tzinfo
+                from dateutil import tz as dateutil_tz
+                from arrow import formatter, locales, parser, util
 
                 if tz_expr is None:
                     return dateutil_tz.tzutc()
@@ -1728,6 +1780,8 @@ def handle(req):
 
             @classmethod
             def _get_datetime(cls, expr):
+                from datetime import datetime, timedelta
+                from arrow import formatter, locales, parser, util
                 """Get datetime object for a specified expression."""
                 if isinstance(expr, Arrow2):
                     return expr.datetime
@@ -1795,6 +1849,9 @@ def handle(req):
         
         # invoke functions from two fairly large libraries 
         def pandas_numpy(x):
+            from functools import reduce
+            import pandas as pd
+            import numpy as np
             data = {}
             for i in range(x):
                 data[f'value {i}'] = [x for x in range(10)]
@@ -1804,7 +1861,27 @@ def handle(req):
             reduced = reduce(lambda n,m: n+m, flatten)
             return reduced
 
-        
+       
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         # ==============================================================
 
         #  invoke nested functions from arguments
@@ -1864,6 +1941,7 @@ def handle(req):
         })
         # return json object with error if exception occurs
     except Exception as e:
+        import traceback
         return json.dumps({
             "statusCode": 200,
             "headers": {
@@ -1920,6 +1998,9 @@ def invoke_nested_function(function_name: str,
         function_name = function_name.split('-').pop()
         invocation_url = f'http://{function_url}/function/{function_name}'
 
+        # imports are expensive, so we only do them when we actually need them
+        import requests
+
         response = requests.post(
             url=invocation_url,
             headers=headers,
@@ -1945,6 +2026,7 @@ def invoke_nested_function(function_name: str,
         return body
 
     except Exception as e:
+        import traceback
         end_time = time.time()
         return {
             f"error-{function_name}-nested_invocation-{end_time}": {

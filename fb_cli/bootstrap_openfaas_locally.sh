@@ -55,8 +55,6 @@ echo -n "$PASSWORD" | faas-cli login --username admin --password-stdin
 pmsg "Deploying functions ..."
 
 faas-cli template pull
-faas-cli deploy \
-  -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml \
-  --label "com.openfaas.scale.zero=true"
+faas-cli deploy -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml
 
 smsg "Done configuring OpenFaas"

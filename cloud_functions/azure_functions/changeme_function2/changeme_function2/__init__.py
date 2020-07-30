@@ -2,12 +2,12 @@ import logging
 import time
 import json
 import uuid
-import requests
 import psutil
-import azure.functions as func
-import traceback
 import random
 import platform
+import azure.functions as func
+#  import requests
+#  import traceback
 
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
@@ -130,6 +130,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         return response
     # return httpResponse with error if exception occurs
     except Exception as e:
+        import traceback
         error_body = {
             "identifier": identifier,
             identifier: {
@@ -180,6 +181,7 @@ def invoke_nested_function(function_name: str,
 
         invocation_url = f'{function_app_name}/api/{function_name}?code={code}'
 
+        import requests
         response = requests.post(
             url=invocation_url,
             headers=headers,
@@ -201,6 +203,7 @@ def invoke_nested_function(function_name: str,
         return body
 
     except Exception as e:
+        import traceback
         end_time = time.time()
         return {
             f"error-{function_name}-nested_invocation-{end_time}": {

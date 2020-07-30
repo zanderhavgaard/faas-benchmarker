@@ -1,11 +1,12 @@
-import boto3
+
 import time
 import json
 import uuid
 import platform
-import traceback
 import random
 import psutil
+#  import boto3
+#  import traceback
 
 
 def lambda_handler(event: dict, context: dict) -> dict:
@@ -28,7 +29,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
     identifier = f'{function_name}-{invocation_uuid}'
 
     try:
-
         # create a dict that will be parsed to json
         body = {
             identifier: {
@@ -38,6 +38,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 "function_cores": psutil.cpu_count()
             },
         }
+
         # set parent (previous invocation) of this invocation
         if 'parent' not in event:
             # if first in chain mark as root
@@ -56,13 +57,14 @@ def lambda_handler(event: dict, context: dict) -> dict:
         if 'sleep' in event:
             time.sleep(event['sleep'])
             body[identifier]['sleep'] = event['sleep']
-    
+        
 
         if 'throughput_time' in event:
             random.seed(event['throughput_time'] * 100)
             process_time_start = time.process_time()
             throughput_start = time.time()
             throughput = []
+
             while(time.time()-throughput_start < event['throughput_time']):
                 throughput.append(random.random())
             throughput_process_time = time.process_time() - process_time_start
@@ -73,6 +75,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
             body[identifier]['throughput_time'] = event['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = event['throughput_time'] * 100
+        
 
         # add invocation metadata to response
         if context is None:
@@ -91,8 +94,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
         # invoke nested lambdas from arguments
         if 'invoke_nested' in event:
             # invoke nested will contain a list of dicts specifying how invoke nested functions
-            # create client for invoking other lambdas
-            lambda_client = boto3.client('lambda')
             # execute each nested lambda invocation command
             for invoke in event['invoke_nested']:
                 invoke['invoke_payload']['parent'] = identifier
@@ -100,7 +101,6 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 nested_response = invoke_lambda(
                     lambda_name=invoke['function_name'],
                     invoke_payload=invoke['invoke_payload'],
-                    client=lambda_client,
                 )
                 # add each nested invocation to response body
                 for id in nested_response.keys():
@@ -123,6 +123,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
         }
 
     except Exception as e:
+        import traceback
         return json.dumps({
             "statusCode": 200,
             "headers": {
@@ -164,8 +165,10 @@ def lambda_handler(event: dict, context: dict) -> dict:
 
 def invoke_lambda(lambda_name: str,
                   invoke_payload: dict,
-                  client: boto3.client
                   ) -> dict:
+    import boto3
+    # create client for invoking other lambdas
+    client = boto3.client('lambda')
 
     # capture the invocation start time
     start_time = time.time()
@@ -194,6 +197,7 @@ def invoke_lambda(lambda_name: str,
         return body
 
     except Exception as e:
+        import traceback
         end_time = time.time()
         return {
             "error-"+lambda_name+'-nested_invocation-'+str(end_time): {
@@ -223,41 +227,4 @@ def invoke_lambda(lambda_name: str,
         }
 
 
-class StatusCodeException(Exception):
-    pass
 
-
-# call the method if running locally
-#  if __name__ == "__main__":
-
-    #  simplest invoke
-    #  test_event = {"StatusCode": 200}
-
-    #  invoke with sleep
-    #  test_event = {"StatusCode": 200, 'sleep': 1.5}
-
-    #  invoke with nested invocations
-    #  test_event = {"StatusCode": 200,
-    #  "invoke_nested": [
-    #  {
-    #  "function_name": "dev2-python",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  "sleep": 0.5,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  {
-    #  "function_name": "dev3-python",
-    #  "invoke_payload": {
-    #  "StatusCode": 200,
-    #  },
-    #  "invocation_type": "RequestResponse"
-    #  },
-    #  ],
-    #  }
-
-    #  test_context = None
-
-    #  response = lambda_handler(test_event, test_context)
-    #  print(response)

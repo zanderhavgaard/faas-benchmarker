@@ -2,11 +2,10 @@ import time
 import uuid
 import json
 import platform
-import requests
 import psutil
-import traceback
 import random
-
+#  import traceback
+#  import requests
 
 def handle(req):
 
@@ -115,6 +114,7 @@ def handle(req):
         })
     # return json object with error if exception occurs
     except Exception as e:
+        import traceback
         return json.dumps({
             "statusCode": 200,
             "headers": {
@@ -151,8 +151,6 @@ def handle(req):
 # params:
 # function_name: name of function in to be called at the gateway
 # invoke_payload: dict containing arguments for invoked function
-
-
 def invoke_nested_function(function_name: str,
                            invoke_payload: dict
                            ) -> dict:
@@ -170,6 +168,9 @@ def invoke_nested_function(function_name: str,
         # strip expreiment name from function_name
         function_name = function_name.split('-').pop()
         invocation_url = f'http://{function_url}/function/{function_name}'
+
+        # imports are expensive, so we only do them when we actually need them
+        import requests
 
         response = requests.post(
             url=invocation_url,
@@ -196,6 +197,7 @@ def invoke_nested_function(function_name: str,
         return body
 
     except Exception as e:
+        import traceback
         end_time = time.time()
         return {
             f"error-{function_name}-nested_invocation-{end_time}": {
@@ -224,4 +226,7 @@ def invoke_nested_function(function_name: str,
             }
         }
 
+#  if __name__ == '__main__':
+    #  response = handle(json.dumps('{}'))
+    #  print(response)
 
