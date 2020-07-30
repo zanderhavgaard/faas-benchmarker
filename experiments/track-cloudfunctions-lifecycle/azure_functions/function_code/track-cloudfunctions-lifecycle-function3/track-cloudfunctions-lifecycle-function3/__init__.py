@@ -2,12 +2,12 @@ import logging
 import time
 import json
 import uuid
-import requests
 import psutil
-import azure.functions as func
-import traceback
 import random
 import platform
+import azure.functions as func
+#  import requests
+#  import traceback
 
 if 'instance_identifier' not in locals():
     instance_identifier = str(uuid.uuid4())
@@ -41,6 +41,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
 
         # parse request json
         req_json = json.loads(req.get_body())
+
 
         if 'parent' not in req_json:
             # if first in chain mark as root
@@ -76,7 +77,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             body[identifier]['throughput_time'] = req_json['throughput_time']
             body[identifier]['throughput_process_time'] = throughput_process_time
             body[identifier]['random_seed'] = req_json['throughput_time'] * 100
-     
+      
 
         # add python version metadata
         body[identifier]['python_version'] = platform.python_version()
@@ -129,6 +130,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
         return response
     # return httpResponse with error if exception occurs
     except Exception as e:
+        import traceback
         error_body = {
             "identifier": identifier,
             identifier: {
@@ -138,7 +140,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": None,
                 "sleep": None,
-                "function_cores": 0,
+                "function_cores": psutil.cpu_count(),
                 "throughput": None,
                 "throughput_time": None,
                 "throughput_process_time": None,
@@ -179,6 +181,7 @@ def invoke_nested_function(function_name: str,
 
         invocation_url = f'{function_app_name}/api/{function_name}?code={code}'
 
+        import requests
         response = requests.post(
             url=invocation_url,
             headers=headers,
@@ -200,6 +203,7 @@ def invoke_nested_function(function_name: str,
         return body
 
     except Exception as e:
+        import traceback
         end_time = time.time()
         return {
             f"error-{function_name}-nested_invocation-{end_time}": {
@@ -209,7 +213,6 @@ def invoke_nested_function(function_name: str,
                 "error": {"trace": traceback.format_exc(), 'message': str(e), "type": str(type(e).__name__)},
                 "parent": invoke_payload['parent'],
                 "sleep": None,
-                "function_cores": 0,
                 "function_cores": 0,
                 "throughput": None,
                 "throughput_time": None,
