@@ -13,6 +13,11 @@ functions:
       read_timeout: "180s"
       write_timeout: "180s"
       timeout_secs: "5000"
+    labels:
+      com.openfaas.scale.factor: 20
+      com.openfaas.scale.min: 1
+      com.openfaas.scale.max: 20
+      com.openfaas.scale.zero: true
   scenario-pyramid-function2:
     lang: python3
     handler: ./function2
@@ -23,6 +28,11 @@ functions:
       read_timeout: "180s"
       write_timeout: "180s"
       timeout_secs: "5000"
+    labels:
+      com.openfaas.scale.factor: 20
+      com.openfaas.scale.min: 1
+      com.openfaas.scale.max: 20
+      com.openfaas.scale.zero: true
   scenario-pyramid-function3:
     lang: python3
     handler: ./function3
@@ -33,6 +43,11 @@ functions:
       read_timeout: "180s"
       write_timeout: "180s"
       timeout_secs: "5000"
+    labels:
+      com.openfaas.scale.factor: 20
+      com.openfaas.scale.min: 1
+      com.openfaas.scale.max: 20
+      com.openfaas.scale.zero: true
   scenario-pyramid-monolith:
     lang: python3
     handler: ./monolith
@@ -43,3 +58,8 @@ functions:
       read_timeout: "180s"
       write_timeout: "180s"
       timeout_secs: "5000"
+    labels:
+      com.openfaas.scale.factor: 20
+      com.openfaas.scale.min: 1
+      com.openfaas.scale.max: 20
+      com.openfaas.scale.zero: true
