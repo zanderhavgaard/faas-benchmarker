@@ -89,41 +89,57 @@ def invoke(args:dict= None):
     return response if 'error' not in response else errors.append(response)
 
 def invoke_concurrently( args:tuple= None ):
-
     err_count = len(errors)
     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
-    benchmarker.invoke_function_conccurrently(function_name=function, numb_threads=args[0], function_args=args[1]))]))
-   
+        benchmarker.invoke_function_conccurrently(function_name=function, numb_threads=args[0], function_args=args[1]))]))
     return None if invocations == [] else invocations
 
 
 # =====================================================================================
 
 try:
-    base_functions = [lambda x: invoke(x)]
-    base_args = [{'throughput_time': 0.1}]
+    # how many times to run the whole experiment
+    iterations = 2
+    
+    # setup arguments for baseline invocations
+    baseline_functions = [lambda x: invoke(x)]
+    baseline_args = [{'throughput_time': 0.1}]
+    #  baseline_seconds = 30
+    baseline_seconds = 0
 
-    spikes = lib.increment_list(16,16,128) + lib.increment_list(16,16,128,True)[1:] if not dev_mode \
-    else lib.increment_list(2,2,14) + lib.increment_list(2,2,14,True)[1:]
-    spike_args = [(x,{'throughput_time': 0.1}) for x in spikes]
+    # setup arguments for concurent spikes
+    spike_start=8
+    spike_increment=8
+    number_of_spikes=64
+    increasing_spikes = lib.increment_list(start=spike_start, increment=spike_increment, n=number_of_spikes)
+    decreasing_spikes = lib.increment_list(start=spike_start, increment=spike_increment, n=number_of_spikes, reverse=True) 
+    spikes = increasing_spikes + decreasing_spikes \
+        #  if not dev_mode else lib.increment_list(2,2,14) + lib.increment_list(2,2,14,True)[1:]
+    spike_args = [(x, {'throughput_time': 0.1}) for x in spikes]
+
+    if verbose:
+        print(f'spikes for the experiment: \n{spikes}\n')
+        print('========== starting experiment invocations ==========')
 
     for args in spike_args:
-        for i in range(1):
-            lib.baseline(30, 0.3, base_functions, base_args)
-            invoke_concurrently(args)
+        for i in range(iterations):
             if verbose:
-                print(f'done invoking for iteration {i} with args: {args}')
+                print(f'doing baseline invocations for {baseline_seconds} seconds')
+            lib.baseline(baseline_seconds, 0.3, baseline_functions, baseline_args)
+            if verbose:
+                print(f'iteration {i}: concurrent spike: {args}')
+            invoke_concurrently(args)
 
-   # =====================================================================================
+    # =====================================================================================
     # end of the experiment, results are logged to database
     benchmarker.end_experiment()
     # =====================================================================================
     # log experiments specific results, hence results not obtainable from the generic Invocation object
     lib.log_experiment_specifics(experiment_name,
-                                experiment_uuid, 
-                                len(errors), 
-                                True)
+                                 experiment_uuid,
+                                 len(errors),
+                                 True)
 
 except Exception as e:
     # this will print to logfile
