@@ -302,9 +302,9 @@ try:
         threads = thread_numb
     
         # time to sleep in between invocations, start at 5 minutes
-        sleep_time = 900
+        sleep_time = 300
         # increment for each iteration
-        increment = 300
+        increment = sleep_time
         # granularity of result
         granularity = 20
         # flags for controlling granularity of sleep value
