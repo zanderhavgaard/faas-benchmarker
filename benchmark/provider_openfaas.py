@@ -43,7 +43,7 @@ class OpenFaasProvider(AbstractProvider):
                         ) -> dict:
 
         # TODO remove when we feel sure that all of the stuff works...
-        print('url', url)
+        #  print('url', url)
 
         # log start time of invocation
         start_time = time.time()

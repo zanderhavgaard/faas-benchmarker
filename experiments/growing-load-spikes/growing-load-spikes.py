@@ -106,12 +106,12 @@ try:
     baseline_functions = [lambda x: invoke(x)]
     baseline_args = [{'throughput_time': 0.1}]
     #  baseline_seconds = 30
-    baseline_seconds = 0
+    baseline_seconds = 30
 
     # setup arguments for concurent spikes
     spike_start=8
     spike_increment=8
-    number_of_spikes=64
+    number_of_spikes=32
     increasing_spikes = lib.increment_list(start=spike_start, increment=spike_increment, n=number_of_spikes)
     decreasing_spikes = lib.increment_list(start=spike_start, increment=spike_increment, n=number_of_spikes, reverse=True) 
     spikes = increasing_spikes + decreasing_spikes \
