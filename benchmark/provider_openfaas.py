@@ -199,7 +199,6 @@ class OpenFaasProvider(AbstractProvider):
         openfaas_port = os.getenv('openfaas_port')
         # TODO remove experiment name from invoke url when back to running on EKS
         # return f'http://{openfaas_hostname}:{openfaas_port}/function/{function_name}'
-        url = f'http://{openfaas_hostname}:{openfaas_port}/function/{self.experiment_name}-{function_name}'
-        #  print('url',url)
-        return url
+        return f'http://{openfaas_hostname}:{openfaas_port}/function/{self.experiment_name}-{function_name}'
+        
         

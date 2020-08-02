@@ -1,14 +1,12 @@
-
-
 import sys
 import json
-from benchmarker import Benchmarker
 import time
+from pprint import pprint
+from benchmarker import Benchmarker
 from datetime import datetime
 import traceback
 from mysql_interface import SQL_Interface
 import function_lib as lib
-from pprint import pprint
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -40,15 +38,18 @@ verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: This experiment tests the time it takes for
-a single function instance to no longer be available due to inactivity.
-The experiment is conducted by first invoking a single function 11 times,
-the first time to make sure that the function instane is created, the the following
-10 times to create a baseline for a hot invocation.
-Then the function is invoked continually with increasing delay between invocations,
-until the function is a cold start for each invocation with that delay.
-This process is then repeated and averaged.
+{experiment_name}: This experiment tests the time it takes for 
+function instances to no longer be available due to inactivity in a multithreaded
+environment.
+The experiment is conducted by first creating a cold time baseline. This is done by i
+nvoking a single function with 12 concurrent requests and average over the results. 
+Then the same function is is invoked 10 times, again with 12 concurrent requests and 
+averaged as a warm-time baseline.
+Then the function is invoked with 12 multithreaded requests continually with increasing 
+delay between invocations, until the avg of the requests falls within the cold time 
+baseline.
 """
+
 # =====================================================================================
 # create the benchmarker
 benchmarker = Benchmarker(experiment_name=experiment_name,
@@ -60,7 +61,7 @@ benchmarker = Benchmarker(experiment_name=experiment_name,
                           dev_mode=dev_mode,
                           verbose=verbose)
 # =====================================================================================
-# database interface for logging results if needed
+# create database interface for logging results
 db = SQL_Interface(dev_mode)
 # name of table to insert data into
 table = 'Coldstart'
@@ -70,15 +71,31 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function3'
-
+fx = 'function1'
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
     time.sleep(15*60) 
 
+# number of threads to be used
+threads = 0
+
 # values used for aborting experiment if it runs more than 24 hours
 _24_hours = 24 * 60 * 60
 start_time = time.time()
+
+# benchmark for cold value for function
+benchmark = None
+# avg_warmtime defines benchmark for warm start time for function
+avg_warmtime = None
+# time to sleep in between invocations, start at 5 minutes
+sleep_time = None
+# increment for each iteration
+increment = None
+# granularity of result
+granularity = None
+# flags for controlling granularity of sleep value
+large_increment = None
+minute_increment = None
 
 # results specific gathered and logged from logic of this experiment
 results = []
@@ -89,26 +106,33 @@ errors = []
 # Convienience methods needed for this experiment
 
 # invoke function and return the result dict
-# if thread_numb > 1 it will be done concurrently and the result averaged
-def invoke():
-    response = lib.get_dict(
-        benchmarker.invoke_function(function_name=fx))
-    return response if 'error' not in response else errors.append(response)
+def invoke(thread_numb:int):
+    
+    # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
+    invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
+    benchmarker.invoke_function_conccurrently(function_name=fx, 
+                                            numb_threads=thread_numb,
+                                            function_args= {'throughput_time':0.2}))]))
 
+    # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
+    invocations = lib.accumulate_dicts(invocations)
+    # return error count and result for this particular invocation 
+    return None if invocations == {} else invocations
 
 
 # the wrapper ends the experiment if any it can not return a valid value
 def err_func(): return benchmarker.end_experiment()
 
 # convinience for not having to repeat values
-def validate(x, y, z=None): return lib.iterator_wrapper(
-    x, y, experiment_name, z, err_func)
 
+def validate(x, y, z=None): 
+    global threads
+    return lib.iterator_wrapper(x, y, experiment_name, threads if z == None else z, err_func)
 
 # creates list of invocation dicts.
 # args: tuble(x,y) -> x=length_of_list, y=error_point_string
 create_invocation_list = lambda x=(5, 'create invocation_list'): [
-    validate(invoke, x[1]) for i in range(x[0])]
+    validate(invoke, x[1]) for i in range(x[0]) ]
 
 # parse data that needs to be logged to database.
 def append_result(
@@ -118,7 +142,7 @@ def append_result(
                 granularity,
                 cold,
                 final,
-                multithreaded=False) -> None:
+                multithreaded=True) -> None:
 
     results.append({
         'exp_id': experiment_uuid,
@@ -136,36 +160,10 @@ def append_result(
 
 try:
 
-    initial_cold_start_response = validate(invoke, 'initial coldtime')
-    coldtime = initial_cold_start_response['execution_start'] - initial_cold_start_response['invocation_start']
+    def check_coldtime(sleep: int, warmtime):
+        global benchmark
 
-    # coldtime is adjusted by 10% to avoid coldtime being an outlier
-    benchmark = coldtime * 0.90
-
-    # calculates avg. time for warm function, default is 5 invocations as input and keys execution_start - invocation_start
-    invo_list = create_invocation_list()
-    avg_warmtime = validate(lib.reduce_dict_by_keys, 
-                            'avg_warmtime',
-                            (invo_list, ('execution_start', 'invocation_start')) )
-    
-
-    if(dev_mode):
-        benchmark = coldtime * 0.80
-        avg_warmtime = validate(lib.reduce_dict_by_keys, 
-                                'avg_warmtime', 
-                                (create_invocation_list((10, 'create invocation_list')), 
-                                ('execution_start', 'invocation_start')))
-        if(verbose):
-            lib.dev_mode_print('Values before any checks -> coldtime xp', [(
-                                                        'coldtime', coldtime), 
-                                                        ('benchmark', benchmark), 
-                                                        ('avg_warmtime', avg_warmtime)
-                                                        ])
-
-    def check_coldtime(sleep: int):
-        global benchmark, avg_warmtime, coldtime
-
-        if(avg_warmtime < benchmark):
+        if(warmtime < benchmark):
             return
         elif(sleep > 7200):
             raise Exception(
@@ -174,39 +172,20 @@ try:
             time.sleep(sleep)
             res_dict = validate(invoke, 'initial coldtime reset')
             coldtime = res_dict['execution_start'] - res_dict['invocation_start']
-            benchmark = coldtime * 0.90
+            benchmark = coldtime * 0.90 if not dev_mode else coldtime * 0.80
             avg_warmtime = validate(lib.reduce_dict_by_keys, 
                                 'avg_warmtime reset', 
                                 (create_invocation_list((10, 'create invocation_list')), 
                                 ('execution_start', 'invocation_start')))
             if(avg_warmtime > benchmark):
-                check_coldtime(sleep+1200)
+                check_coldtime(sleep+1200,avg_warmtime)
 
-    # sleep for 60 minutes if coldtime is not cold
-    check_coldtime(40*60)
+    
 
-    if(verbose):
-        lib.dev_mode_print('Initial Coldtime ', [
-            ('coldtime', coldtime),
-            ('benchmark', benchmark),
-            ('avg_warmtime', avg_warmtime)
-        ])
-
-    # time to sleep in between invocations, start at 5 minutes
-    sleep_time = 300
-    # increment for each iteration
-    increment = sleep_time
-    # granularity of result
-    granularity = 10
-    # value for last response latency
-    latest_latency_time = avg_warmtime
-    # flags for controlling granularity of sleep value
-    large_increment = True
-    minute_increment = True
 
     # Find the values for when coldtimes occure
     def set_cold_values():
-        global sleep_time, increment, granularity, latest_latency_time,large_increment,minute_increment
+        global sleep_time, increment, granularity,large_increment,minute_increment,start_time,_24_hours
         while(True):
             if time.time() - start_time > _24_hours:
                 print('ABORTING due to 24 hour time constraint from set_cold_values function\n')
@@ -257,79 +236,127 @@ try:
 
 
 
-    if(verbose):
-        lib.dev_mode_print('pre set_cold_values() coldtime exp', [
-                            ('sleep_time', sleep_time), 
-                            ('increment', increment),
-                            ('granularity', granularity),
-                            ('latest_latency_time',latest_latency_time)
-                            ])
-    
-    set_cold_values()
+    def variefy_result():
+        global start_time,_24_hours,benchmarker, sleep_time
+        # variefy that result is valid by using same sleeptime between invocations 5 times
+        iter_count = 5 if not dev_mode else 2
+        while(iter_count > 0):
+            if time.time() - start_time > _24_hours:
+                print('ABORTING due to 24 hour time constraint from varification loop\n')
+                benchmarker.end_experiment()
+                # log experiments specific results, hence results not obtainable from the generic Invocation object
+                lib.log_experiment_specifics(experiment_name,
+                                        experiment_uuid, 
+                                        len(errors), 
+                                        db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
+                sys.exit()
 
-    if(verbose):
-        lib.dev_mode_print('post set_cold_values() coldtime exp', [
-                            ('sleep_time', sleep_time), 
-                            ('increment', increment),
-                            ('granularity', granularity),
-                            ('latest_latency_time',latest_latency_time)])
+            time.sleep(sleep_time)
+            result_dict = validate(invoke, f'invoking function: {fx} from validation of cold start experiment')
+            latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
-    # variefy that result is valid by using same sleeptime between invocations 5 times
-    iter_count = 5 if not dev_mode else 2
-    while(iter_count > 0):
-        if time.time() - start_time > _24_hours:
-            print('ABORTING due to 24 hour time constraint from varification loop\n')
-            benchmarker.end_experiment()
-            # log experiments specific results, hence results not obtainable from the generic Invocation object
-            lib.log_experiment_specifics(experiment_name,
-                                    experiment_uuid, 
-                                    len(errors), 
-                                    db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
-            sys.exit()
+            if(verbose):
+                lib.dev_mode_print(f'logging cold time: {latency_time > benchmark} -> coldtime exp', [
+                    ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
+                    ('sleep_time / 60', int(sleep_time / 60)),
+                    ('sleep_time % 60', int(sleep_time % 60)),
+                    ('increment', increment),
+                    ('coldtime', latency_time > benchmark),
+                    ('Final result', False)
+                    ])
             
-        time.sleep(sleep_time)
-        result_dict = validate(invoke, f'invoking function: {fx} from validation of cold start experiment')
-        latency_time = result_dict['execution_start'] - result_dict['invocation_start']
+            append_result(
+                        result_dict['identifier'],
+                        int(sleep_time / 60),
+                        int(sleep_time % 60),
+                        increment,
+                        latency_time > benchmark,
+                        False)
 
-        if(verbose):
-            lib.dev_mode_print(f'logging cold time: {latency_time > benchmark} -> coldtime exp', [
-                ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
-                ('sleep_time / 60', int(sleep_time / 60)),
-                ('sleep_time % 60', int(sleep_time % 60)),
-                ('increment', increment),
-                ('coldtime', latency_time > benchmark),
-                ('Final result', False)
-                ])
-        
+
+            if(latency_time < benchmark):
+                sleep_time += granularity
+                iter_count = 5 if not dev_mode else 2
+            else:
+                iter_count -= 1
+
+
+        # run one last time and log result as final
+        time.sleep(sleep_time)
+
+        result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment')
+        latency_time = result_dict['execution_start'] - result_dict['invocation_start']
+        # log final result
         append_result(
                     result_dict['identifier'],
                     int(sleep_time / 60),
                     int(sleep_time % 60),
-                    increment,
+                    granularity,
                     latency_time > benchmark,
-                    False)
+                    True)
+    
 
+    def run_experiment(thread_numb:int,function:str):
+        global threads,fx,sleep_time,increment,granularity,coldtime,benchmark
+        fx = function
+        threads = thread_numb
+    
+        # time to sleep in between invocations, start at 5 minutes
+        sleep_time = 900
+        # increment for each iteration
+        increment = 300
+        # granularity of result
+        granularity = 20
+        # flags for controlling granularity of sleep value
+        large_increment = True
+        minute_increment = True
 
-        if(latency_time < benchmark):
-            sleep_time += granularity
-            iter_count = 5 if not dev_mode else 2
-        else:
-            iter_count -= 1
+        initial_cold_start_response = validate(invoke, 'initial coldtime')
+        coldtime = initial_cold_start_response['execution_start'] - initial_cold_start_response['invocation_start']
 
+        # coldtime is adjusted by 10% to avoid coldtime being an outlier
+        benchmark = coldtime * 0.90
 
-    # run one last time and log result as final
-    time.sleep(sleep_time)
+        invo_list = create_invocation_list()
+    
+        # calculates avg. time for warm function, default is 5 invocations as input and keys execution_start - invocation_start
+        avg_warmtime = validate(lib.reduce_dict_by_keys, 
+                                'avg_warmtime',
+                                (invo_list, ('execution_start', 'invocation_start')) )
+        
+                         
+        check_coldtime(sleep_time, avg_warmtime)
 
-    result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment')
-    latency_time = result_dict['execution_start'] - result_dict['invocation_start']
-    # log final result
-    append_result(
-                result_dict['identifier'],
-                int(sleep_time / 60),
-                int(sleep_time % 60),
-                granularity,
-                latency_time > benchmark,
-                True)
+        if(verbose):
+            lib.dev_mode_print('pre set_cold_values() coldtime exp', [
+                                ('sleep_time', sleep_time), 
+                                ('increment', increment),
+                                ('granularity', granularity),
+                                ('benchmark',benchmark),
+                                ])
+    
+        set_cold_values()
+
+        if(verbose):
+            lib.dev_mode_print('post set_cold_values() coldtime exp', [
+                                ('sleep_time', sleep_time), 
+                                ('increment', increment),
+                                ('granularity', granularity),
+                                ('benchmark',benchmark),
+                                ])
+        
+        variefy_result()
+
+        
+    # =======================
+    # Run experiments
+    # =======================
+    
+    run_experiment(6,'function1')
+
+    run_experiment(12,'function2')
+
+    run_experiment(18,'function3')
 
 
     # =====================================================================================
