@@ -115,3 +115,26 @@ microk8s reset
 ### uninstall openfaas
 kubectl delete namespace openfaas openfaas-fn
 kubectl delete clusterrole openfaas-prometheus
+
+
+============================
+
+# HPAv2 kubernetes scaling
+
+## scale gateway
+kubectl \
+        -n openfaas \
+        autoscale \
+        deployment/gateway \
+        --cpu-percent=50 \
+        --min=2 \
+        --max=10
+
+## scale queue-worker
+kubectl \
+        -n openfaas \
+        autoscale \
+        deployment/queue-worker \
+        --cpu-percent=50 \
+        --min=1 \
+        --max=5
