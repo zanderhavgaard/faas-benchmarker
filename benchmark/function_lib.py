@@ -33,7 +33,6 @@ def get_dict(data: dict) -> dict:
 
 
 def iterator_wrapper(func, error_point:str, experiment_name: str, args=None, err_func=None):
-  
     try:
         # breakpoint()
         for i in range(5):
