@@ -38,6 +38,7 @@ function destroy {
     experiment_name=$1
     experiment_context="$fbrd/experiments/$experiment_name"
     experiment_client_env="$experiment_context/$experiment_name-openfaas_client_vm.env"
+    experiment_cloud_function_env="$experiment_context/$experiment_name-openfaas.env"
 
     cd "$experiment_context/openfaas_client_vm"
 
