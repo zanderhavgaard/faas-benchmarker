@@ -70,7 +70,7 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function3'
+fx = 'function1'
 
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
@@ -119,6 +119,7 @@ def append_result(
                 cold,
                 final,
                 multithreaded=False) -> None:
+    global benchmark
 
     results.append({
         'exp_id': experiment_uuid,
@@ -126,7 +127,8 @@ def append_result(
         'minutes': minutes,
         'seconds': seconds,
         'granularity': granularity,
-        'multithreaded':multithreaded,
+        'threads':1,
+        'benchmark': benchmark,
         'cold': cold,
         'final': final
         })
@@ -162,10 +164,11 @@ try:
                                                         ('avg_warmtime', avg_warmtime)
                                                         ])
 
-    def check_coldtime(sleep: int):
-        global benchmark, avg_warmtime, coldtime
+    def check_coldtime(sleep: int, warmtime: float):
+        global benchmark
 
-        if(avg_warmtime < benchmark):
+        if(warmtime * 1.2 < benchmark):
+            print(f'benchmark found: {benchmark}, with {warmtime} as warmtime')
             return
         elif(sleep > 7200):
             raise Exception(
@@ -173,17 +176,17 @@ try:
         else:
             time.sleep(sleep)
             res_dict = validate(invoke, 'initial coldtime reset')
-            coldtime = res_dict['execution_start'] - res_dict['invocation_start']
-            benchmark = coldtime * 0.90
+            local_coldtime = res_dict['execution_start'] - res_dict['invocation_start']
+            benchmark = local_coldtime * 0.80 if not dev_mode else coldtime * 0.90
             avg_warmtime = validate(lib.reduce_dict_by_keys, 
                                 'avg_warmtime reset', 
                                 (create_invocation_list((10, 'create invocation_list')), 
                                 ('execution_start', 'invocation_start')))
             if(avg_warmtime > benchmark):
-                check_coldtime(sleep+1200)
+                check_coldtime(sleep+1200, avg_warmtime)
 
     # sleep for 60 minutes if coldtime is not cold
-    check_coldtime(40*60)
+    check_coldtime(40*60, avg_warmtime)
 
     if(verbose):
         lib.dev_mode_print('Initial Coldtime ', [
