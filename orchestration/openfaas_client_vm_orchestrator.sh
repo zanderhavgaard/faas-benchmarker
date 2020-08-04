@@ -21,12 +21,18 @@ function bootstrap {
     bash init.sh "$experiment_name"
 
     pmsg "Creating client vm ..."
-    terraform apply \
-        -auto-approve \
-        -compact-warnings \
-        -var-file="$experiment_context/$experiment_name.tfvars" \
-        -var "env_file=$experiment_cloud_function_env" \
-        -var "remote_env_file=$remote_env_file"
+    tf_deployed="false"
+    until $tf_deployed ; do
+        terraform apply \
+            -auto-approve \
+            -compact-warnings \
+            -var-file="$experiment_context/$experiment_name.tfvars" \
+            -var "env_file=$experiment_cloud_function_env" \
+            -var "remote_env_file=$remote_env_file" \
+            && tf_deployed="true" \
+            && echo \
+            && pmsg "Successfully deployed using terraform ..."
+    done
 
     pmsg "Outputting variables to $experiment_name-openfaas_client.env ..."
     terraform output > "$experiment_client_env"

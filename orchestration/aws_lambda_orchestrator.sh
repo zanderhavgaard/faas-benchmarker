@@ -15,7 +15,13 @@ function bootstrap {
     bash init.sh "$experiment_name"
 
     pmsg "Creating cloud functions ..."
-    terraform apply -auto-approve
+    tf_deployed="false"
+    until $tf_deployed ; do
+        terraform apply -auto-approve \
+            && tf_deployed="true" \
+            && echo \
+            && pmsg "Successfully deployed using terraform ..."
+    done
 
     # echo -e "\n--> Outputting variables to experiment.env ...\n"
     pmsg "Outputting variables to $experiment_name-awslambda.env ..."
