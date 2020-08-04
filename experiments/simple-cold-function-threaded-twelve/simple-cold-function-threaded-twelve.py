@@ -74,7 +74,7 @@ experiment_uuid = benchmarker.experiment.uuid
 fx = 'function1'
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
-    time.sleep(15*60) 
+    time.sleep(45*60) 
 
 # number of threads to be used
 threads = 0
@@ -162,6 +162,9 @@ def append_result(
 
 def check_coldtime(sleep: int, warmtime: float):
     global benchmark
+
+    if verbose:
+        print('check_coldtime', sleep, warmtime)
 
     if(warmtime * 1.2 < benchmark):
         print(f'benchmark found: {benchmark}, with {warmtime} as warmtime')
@@ -319,9 +322,13 @@ def run_experiment(thread_numb:int,function:str):
 
     initial_cold_start_response = validate(invoke, 'initial coldtime')
     coldtime = initial_cold_start_response['execution_start'] - initial_cold_start_response['invocation_start']
+    if verbose:
+        print('init coldtime', coldtime)
 
     # coldtime is adjusted by 10% to avoid coldtime being an outlier
     benchmark = coldtime * 0.80
+    if verbose:
+        print('init benchmark', benchmark)
 
     invo_list = create_invocation_list()
 
