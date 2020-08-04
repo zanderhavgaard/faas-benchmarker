@@ -113,6 +113,8 @@ def invoke(thread_numb:int):
     benchmarker.invoke_function_conccurrently(function_name=fx, 
                                             numb_threads=thread_numb,
                                             function_args= {'throughput_time':0.2}))]))
+
+    print('Trace for invocation with thread_numb:',thread_numb)
     if len(errors) != 0:
         print('ERRORS',len(errors))
         pprint(errors)
@@ -124,7 +126,7 @@ def invoke(thread_numb:int):
         pprint(latency_with_identifier)
         print()
 
-        invo_start = list(map(lambda x: x['invocation_start']),invocations)
+        invo_start = list(map(lambda x: x['invocation_start'],invocations))
         invo_start.sort()
         first_invocation = invo_start[0]
         invo_start_dist = list(map(lambda x: x-first_invocation,invo_start))
