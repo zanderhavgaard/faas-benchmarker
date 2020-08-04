@@ -113,7 +113,33 @@ def invoke(thread_numb:int):
     benchmarker.invoke_function_conccurrently(function_name=fx, 
                                             numb_threads=thread_numb,
                                             function_args= {'throughput_time':0.2}))]))
-    
+    if len(errors) != 0:
+        print('ERRORS',len(errors))
+        pprint(errors)
+        print()
+    if len(invocations) != 0:
+        print(f'values from invoke with {len(invocations)} invocations')
+        latency_with_identifier = latency = list(map(lambda x: (x['instance_identifier'],x['execution_start']-x['invocation_start']),invocations))
+        print('identifier, latency')
+        pprint(latency_with_identifier)
+        print()
+
+        invo_start = list(map(lambda x: x['invocation_start']),invocations)
+        invo_start.sort()
+        first_invocation = invo_start[0]
+        invo_start_dist = list(map(lambda x: x-first_invocation,invo_start))
+        print('invo_start_distribution')
+        pprint(invo_start_dist)
+        print()
+        execution_start = list(map(lambda x: x['execution_start'],invocations))
+        execution_start.sort()
+        first_execution = execution_start[0]
+        execution_start_dist = list(map(lambda x: x-first_execution,execution_start))
+        print('execution_start_dist')
+        pprint(execution_start_dist)
+        print()
+
+    print('=====================================')
     # return result for as an acumulated dict or None for failure
     return None if invocations == {} else lib.accumulate_dicts(invocations)
 
