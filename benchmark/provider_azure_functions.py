@@ -89,7 +89,7 @@ class AzureFunctionsProvider(AbstractProvider):
                                 res = await response.text()
                                 print(f'E001 : A non 200 response code recieved at iteration {i}. \
                                         Response_code: {response.status}, message: {res}')
-                    except aiohttp_session.ClientConnectionError as e:
+                    except aiohttp.ClientConnectionError as e:
                         print(f'Caught a ClientConnectionError at invocation attempt #{i}')
                             
             return (res, start_time, time.time(), thread_number, number_of_threads) if response_code == 200 \
