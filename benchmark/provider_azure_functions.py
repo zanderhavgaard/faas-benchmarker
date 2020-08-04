@@ -69,25 +69,28 @@ class AzureFunctionsProvider(AbstractProvider):
             response_code = 0
             async with aiohttp_session as session:
                 for i in range(5):
-                    async with session.post(
-                        url=url,
-                        headers=self.headers,
-                        data=json.dumps(data),
-                        timeout=self.request_timeout
-                    ) as response:
-                        response_code = response.status
-                        if response_code == 200:
-                            body = await response.json()
-                            identifier = body['identifier']
-                            body.pop('identifier')
-                            res['body'] = body
-                            res['statusCode'] = response_code
-                            res['identifier'] = identifier
-                            break
-                        elif i == 4:
-                            res = await response.text()
-                            print(f'E001 : A non 200 response code recieved at iteration {i}. \
-                                    Response_code: {response.status}, message: {res}')
+                    try:
+                        async with session.post(
+                            url=url,
+                            headers=self.headers,
+                            data=json.dumps(data),
+                            timeout=self.request_timeout
+                        ) as response:
+                            response_code = response.status
+                            if response_code == 200:
+                                body = await response.json()
+                                identifier = body['identifier']
+                                body.pop('identifier')
+                                res['body'] = body
+                                res['statusCode'] = response_code
+                                res['identifier'] = identifier
+                                break
+                            elif i == 4:
+                                res = await response.text()
+                                print(f'E001 : A non 200 response code recieved at iteration {i}. \
+                                        Response_code: {response.status}, message: {res}')
+                    except aiohttp_session.ClientConnectionError as e:
+                        print(f'Caught a ClientConnectionError at invocation attempt #{i}')
                             
             return (res, start_time, time.time(), thread_number, number_of_threads) if response_code == 200 \
                     else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time(), thread_number, number_of_threads)
