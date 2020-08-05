@@ -80,7 +80,7 @@ if not dev_mode:
 threads = 0
 
 # values used for aborting experiment if it runs more than 24 hours
-_24_hours = 24 * 60 * 60
+_30_hours = 30 * 60 * 60
 start_time = time.time()
 
 # benchmark for cold value for function
@@ -113,8 +113,12 @@ def invoke(thread_numb:int):
     benchmarker.invoke_function_conccurrently(function_name=fx, 
                                             numb_threads=thread_numb,
                                             function_args= {'throughput_time':0.2}))]))
+<<<<<<< Updated upstream
 
     print('Trace for invocation with thread_numb:',thread_numb)
+=======
+    print('Trace for invocation with thread_numb',thread_numb)
+>>>>>>> Stashed changes
     if len(errors) != 0:
         print('ERRORS',len(errors))
         pprint(errors)
@@ -217,10 +221,10 @@ def check_coldtime(sleep: int, warmtime: float):
 
 # Find the values for when coldtimes occure
 def set_cold_values():
-    global sleep_time, increment, granularity,large_increment,minute_increment,start_time,_24_hours
+    global sleep_time, increment, granularity,large_increment,minute_increment
     while(True):
-        if time.time() - start_time > _24_hours:
-            print('ABORTING due to 24 hour time constraint from set_cold_values function\n')
+        if time.time() - start_time > _30_hours:
+            print('ABORTING due to 30 hour time constraint from set_cold_values function\n')
             benchmarker.end_experiment()
             # log experiments specific results, hence results not obtainable from the generic Invocation object
             lib.log_experiment_specifics(experiment_name,
@@ -273,8 +277,8 @@ def verify_result():
     # variefy that result is valid by using same sleeptime between invocations 5 times
     iter_count = 5 if not dev_mode else 2
     while(iter_count > 0):
-        if time.time() - start_time > _24_hours:
-            print('ABORTING due to 24 hour time constraint from varification loop\n')
+        if time.time() - start_time > _30_hours:
+            print('ABORTING due to 30 hour time constraint from varification loop\n')
             benchmarker.end_experiment()
             # log experiments specific results, hence results not obtainable from the generic Invocation object
             lib.log_experiment_specifics(experiment_name,
