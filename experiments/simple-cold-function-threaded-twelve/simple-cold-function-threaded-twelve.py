@@ -268,8 +268,8 @@ def set_cold_values():
 
 
 
-def variefy_result():
-    global start_time,_24_hours,benchmarker, sleep_time
+def verify_result():
+    global sleep_time
     # variefy that result is valid by using same sleeptime between invocations 5 times
     iter_count = 5 if not dev_mode else 2
     while(iter_count > 0):
@@ -318,14 +318,18 @@ def variefy_result():
 
     result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment')
     latency_time = result_dict['execution_start'] - result_dict['invocation_start']
-    # log final result
-    append_result(
-                result_dict['identifier'],
-                int(sleep_time / 60),
-                int(sleep_time % 60),
-                granularity,
-                latency_time > benchmark,
-                True)
+    if latency_time > benchmark:
+        # log final result
+        append_result(
+                    result_dict['identifier'],
+                    int(sleep_time / 60),
+                    int(sleep_time % 60),
+                    granularity,
+                    True,
+                    True)
+    else:
+        sleep_time += granularity
+        verify_result()
 
 
 def run_experiment(thread_numb:int,function:str):
@@ -386,7 +390,7 @@ def run_experiment(thread_numb:int,function:str):
                             ('benchmark',benchmark),
                             ])
     
-    variefy_result()
+    verify_result()
     print(f'ending experiment with {threads} threads at {datetime.now()}')
 
     
@@ -395,11 +399,11 @@ def run_experiment(thread_numb:int,function:str):
     # =======================
 
 try:
-    # run_experiment(6,'monolith')
+    # run_experiment(6,'function1')
 
     # time.sleep(sleep_time)
 
-    run_experiment(12,'function3')
+    run_experiment(12,'function2')
 
     # time.sleep(sleep_time)
 
