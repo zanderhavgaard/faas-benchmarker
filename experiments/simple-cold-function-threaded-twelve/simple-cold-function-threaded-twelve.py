@@ -113,8 +113,12 @@ def invoke(thread_numb:int):
     benchmarker.invoke_function_conccurrently(function_name=fx, 
                                             numb_threads=thread_numb,
                                             function_args= {'throughput_time':0.2}))]))
+<<<<<<< Updated upstream
 
     print('Trace for invocation with thread_numb:',thread_numb)
+=======
+    print('Trace for invocation with thread_numb',thread_numb)
+>>>>>>> Stashed changes
     if len(errors) != 0:
         print('ERRORS',len(errors))
         pprint(errors)
