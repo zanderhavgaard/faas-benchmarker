@@ -1,6 +1,8 @@
 access_key=$SPACE_KEY
 secret_access_key=$SPACE_SECRET_KEY
 space_name=$SPACE_NAME
+db_user=$DB_SQL_USER
+db_pass=$DB_SQL_PASS
 
 timestamp=$(date -u +%d-%m-%Y_%H-%M-%S)
 backup_dir="/home/ubuntu/backup"
@@ -15,8 +17,8 @@ docker run \
         --network host \
         mysql:5.7 \
         mysqldump \
-        -uroot \
-        -pfaas \
+        -u$db_user \
+        -p$db_pass \
         -h127.0.0.1 \
         Benchmarks > "$backup_dir/$sqldump_file"
 

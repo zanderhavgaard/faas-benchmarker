@@ -58,7 +58,7 @@ resource "null_resource" "root-provisioner" {
       "echo 'cd /home/ubuntu/faas-benchmarker && git pull' >> /home/ubuntu/.bashrc",
 
       # add crontab to run backup
-      "echo \"1 1,13 * * * SPACE_NAME=${var.space_name} SPACE_KEY=${var.space_key} SPACE_SECRET_KEY=${var.space_secret_key} bash /home/ubuntu/faas-benchmarker/infrastructure/db_server_backups/backup.sh\" >> /home/ubuntu/cronfile",
+      "echo \"1 1,13 * * * DB_SQL_USER=${var.DB_SQL_USER} DB_SQL_PASS=${var.DB_SQL_PASS} SPACE_NAME=${var.space_name} SPACE_KEY=${var.space_key} SPACE_SECRET_KEY=${var.space_secret_key} bash /home/ubuntu/faas-benchmarker/infrastructure/db_server_backups/backup.sh\" >> /home/ubuntu/cronfile",
       "crontab -u ubuntu /home/ubuntu/cronfile",
 
       # clone repository
