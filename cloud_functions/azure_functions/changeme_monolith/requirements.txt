@@ -3,4 +3,5 @@ requests
 psutil
 arrow
 pandas
-numpy 
+numpy
+ntplib

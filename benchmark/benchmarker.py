@@ -45,10 +45,13 @@ class Benchmarker:
         self.future_lock = th.Lock()
         self.sync_flag = True
         self.futures_parsed = True
+        self.ntp_diff = self.get_ntp_diff()
 
         # get function execution provider
-        self.provider = self.get_provider(
-            provider=provider, experiment_name=experiment_name, env_file_path=env_file_path)
+        self.provider = self.get_provider(provider=provider, 
+                                          experiment_name=experiment_name, 
+                                          env_file_path=env_file_path,
+                                          ntp_diff=self.ntp_diff)
 
         # experiment object holds all data for experiment
         self.experiment = Experiment(experiment_meta_identifier,
@@ -56,7 +59,8 @@ class Benchmarker:
                                      provider,
                                      client_provider,
                                      experiment_description,
-                                     dev_mode)
+                                     dev_mode,
+                                     self.ntp_diff)
         
         self.background_sync()
 
@@ -75,6 +79,7 @@ class Benchmarker:
         print(f'function provider:  {provider}')
         print(f'client provider:    {client_provider}')
         print(f'env file:           {env_file_path}')
+        print(f'ntp_diff:           {self.experiment.ntp_diff}')
         print('=================================================')
         print(f'Experiment start time: {time.ctime(int(self.experiment.start_time))}')
         print('=================================================')
@@ -83,18 +88,18 @@ class Benchmarker:
 
     # create cloud function execution provider
 
-    def get_provider(self, provider: str, experiment_name: str, env_file_path: str) -> AbstractProvider:
+    def get_provider(self, provider: str, experiment_name: str, env_file_path: str, ntp_diff: float) -> AbstractProvider:
         # implemented providers
         providers = ['aws_lambda', 'azure_functions', 'openfaas']
 
         # choose provider to invoke cloud function
         if provider in providers:
             if provider == 'aws_lambda':
-                return AWSLambdaProvider(experiment_name=experiment_name, env_file_path=env_file_path)
+                return AWSLambdaProvider(experiment_name=experiment_name, env_file_path=env_file_path, ntp_diff=ntp_diff)
             elif provider == 'azure_functions':
-                return AzureFunctionsProvider(experiment_name=experiment_name, env_file_path=env_file_path)
+                return AzureFunctionsProvider(experiment_name=experiment_name, env_file_path=env_file_path, ntp_diff=ntp_diff)
             elif provider == 'openfaas':
-                return OpenFaasProvider(experiment_name=experiment_name, env_file_path=env_file_path)
+                return OpenFaasProvider(experiment_name=experiment_name, env_file_path=env_file_path, ntp_diff=ntp_diff)
         else:
             raise RuntimeError(
                 'Error: Please use an implemented provider, options are: ' +
@@ -250,6 +255,21 @@ class Benchmarker:
     def ensure_futures(self):
         while(not self.futures_parsed):
             time.sleep(1)
+
+    def get_ntp_diff(self):
+        import ntplib
+        ntpc = ntplib.NTPClient()
+        ntp_response_recieved = False
+        while not ntp_response_recieved:
+            try:
+                t1 = time.time()
+                ntp_response = ntpc.request('uk.pool.ntp.org')
+                t2 = time.time()
+                ntp_response_recieved = True
+            except ntplib.NTPException:
+                print('no response from ntp request, trying again ...')
+        ntp_diff = (ntp_response.tx_time - ((t2 - t1) / 2)) - t1
+        return ntp_diff
 
 
 # create exception class for empty responses

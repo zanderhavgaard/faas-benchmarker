@@ -309,11 +309,13 @@ def test_monolith():
             'docker_documentation', 
             'use_arrow', 
             'pandas_numpy', 
+            'matrix_mult',
     ]
     for f in f_list:
         args['run_function'] = f
         response = benchmarker.invoke_function(function_name='monolith',function_args=args)
         d = lib.get_dict(response)
+        print(f)
         if 'error' in d:
             pprint(d)
     

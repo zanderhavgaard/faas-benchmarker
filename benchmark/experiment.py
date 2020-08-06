@@ -21,7 +21,9 @@ class Experiment:
                  cl_provider: str,
                  cl_client: str,
                  desc: str,
-                 dev_mode: bool):
+                 dev_mode: bool,
+                 ntp_diff: float,
+                 ) -> None:
 
         self.uuid = str(uuid.uuid4())
         self.start_time = time.time()
@@ -31,6 +33,7 @@ class Experiment:
         self.cl_client = cl_client
         self.description = desc
         self.dev_mode = dev_mode
+        self.ntp_diff = ntp_diff
         self.python_version = platform.python_version()
         self.cores = psutil.cpu_count()
         self.memory = psutil.virtual_memory()[0]

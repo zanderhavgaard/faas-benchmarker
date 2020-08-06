@@ -13,12 +13,13 @@ import asyncio
 
 class AzureFunctionsProvider(AbstractProvider):
 
-    def __init__(self, experiment_name: str, env_file_path: str) -> None:
+    def __init__(self, experiment_name: str, env_file_path: str, ntp_diff: float) -> None:
         # Create executor service
         AbstractProvider.__init__(self)
 
         # name of experiment
         self.experiment_name = experiment_name
+        self.ntp_diff = ntp_diff
 
         # timeout for invoking function
         self.request_timeout = 600
@@ -35,15 +36,15 @@ class AzureFunctionsProvider(AbstractProvider):
 
     def load_env_vars(self, env_file_path: str) -> None:
         dotenv.load_dotenv(dotenv_path=env_file_path)
-    
+
     async def invoke_wrapper(self,
-                        url:str,
-                        data:dict,
-                        aiohttp_session:aiohttp.ClientSession,
-                        thread_number:int,
-                        number_of_threads:int
-                        ) -> dict:
-        
+                             url: str,
+                             data: dict,
+                             aiohttp_session: aiohttp.ClientSession,
+                             thread_number: int,
+                             number_of_threads: int
+                             ) -> dict:
+
         try:
             # create placeholder result
             res = {
@@ -61,14 +62,16 @@ class AzureFunctionsProvider(AbstractProvider):
                     )
                 else:
                     raise Exception('azure deadlock')
-            
+
             # log start time of invocation
-            start_time = time.time()
-        
+            start_time = time.time() + self.ntp_diff
+
             # async with aiohttp.ClientSession() as session:
             response_code = 0
             async with aiohttp_session as session:
+
                 for i in range(5):
+
                     try:
                         async with session.post(
                             url=url,
@@ -89,14 +92,19 @@ class AzureFunctionsProvider(AbstractProvider):
                                 res = await response.text()
                                 print(f'E001 : A non 200 response code recieved at iteration {i}. \
                                         Response_code: {response.status}, message: {res}')
-                    except aiohttp.ClientConnectionError as e:
+                            else:
+                                print(f'trying to invoke {url} for the {i}th time, did not recieve a 200 response, the response recieved was:\n', response)
+
+                    except aiohttp.ClientConnectionError:
                         print(f'Caught a ClientConnectionError at invocation attempt #{i}')
-                            
-            return (res, start_time, time.time(), thread_number, number_of_threads) if response_code == 200 \
-                    else ({'statusCode': response_code, 'message': res.strip()}, start_time, time.time(), thread_number, number_of_threads)
+
+            end_time = time.time() + self.ntp_diff
+
+            return (res, start_time, end_time, thread_number, number_of_threads) if response_code == 200 \
+                else ({'statusCode': response_code, 'message': res.strip()}, start_time, end_time, thread_number, number_of_threads)
+
         except Exception as e:
             return ({'statusCode': 9999999, 'message': str(e)}, time.time(), time.time(), thread_number, number_of_threads)
-
 
     # the functions are available under
     # https://<funtion_app_name>/api/<function_name>?code=<function_key>
@@ -105,11 +113,10 @@ class AzureFunctionsProvider(AbstractProvider):
                         function_args: dict = None
                         ) -> dict:
 
-     
         try:
 
             # create url of function to invoke
-            invoke_url = self.get_url(function_name) 
+            invoke_url = self.get_url(function_name)
 
             # fix for experimetns that use threads, since each thread need to have an event loop
             # overhead of creating new loops should be negligable
@@ -118,29 +125,32 @@ class AzureFunctionsProvider(AbstractProvider):
             # was 
             # loop = asyncio.get_event_loop()
 
-            tasks = [asyncio.ensure_future(self.invoke_wrapper(
-                                                url=invoke_url,
-                                                data=function_args if function_args != None else {}, 
-                                                aiohttp_session=aiohttp.ClientSession(),
-                                                thread_number=1,
-                                                number_of_threads=1))]
-
+            tasks = [asyncio.ensure_future(self.invoke_wrapper(url=invoke_url,
+                                                               data=function_args if function_args != None else {},
+                                                               aiohttp_session=aiohttp.ClientSession(),
+                                                               thread_number=1,
+                                                               number_of_threads=1))]
 
             loop.run_until_complete(asyncio.wait(tasks))
 
             # close created loop
             loop.close()
 
-            (response,start_time,end_time, thread_number, number_of_threads) = tasks[0].result()
+            (response, start_time, end_time, thread_number, number_of_threads) = tasks[0].result()
 
-            return self.parse_data(response,start_time,end_time, thread_number, number_of_threads)
+            return self.parse_data(response, start_time, end_time, thread_number, number_of_threads)
         
         except Exception as e:
-            return self.error_response(start_time=time.time(),exception=e)
+            return self.error_response(start_time=time.time(), exception=e)
 
-    def parse_data(self, response:dict, start_time:float, end_time:float, thread_number:int, number_of_threads:int) -> dict:
+    def parse_data(self,
+                   response: dict,
+                   start_time: float,
+                   end_time: float,
+                   thread_number: int,
+                   number_of_threads: int) -> dict:
         try:
-        
+
             if (response != None) and (response['statusCode'] == 200):
 
                 # get the identifier
@@ -153,7 +163,7 @@ class AzureFunctionsProvider(AbstractProvider):
                 for val in response_data:
                     response_data[val]['thread_id'] = thread_number
                     response_data[val]['numb_threads'] = number_of_threads
-                    
+
                 # add invocation metadata to response
                 response_data[identifier]['invocation_start'] = start_time
                 response_data[identifier]['invocation_end'] = end_time
@@ -190,31 +200,30 @@ class AzureFunctionsProvider(AbstractProvider):
         except Exception as e:
             return self.error_response(start_time=start_time, exception=e)
 
-
     def error_response(self, start_time, exception):
-            end_time = time.time()
-            error_dict = {
-                f'exception-provider_azure-{self.experiment_name}-{end_time}': {
-                    'identifier': f'exception-provider_azure-{self.experiment_name}-{str(end_time)}',
-                    'uuid': None,
-                    'function_name': self.experiment_name,
-                    'error': {"trace": traceback.format_exc(), "type": str(type(exception).__name__), 'message': str(exception)},
-                    'parent': None,
-                    'sleep': 0.0,
-                    'numb_threads': 1,
-                    'thread_id': 1,
-                    'python_version': None,
-                    'level': None,
-                    'memory': None,
-                    'instance_identifier': None,
-                    'execution_start': None,
-                    'execution_end': None,
-                    'invocation_start': start_time,
-                    'invocation_end': end_time
-                },
-                'root_identifier': f'exception-provider_azure-{self.experiment_name}-{str(end_time)}'
-            }
-            return error_dict
+        end_time = time.time() + self.ntp_diff
+        error_dict = {
+            f'exception-provider_azure-{self.experiment_name}-{end_time}': {
+                'identifier': f'exception-provider_azure-{self.experiment_name}-{str(end_time)}',
+                'uuid': None,
+                'function_name': self.experiment_name,
+                'error': {"trace": traceback.format_exc(), "type": str(type(exception).__name__), 'message': str(exception)},
+                'parent': None,
+                'sleep': 0.0,
+                'numb_threads': 1,
+                'thread_id': 1,
+                'python_version': None,
+                'level': None,
+                'memory': None,
+                'instance_identifier': None,
+                'execution_start': None,
+                'execution_end': None,
+                'invocation_start': start_time,
+                'invocation_end': end_time
+            },
+            'root_identifier': f'exception-provider_azure-{self.experiment_name}-{str(end_time)}'
+        }
+        return error_dict
 
     # recursively add function codes to invoke nested dict
     def add_function_code_for_nested_invocations(self, nested_invocations: list) -> list:
@@ -241,10 +250,10 @@ class AzureFunctionsProvider(AbstractProvider):
                     return False
         return True
 
-    def get_url(self,function_name):
+    def get_url(self, function_name):
         function_app_url = os.getenv(f'{self.experiment_name}-{function_name}_function_app_url')
         function_key = os.getenv(f'{self.experiment_name}-{function_name}_function_key')
-         # create url of function to invoke
+        # create url of function to invoke
 
         if function_app_url is None or function_key is None:
             raise RuntimeError('Could not parse function app url or key.')

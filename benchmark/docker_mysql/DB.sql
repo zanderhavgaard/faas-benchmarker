@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `Experiment` (
   `end_time` DOUBLE NOT NULL,
   `total_time` DOUBLE NOT NULL,
   `dev_mode` BOOLEAN DEFAULT FALSE,
+  `ntp_diff` DOUBLE DEFAULT 0.0,
   UNIQUE(uuid),
   PRIMARY KEY (id)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
@@ -71,6 +72,7 @@ CREATE TABLE IF NOT EXISTS `Invocation` (
   `invocation_end` DOUBLE NOT NULL,
   `execution_total` DOUBLE NOT NULL,
   `invocation_total` DOUBLE NOT NULL,
+  `invocation_ntp_diff` DOUBLE DEFAULT 0.0,
   UNIQUE(identifier),
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
