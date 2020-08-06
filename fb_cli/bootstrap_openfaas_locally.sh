@@ -55,6 +55,7 @@ echo -n "$PASSWORD" | faas-cli login --username admin --password-stdin
 pmsg "Deploying functions ..."
 
 faas-cli template pull
+faas-cli template store pull python3-flask
 faas-cli deploy -f $fbrd/cloud_functions/openfaas/faas_benchmarker_functions.yml
 
 smsg "Done configuring OpenFaas"

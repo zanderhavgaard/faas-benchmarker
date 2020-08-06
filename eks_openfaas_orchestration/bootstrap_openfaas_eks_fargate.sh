@@ -105,6 +105,7 @@ pmsg "Pulling OpenFaas template files ..."
 
 # download openfaas template files
 faas-cli template pull
+faas-cli template store pull python3-flask
 
 pmsg "Deploying functions ..."
 
