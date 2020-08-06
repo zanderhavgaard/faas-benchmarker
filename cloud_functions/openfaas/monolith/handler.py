@@ -1,28 +1,4 @@
 
-import time
-import uuid
-import json
-import platform
-import psutil
-import random
-#  import traceback
-#  import requests
-import sys
-
-#  from math import sqrt
-#  from functools import reduce
-#  import collections
-#  import pandas as pd
-#  import numpy as np
-#  import calendar
-#  from datetime import datetime, timedelta
-#  from datetime import tzinfo as dt_tzinfo
-#  from math import trunc
-#  from dateutil import tz as dateutil_tz
-#  from dateutil.relativedelta import relativedelta
-#  from arrow import formatter, locales, parser, util
-
-
 def handle(req):
     """handle a request to the function
     Args:
@@ -30,7 +6,31 @@ def handle(req):
     """
 
     # get start time
+    import time
     start_time = time.time()
+
+    # we do not trust that the time is correct for all function platforms 
+    # so we adjust the recorded time with ntp
+    import ntplib
+    ntpc = ntplib.NTPClient()
+    ntp_response_recieved = False
+    while not ntp_response_recieved:
+        try:
+            t1 = time.time()
+            ntp_response = ntpc.request('uk.pool.ntp.org')
+            t2 = time.time()
+            ntp_response_recieved = True
+        except ntplib.NTPException:
+            print('no response from ntp request, trying again ...')
+    ntp_diff = (ntp_response.tx_time - ((t2 - t1) / 2)) - t1
+
+    import uuid
+    import json
+    import platform
+    import psutil
+    import random
+    import sys
+
 
     # we create an UUID to ensure that the function has
     # to do some arbitrary computation such that responses cannot
@@ -78,6 +78,7 @@ def handle(req):
                 "uuid": invocation_uuid,
                 "function_name": function_name,
                 "function_cores": psutil.cpu_count(),
+                "invocation_ntp_diff": ntp_diff
             }
         }
 
@@ -501,7 +502,6 @@ def handle(req):
         
         class Arrow2(object):
             from datetime import datetime, timedelta
-
             """An :class:`Arrow2 <Arrow2.arrow.Arrow>` object.
             Implements the ``datetime`` interface, behaving as an aware ``datetime`` while implementing
             additional functionality.
@@ -1891,7 +1891,8 @@ def handle(req):
                 invoke['invoke_payload']['level'] = body[identifier]['level']
                 nested_response = invoke_nested_function(
                     function_name=invoke['function_name'],
-                    invoke_payload=invoke['invoke_payload']
+                    invoke_payload=invoke['invoke_payload'],
+                    ntp_diff=ntp_diff
                 )
 
                 # add each nested invocation to response body
@@ -1924,25 +1925,25 @@ def handle(req):
         # =============================================
 
         # add timings and return
-        body[identifier]['execution_start'] = start_time
-        body[identifier]['execution_end'] = time.time()
+        body[identifier]['execution_start'] = start_time + ntp_diff
+        body[identifier]['execution_end'] = time.time() + ntp_diff
         body[identifier]['cpu'] = platform.processor()
         body[identifier]['process_time'] = time.process_time()
         
 
         # create return dict and parse json bodu
-        return json.dumps({
+        return {
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json; charset=utf-8"
             },
             "body": json.dumps(body),
             "identifier": identifier
-        })
+        }
         # return json object with error if exception occurs
     except Exception as e:
         import traceback
-        return json.dumps({
+        return {
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json; charset=utf-8"
@@ -1965,14 +1966,14 @@ def handle(req):
                     "level": None,
                     "memory": None,
                     "instance_identifier": None,
-                    "execution_start": start_time,
-                    "execution_end": time.time(),
+                    "execution_start": start_time + ntp_diff,
+                    "execution_end": time.time() + ntp_diff,
                     "cpu": platform.processor(),
                     "process_time": time.process_time()
                 }
             }),
             "identifier": identifier
-        })
+        }
 
         # invoke another openfaas function using python requests, will make use of the API gateway
         # params:
@@ -1980,9 +1981,9 @@ def handle(req):
         # invoke_payload: dict containing arguments for invoked function
 
 
-def invoke_nested_function(function_name: str,
-                        invoke_payload: dict
-                        ) -> dict:
+def invoke_nested_function(function_name: str,invoke_payload: dict, ntp_diff: float) -> dict:
+    import time
+    import json
 
     # capture the invocation start time
     start_time = time.time()
@@ -2001,11 +2002,17 @@ def invoke_nested_function(function_name: str,
         # imports are expensive, so we only do them when we actually need them
         import requests
 
-        response = requests.post(
-            url=invocation_url,
-            headers=headers,
-            data=json.dumps(invoke_payload)
-        )
+        for i in range(5):
+            try:
+                response = requests.post(
+                    url=invocation_url,
+                    headers=headers,
+                    data=json.dumps(invoke_payload)
+                )
+                if response.status_code == 200:
+                    break
+            except Exception as e:
+                print('caught some error while doing a nested invoke,', e, str(e))
 
         # capture the invocation end time
         end_time = time.time()
@@ -2020,13 +2027,13 @@ def invoke_nested_function(function_name: str,
         body = json.loads(response_json['body'])
 
         # add invocation metadata to response
-        body[id]['invocation_start'] = start_time
-        body[id]['invocation_end'] = end_time
+        body[id]['invocation_start'] = start_time + ntp_diff
+        body[id]['invocation_end'] = end_time + ntp_diff
 
         return body
 
     except Exception as e:
-        import traceback
+        import traceback, time, platform
         end_time = time.time()
         return {
             f"error-{function_name}-nested_invocation-{end_time}": {
@@ -2048,10 +2055,48 @@ def invoke_nested_function(function_name: str,
                 "instance_identifier": None,
                 "execution_start": None,
                 "execution_end": None,
-                "invocation_start": start_time,
-                "invocation_end": end_time,
+                "invocation_start": start_time + ntp_diff,
+                "invocation_end": end_time + ntp_diff,
                 "cpu": platform.processor(),
                 "process_time": time.process_time()
             }
         }
 
+#  if __name__ == '__main__':
+    #  import json
+    #  from pprint import pprint
+    #  import function_lib as lib
+    #  import sys
+
+    #  f_list = [
+            #  'fib', 
+            #  'isSymmetric', 
+            #  'levelOrder',
+            #  'maxDepth', 
+            #  'levelOrderBottom', 
+            #  'sortedArrayToBST', 
+            #  'zigzagLevelOrder', 
+            #  'sortedListToBST', 
+            #  'isBalanced', 
+            #  'minDepth',
+            #  'flatten', 
+            #  'maxPathSum', 
+            #  'preorderTraversal', 
+            #  'rightSideView', 
+            #  'dummie_webpage', 
+            #  'docker_documentation', 
+            #  'use_arrow', 
+            #  'pandas_numpy', 
+            #  'matrix_mult',
+    #  ]
+    #  args = {
+        #  'args': 8,
+        #  'run_function': 'random',
+        #  'seed': 2,
+        #  }
+    #  for f in f_list:
+        #  args['run_function'] = f
+        #  json_args = json.dumps(args)
+        #  response = json.loads(handle(json_args))
+        #  body = json.loads(response['body'])
+        #  pprint(body)
