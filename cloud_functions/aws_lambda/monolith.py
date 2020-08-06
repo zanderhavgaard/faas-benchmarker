@@ -1,34 +1,32 @@
-import time
-import uuid
-import json
-import platform
-import psutil
-import random
-#  import boto3
-#  import traceback
-
-#  from math import sqrt
-#  from functools import reduce
-#  import collections
-#  import pandas as pd
-#  import numpy as np
-#  import calendar
-#  import sys
-#  from datetime import datetime, timedelta
-#  from datetime import tzinfo as dt_tzinfo
-#  from math import trunc
-#  from dateutil import tz as dateutil_tz
-#  from dateutil.relativedelta import relativedelta
-#  from arrow import formatter, locales, parser, util
-
-
 def lambda_handler(event: dict, context: dict) -> dict:
     # event contains json parameters
     # context contains metadata of the lambda instance
     #   --> provided by AWS
 
     # get start time
+    import time
     start_time = time.time()
+
+    # we do not trust that the time is correct for all function platforms 
+    # so we adjust the recorded time with ntp
+    import ntplib
+    ntpc = ntplib.NTPClient()
+    ntp_response_recieved = False
+    while not ntp_response_recieved:
+        try:
+            t1 = time.time()
+            ntp_response = ntpc.request('uk.pool.ntp.org')
+            t2 = time.time()
+            ntp_response_recieved = True
+        except ntplib.NTPException:
+            print('no response from ntp request, trying again ...')
+    ntp_diff = (ntp_response.tx_time - ((t2 - t1) / 2)) - t1
+
+    import uuid
+    import json
+    import platform
+    import psutil
+    import random
 
     # we create an UUID to ensure that the function has
     # to do some arbitrary computation such that responses cannot
@@ -76,6 +74,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 "uuid": invocation_uuid,
                 "function_name": function_name,
                 "function_cores": psutil.cpu_count(),
+                "invocation_ntp_diff": ntp_diff
             },
         }
 
@@ -1917,6 +1916,7 @@ def lambda_handler(event: dict, context: dict) -> dict:
                 nested_response = invoke_lambda(
                     lambda_name=invoke['function_name'],
                     invoke_payload=invoke['invoke_payload'],
+                    ntp_diff=ntp_diff
                 )
                 # add each nested invocation to response body
                 for id in nested_response.keys():
@@ -1949,8 +1949,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
         # =============================================
 
         # add timings and return
-        body[identifier]['execution_start'] = start_time
-        body[identifier]['execution_end'] = time.time()
+        body[identifier]['execution_start'] = start_time + ntp_diff
+        body[identifier]['execution_end'] = time.time() + ntp_diff
         body[identifier]['cpu'] = platform.processor()
         body[identifier]['process_time'] = time.process_time()
 
@@ -1989,8 +1989,8 @@ def lambda_handler(event: dict, context: dict) -> dict:
                     "level": None,
                     "memory": None,
                     "instance_identifier": None,
-                    "execution_start": start_time,
-                    "execution_end": time.time(),
+                    "execution_start": start_time + ntp_diff,
+                    "execution_end": time.time() + ntp_diff,
                     "cpu": platform.processor(),
                     "process_time": time.process_time()
                 }
@@ -2007,7 +2007,10 @@ def lambda_handler(event: dict, context: dict) -> dict:
 
 def invoke_lambda(lambda_name: str,
                   invoke_payload: dict,
+                  ntp_diff: float
                   ) -> dict:
+    import time
+    import json
     import boto3
     # create client for invoking other lambdas
     client = boto3.client('lambda')
@@ -2033,13 +2036,14 @@ def invoke_lambda(lambda_name: str,
         body = json.loads(payload['body'])
 
         # add invocation start/end times
-        body[id]['invocation_start'] = start_time
-        body[id]['invocation_end'] = end_time
+        body[id]['invocation_start'] = start_time + ntp_diff
+        body[id]['invocation_end'] = end_time + ntp_diff
 
         return body
 
     except Exception as e:
         import traceback
+        import platform
         end_time = time.time()
         return {
             f"error-{lambda_name}-nested_invocation-{end_time}": {
@@ -2061,8 +2065,8 @@ def invoke_lambda(lambda_name: str,
                 "instance_identifier": None,
                 "execution_start": None,
                 "execution_end": None,
-                "invocation_start": start_time,
-                "invocation_end": end_time,
+                "invocation_start": start_time + ntp_diff,
+                "invocation_end": end_time + ntp_diff,
                 "cpu": platform.processor(),
                 "process_time": time.process_time()
             }
