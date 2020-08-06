@@ -2,8 +2,11 @@ version: 1.0
 provider:
   name: openfaas
   gateway: http://127.0.0.1:8080
+
 functions:
+
   function1:
+    # lang: python3-flask-debian
     lang: python3
     handler: ./function1
     image: faasbenchmarker/function1:latest
@@ -18,7 +21,9 @@ functions:
       com.openfaas.scale.min: 1
       com.openfaas.scale.max: 20
       com.openfaas.scale.zero: true
+
   function2:
+    # lang: python3-flask-debian
     lang: python3
     handler: ./function2
     image: faasbenchmarker/function2:latest
@@ -33,7 +38,9 @@ functions:
       com.openfaas.scale.min: 1
       com.openfaas.scale.max: 20
       com.openfaas.scale.zero: true
+
   function3:
+    # lang: python3-flask-debian
     lang: python3
     handler: ./function3
     image: faasbenchmarker/function3:latest
@@ -48,12 +55,12 @@ functions:
       com.openfaas.scale.min: 1
       com.openfaas.scale.max: 20
       com.openfaas.scale.zero: true
+
   monolith:
-    lang: python3
+    # lang: python3-flask-debian
+    lang: python3-debian
     handler: ./monolith
     image: faasbenchmarker/monolith:latest
-    build_options:
-      - dev
     environment:
       read_timeout: "180s"
       write_timeout: "180s"
