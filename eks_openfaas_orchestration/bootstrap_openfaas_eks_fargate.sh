@@ -3,7 +3,7 @@
 #enable scale to zero, set to 'false', default 'true'
 dry_run="false"
 # how long should a function be inactive before scaling to zero, default 30m
-inactivity_duration="30m"
+inactivity_duration="10m"
 # how often to check the status of whether a function should be scaled to zero, default 2m
 reconcile_interval="5m"
 
