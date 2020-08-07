@@ -359,7 +359,8 @@ def db_interface_sanity_check():
                     10,
                     10,
                     30,
-                    False,
+                    2,
+                    1.2,
                     True,
                     False)
     
@@ -368,7 +369,8 @@ def db_interface_sanity_check():
                     10,
                     10,
                     30,
-                    True,
+                    1,
+                    3.4,
                     True,
                     True)
     

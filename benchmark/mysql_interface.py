@@ -136,13 +136,14 @@ class SQL_Interface:
                     minutes: int,
                     seconds: int,
                     granularity: int,
-                    multithreaded:bool=False,
+                    threads:int=1,
+                    benchmark:float=0.0,
                     cold: bool = True,
                     final: bool = False):
 
-        query = """INSERT INTO Coldstart (exp_id,invo_id,minutes,seconds,granularity,multithreaded,cold,final) 
+        query = """INSERT INTO Coldstart (exp_id,invo_id,minutes,seconds,granularity,threads,benchmark,cold,final) 
                     VALUES ('{0}','{1}',{2},{3},{4},{5},{6},{7});""".format(
-                    exp_id, invo_id, minutes, seconds, granularity, multithreaded, cold, final)
+                    exp_id, invo_id, minutes, seconds, granularity, threads, benchmark, cold, final)
         return self.tunnel.insert_queries([query])
 
     def get_from_coldtimes(self, args: str = '*', provider:str='', flag: bool = True):
