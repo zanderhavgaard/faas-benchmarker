@@ -49,15 +49,15 @@ class OpenFaasProvider(AbstractProvider):
 
         # log start time of invocation
         start_time = time.time() + self.ntp_diff
+        cutoff_time = start_time + (60 * 5)
+        res = 'no response recieved'
+        errors = 0
 
         try:
             # async with aiohttp.ClientSession() as session:
             response_code = 0
-            res = None
             async with aiohttp_session as session:
-
-                for i in range(5):
-
+                while time.time() < cutoff_time:
                     try:
                         async with session.post(
                             url=url,
@@ -69,22 +69,25 @@ class OpenFaasProvider(AbstractProvider):
                             if response_code == 200:
                                 res = await response.json()
                                 break
-                            elif (i == 4):
-                                res = await response.text()
-                                print(f'E001 : A non 200 response code recieved at iteration {i}. \
-                                        Response_code: {response.status}, message: {res}')
+                            elif response_code == 500:
+                                errors += 1
+                                time.sleep(1)
                             else:
-                                print(f'trying to invoke {url} for the {i}th time, did not recieve a 200 response, the response recieved was:\n', response)
+                                errors += 1
 
                     except aiohttp.ClientConnectionError:
-                        print(f'Caught a ClientConnectionError at invocation attempt #{i}')
+                        errors += 1
 
                     except Exception as e:
-                        print(f'Caught an expception at invocation attemp #{i}', e, str(e))
+                        errors += 1
+                        print(f'Caught an expception', str(type(e)), str(e))
                         print('response', response)
                         print('response content', response.content)
 
             end_time = time.time() + self.ntp_diff
+
+            if errors != 0:
+                print(f'encountered {errors} errors while trying to invoke the function, most likely due to cold start.')
 
             return (res, start_time, end_time, thread_number, number_of_threads) if response_code == 200 \
                 else ({'statusCode': response_code, 'message': res.strip()}, start_time, end_time, thread_number, number_of_threads)

@@ -188,7 +188,9 @@ def invoke_nested_function(function_name: str,invoke_payload: dict, ntp_diff: fl
         # imports are expensive, so we only do them when we actually need them
         import requests
 
-        for i in range(5):
+        cutoff_time = start_time + (60 * 5)
+
+        while time.time() < cutoff_time:
             try:
                 response = requests.post(
                     url=invocation_url,
@@ -197,6 +199,9 @@ def invoke_nested_function(function_name: str,invoke_payload: dict, ntp_diff: fl
                 )
                 if response.status_code == 200:
                     break
+                # if we try to invoke a cold function we might get 500's while it is starting
+                elif response.status_code == 500:
+                    time.sleep(1)
             except Exception as e:
                 print('caught some error while doing a nested invoke,', e, str(e))
 
