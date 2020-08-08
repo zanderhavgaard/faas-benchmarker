@@ -17,8 +17,22 @@ function bootstrap {
     bash init.sh "$experiment_name"
 
     pmsg "Creating client vm ..."
+    retries=10
+    counter=0
+    delay=60
+    destroy_delay=10
     tf_deployed="false"
+
     until $tf_deployed ; do
+
+        (( counter++ ))
+        if [ $counter = $retries ] ; then
+            errmsg "Maximum deployment retries reached, aborting ..."
+            exit
+        fi
+
+        pmsg "Trying deployment, attempt # $counter / $retries ..."
+
         terraform apply \
             -auto-approve \
             -compact-warnings \
@@ -28,6 +42,16 @@ function bootstrap {
             && tf_deployed="true" \
             && echo \
             && pmsg "Successfully deployed using terraform ..."
+
+        if ! $tf_deployed ; then
+            pmsg "Deployment failed, sleeping for $destroy_delay seconds, and then destroying anything that was created ..."
+            sleep $destroy_delay
+            terraform destroy -auto-approve
+            pmsg "Now sleeping for $delay seconds before attempting deployment again ..."
+            sleep $delay
+        else
+            smsg "Successfully deployed infrastructure!"
+        fi
     done
 
     pmsg "Outputting variables to $experiment_name-aws_ec2.env ..."

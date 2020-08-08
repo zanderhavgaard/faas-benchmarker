@@ -74,6 +74,7 @@ class OpenFaasProvider(AbstractProvider):
                                 time.sleep(1)
                             else:
                                 errors += 1
+                                time.sleep(1)
 
                     except aiohttp.ClientConnectionError:
                         errors += 1
