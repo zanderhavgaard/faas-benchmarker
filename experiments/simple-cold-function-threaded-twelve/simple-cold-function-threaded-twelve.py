@@ -87,6 +87,7 @@ start_time = time.time()
 benchmark = None
 # avg_warmtime defines benchmark for warm start time for function
 avg_warmtime = None
+coldtime = 0
 # time to sleep in between invocations, start at 5 minutes
 sleep_time = None
 # increment for each iteration
@@ -113,12 +114,8 @@ def invoke(thread_numb:int):
     benchmarker.invoke_function_conccurrently(function_name=fx, 
                                             numb_threads=thread_numb,
                                             function_args= {'throughput_time':0.2}))]))
-<<<<<<< Updated upstream
+    print('Trace for invocation with thread_numb:', thread_numb)
 
-    print('Trace for invocation with thread_numb:',thread_numb)
-=======
-    print('Trace for invocation with thread_numb',thread_numb)
->>>>>>> Stashed changes
     if len(errors) != 0:
         print('ERRORS',len(errors))
         pprint(errors)

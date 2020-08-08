@@ -90,7 +90,7 @@ increment = sleep_time
 # granularity of result
 granularity = 20
 # value for last response latency
-latest_latency_time = avg_warmtime
+latest_latency_time = 0
 # flags for controlling granularity of sleep value
 large_increment = True
 minute_increment = True
@@ -152,34 +152,34 @@ def append_result(
 # The actual logic if the experiment
 
 def check_coldtime(sleep: int, warmtime: float):
-        global benchmark
+    global benchmark
 
-        if verbose:
-            print('check_coldtime', sleep, warmtime)
+    if verbose:
+        print('check_coldtime', sleep, warmtime)
 
-        if(warmtime * 1.2 < benchmark):
-            print(f'benchmark found: {benchmark}, with {warmtime} as warmtime')
-            return
-        elif(sleep > 7200):
-            raise Exception(
-                'Benchmark could not be established after 2 hours sleep_time')
-        else:
-            time.sleep(sleep)
-            res_dict = validate(invoke, 'initial coldtime reset')
-            local_coldtime = res_dict['execution_start'] - res_dict['invocation_start']
-            benchmark = local_coldtime * 0.80 if not dev_mode else coldtime * 0.90
-            avg_warmtime = validate(lib.reduce_dict_by_keys, 
+    if(warmtime * 1.2 < benchmark):
+        print(f'benchmark found: {benchmark}, with {warmtime} as warmtime')
+        return
+    elif(sleep > 7200):
+        raise Exception(
+            'Benchmark could not be established after 2 hours sleep_time')
+    else:
+        time.sleep(sleep)
+        res_dict = validate(invoke, 'initial coldtime reset')
+        local_coldtime = res_dict['execution_start'] - res_dict['invocation_start']
+        benchmark = local_coldtime * 0.80 if not dev_mode else coldtime * 0.90
+        avg_warmtime = validate(lib.reduce_dict_by_keys, 
                                 'avg_warmtime reset', 
                                 (create_invocation_list((10, 'create invocation_list')), 
                                 ('execution_start', 'invocation_start')))
-            if(avg_warmtime > benchmark):
-                check_coldtime(sleep+1200, avg_warmtime)
+        if(avg_warmtime > benchmark):
+            check_coldtime(sleep+1200, avg_warmtime)
     
     # Find the values for when coldtimes occure
 def set_cold_values():
     global sleep_time, increment, granularity, latest_latency_time,large_increment,minute_increment
     while(True):
-        if time.time() - start_time > _24_hours:
+        if time.time() - start_time > _30_hours:
             print('ABORTING due to 30 hour time constraint from set_cold_values function\n')
             benchmarker.end_experiment()
             # log experiments specific results, hence results not obtainable from the generic Invocation object
