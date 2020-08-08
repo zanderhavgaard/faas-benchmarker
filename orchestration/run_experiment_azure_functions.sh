@@ -31,6 +31,8 @@ bash "$fbrd/orchestration/experiment_status_updater.sh" "insert" "$experiment_na
 
 # ===== create infrastructure
 
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_provisioning" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
+
 pmsg "Bootstrapping cloud functions ..."
 bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "bootstrap" "azure_functions" || log_experiment_failed
 
@@ -39,10 +41,14 @@ bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "bootstrap" "aws_e
 
 # ====== run experiment
 
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_running" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
+
 pmsg "Running experiment ..."
 bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "azure_functions" || exit
 
 # ====== destroy infrastructure
+
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_destroying" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
 
 pmsg "Destroying cloud functions ..."
 bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "destroy" "azure_functions" || log_experiment_failed

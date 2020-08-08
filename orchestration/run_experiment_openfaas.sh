@@ -29,15 +29,21 @@ bash "$fbrd/orchestration/experiment_status_updater.sh" "insert" "$experiment_na
 
 # ===== create client vm
 
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_provisioning" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
+
 pmsg "Creating openfaas client vm ..."
 bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "bootstrap" "openfaas_client_vm" || log_experiment_failed
 
 # ===== create eks cluster and run experiment
 
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_running" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
+
 pmsg "Creating eks cluster and then running experiment on worker server ..."
 bash "$fbrd/orchestration/executor.sh" "$experiment_name" "$experiment_meta_identifier" "openfaas" || exit
 
 # ===== destroy client vm
+
+bash "$fbrd/orchestration/experiment_status_updater.sh" "update_destroying" "$experiment_name" "$experiment_meta_identifier" "$function_provider" "$client_provider"
 
 pmsg "Destorying openfaas client vm ..."
 bash "$fbrd/orchestration/orchestrator.sh" "$experiment_name" "destroy" "openfaas_client_vm" || log_experiment_failed
