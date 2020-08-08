@@ -15,12 +15,36 @@ function bootstrap {
     bash init.sh "$experiment_name"
 
     pmsg "Creating cloud functions ..."
+    retries=10
+    counter=0
+    delay=10
+    destroy_delay=60
     tf_deployed="false"
+
     until $tf_deployed ; do
+
+        (( counter++ ))
+        if [ $counter = $retries ] ; then
+            errmsg "Maximum deployment retries reached, aborting ..."
+            exit
+        fi
+
+        pmsg "Trying deployment, attempt # $counter / $retries ..."
+
         terraform apply -auto-approve \
             && tf_deployed="true" \
             && echo \
             && pmsg "Successfully deployed using terraform ..."
+
+        if ! $tf_deployed ; then
+            pmsg "Deployment failed, sleeping for $destroy_delay seconds, and then destroying anything that was created ..."
+            sleep $destroy_delay
+            terraform destroy -auto-approve
+            pmsg "Now sleeping for $delay seconds before attempting deployment again ..."
+            sleep $delay
+        else
+            smsg "Successfully deployed infrastructure!"
+        fi
     done
 
     # echo -e "\n--> Outputting variables to experiment.env ...\n"
