@@ -216,7 +216,7 @@ CREATE TABLE `ExperimentStatus` (
 
 LOCK TABLES `ExperimentStatus` WRITE;
 /*!40000 ALTER TABLE `ExperimentStatus` DISABLE KEYS */;
-INSERT INTO `ExperimentStatus` VALUES (1,'dev-meta','dev-experiment','aws_lambda','aws_ec2','failed',1593264660,0),(2,'dev-meta2','dev-experiment','aws_lambda','aws_ec2','completed',1593264660,0),(3,'dev-meta','dev-experiment','aws_lambda','aws_ec2','running',1593264660,0),(4,'dev-meta3','dev-experiment','aws_lambda','aws_ec2','running',1593264660,0);
+INSERT INTO `ExperimentStatus` VALUES (1,'dev-meta','dev-experiment','aws_lambda','aws_ec2','failed',1593264660,0), (2,'dev-meta2','dev-experiment','aws_lambda','aws_ec2','completed',1593264660,0), (3,'dev-meta','dev-experiment','aws_lambda','aws_ec2','running',1593264660,0), (4,'dev-meta3','dev-experiment','aws_lambda','aws_ec2','running',1593264660,0), (5,'dev-meta','dev-experiment','aws_lambda','aws_ec2','destroying',1593264660,0), (6,'dev-meta','dev-experiment','aws_lambda','aws_ec2','provisioning',1593264660,0);
 /*!40000 ALTER TABLE `ExperimentStatus` ENABLE KEYS */;
 UNLOCK TABLES;
 
