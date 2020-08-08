@@ -60,6 +60,7 @@ pmsg "arkade install openfaas ..."
 retries=10
 counter=0
 deployed="false"
+delay=300
 until $deployed ; do
     (( counter++ ))
     if [ $counter = $retries ] ; then
@@ -76,6 +77,16 @@ until $deployed ; do
         --set "faasIdler.reconcileInterval=$reconcile_interval" \
         && deployed="true" \
         && smsg "Successfully deployed openfaas $fcd"
+
+        if ! $deployed ; then
+            pmsg "Deployment failed, deleting namespaces ..."
+            kubectl delete clusterrole openfaas-prometheus
+            kubectl delete namespace openfaas openfaas-fn
+            pmsg "Now sleeping for $delay seconds before attempting deployment again ..."
+            sleep $delay
+        else
+            smsg "Successfully deployed infrastructure!"
+        fi
 done
 
 # wait a bit for things to be ready
@@ -95,7 +106,7 @@ kubectl port-forward -n openfaas svc/gateway 8080:8080 &
 # wait a bit for things to be ready
 sleep 5
 
-pmsg "faas-cli log in to cluste ..."
+pmsg "faas-cli log in to cluster ..."
 
 # log faas-cli into the new cluster
 PASSWORD=$(kubectl get secret -n openfaas basic-auth -o jsonpath="{.data.basic-auth-password}" | base64 --decode; echo)

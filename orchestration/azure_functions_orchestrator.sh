@@ -18,8 +18,8 @@ function bootstrap {
     pmsg "Creating cloud functions ..."
     retries=10
     counter=0
-    delay=10
-    destroy_delay=60
+    delay=60
+    destroy_delay=10
     tf_deployed="false"
 
     until $tf_deployed ; do
