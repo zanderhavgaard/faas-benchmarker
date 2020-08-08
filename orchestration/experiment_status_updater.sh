@@ -24,10 +24,10 @@ case "$command" in
 
     update_completed)
         end_time=$(date +%s)
-        # pmsg "Updating ExperimentStatus row to completed ..."
+        pmsg "Updating ExperimentStatus row to completed ..."
         experiment_status="completed"
         status=$(ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -u$DB_SQL_USER -p$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e \" select status from ExperimentStatus where name='$experiment_name' and experiment_meta_identifier='$experiment_meta_identifier' and function_provider='$function_provider' and client_provider='$client_provider' ;  \" ")
-        if [[ "$status" =~ "running" ]] ; then
+        if [[ "$status" =~ "destroying" ]] ; then
             pmsg "Found ExperimentStatus row, updating to completed ..."
             ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -u$DB_SQL_USER -p$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e \" update ExperimentStatus set status='$experiment_status', end_time='$end_time' where name='$experiment_name' and experiment_meta_identifier='$experiment_meta_identifier' and function_provider='$function_provider' and client_provider='$client_provider' ;  \" "
         elif [[ "$status" =~ "failed" ]] ; then
@@ -49,7 +49,7 @@ case "$command" in
 
     update_provisioning)
         end_time=$(date +%s)
-        # pmsg "Updating ExperimentStatus row to completed ..."
+        pmsg "Updating ExperimentStatus row to provisioning ..."
         experiment_status="provisioning"
 
         status=$(ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -u$DB_SQL_USER -p$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e \" select status from ExperimentStatus where name='$experiment_name' and experiment_meta_identifier='$experiment_meta_identifier' and function_provider='$function_provider' and client_provider='$client_provider' ;  \" ")
@@ -66,13 +66,12 @@ case "$command" in
 
     update_destroying)
         end_time=$(date +%s)
-        # pmsg "Updating ExperimentStatus row to completed ..."
         experiment_status="destroying"
 
         status=$(ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -u$DB_SQL_USER -p$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e \" select status from ExperimentStatus where name='$experiment_name' and experiment_meta_identifier='$experiment_meta_identifier' and function_provider='$function_provider' and client_provider='$client_provider' ;  \" ")
 
         if [[ "$status" =~ "running" ]] ; then
-            pmsg "Found ExperimentStatus row, updating to provisioning ..."
+            pmsg "Found ExperimentStatus row, updating to destroying ..."
             ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -u$DB_SQL_USER -p$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e \" update ExperimentStatus set status='$experiment_status', end_time='$end_time' where name='$experiment_name' and experiment_meta_identifier='$experiment_meta_identifier' and function_provider='$function_provider' and client_provider='$client_provider' ;  \" "
 
         elif [[ "$status" =~ "failed" ]] ; then
@@ -84,13 +83,12 @@ case "$command" in
 
     update_running)
         end_time=$(date +%s)
-        # pmsg "Updating ExperimentStatus row to completed ..."
         experiment_status="running"
 
         status=$(ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -u$DB_SQL_USER -p$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e \" select status from ExperimentStatus where name='$experiment_name' and experiment_meta_identifier='$experiment_meta_identifier' and function_provider='$function_provider' and client_provider='$client_provider' ;  \" ")
 
         if [[ "$status" =~ "provisioning" ]] ; then
-            pmsg "Found ExperimentStatus row, updating to provisioning ..."
+            pmsg "Found ExperimentStatus row, updating to running ..."
             ssh $ssh_command " docker run --rm --network host mysql:5.7 mysql -u$DB_SQL_USER -p$DB_SQL_PASS -h127.0.0.1 -P3306 Benchmarks -e \" update ExperimentStatus set status='$experiment_status', end_time='$end_time' where name='$experiment_name' and experiment_meta_identifier='$experiment_meta_identifier' and function_provider='$function_provider' and client_provider='$client_provider' ;  \" "
 
         elif [[ "$status" =~ "failed" ]] ; then
@@ -100,7 +98,7 @@ case "$command" in
         ;;
 
     *)
-        errmsg "Invalid command, valid commands are: insert, update_finished, update_failed"
+        errmsg "Invalid command, valid commands are: insert, update_finished, update_failed, update_running, update_provisioning, update_destroying"
         ;;
 
 esac
