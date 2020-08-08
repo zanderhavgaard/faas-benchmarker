@@ -15,7 +15,7 @@ class DB_interface():
         # default value to return if no data is retrieved
         result = "Could not get any data ..."
 
-        query = """select name, experiment_meta_identifier, function_provider, client_provider, start_time, end_time, status from ExperimentStatus;"""
+        query = """select name, experiment_meta_identifier, function_provider, client_provider, start_time, end_time, status from ExperimentStatus order by id desc;"""
 
         try:
             with pymysql.connect(host=self.db_host,
@@ -38,7 +38,7 @@ class DB_interface():
         # default value to return if no data is retrieved
         result = "Could not get any data ..."
 
-        query = """select name, experiment_meta_identifier, uuid, start_time, end_time, total_time, cl_provider, cl_client, python_version, cores, memory, invocation_count, dev_mode from Experiment;"""
+        query = """select name, experiment_meta_identifier, uuid, start_time, end_time, total_time, cl_provider, cl_client, python_version, cores, memory, invocation_count, dev_mode from Experiment order by id desc;"""
 
         try:
             with pymysql.connect(host=self.db_host,
