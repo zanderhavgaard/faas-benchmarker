@@ -247,7 +247,7 @@ def verify_result():
 
         if(verbose):
             lib.dev_mode_print(f'logging cold time: {latency_time > benchmark} -> coldtime exp', [
-                ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
+                ('experiment_uuid,result_dict[instance_identifier]',experiment_uuid, result_dict['instance_identifier']),
                 ('sleep_time / 60', int(sleep_time / 60)),
                 ('sleep_time % 60', int(sleep_time % 60)),
                 ('increment', increment),
