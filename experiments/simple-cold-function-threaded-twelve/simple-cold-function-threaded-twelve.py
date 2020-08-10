@@ -80,7 +80,7 @@ if not dev_mode:
 threads = 0
 
 # values used for aborting experiment if it runs more than 24 hours
-_30_hours = 30 * 60 * 60
+_timeout = 24 * 60 * 60
 start_time = time.time()
 
 # benchmark for cold value for function
@@ -220,7 +220,7 @@ def check_coldtime(sleep: int, warmtime: float):
 def set_cold_values():
     global sleep_time, increment, granularity,large_increment,minute_increment
     while(True):
-        if time.time() - start_time > _30_hours:
+        if time.time() - start_time > _timeout:
             print('ABORTING due to 30 hour time constraint from set_cold_values function\n')
             benchmarker.end_experiment()
             # log experiments specific results, hence results not obtainable from the generic Invocation object
@@ -274,7 +274,7 @@ def verify_result():
     # variefy that result is valid by using same sleeptime between invocations 5 times
     iter_count = 5 if not dev_mode else 2
     while(iter_count > 0):
-        if time.time() - start_time > _30_hours:
+        if time.time() - start_time > _timeout:
             print('ABORTING due to 30 hour time constraint from varification loop\n')
             benchmarker.end_experiment()
             # log experiments specific results, hence results not obtainable from the generic Invocation object
