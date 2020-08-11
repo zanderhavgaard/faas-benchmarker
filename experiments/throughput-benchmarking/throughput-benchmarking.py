@@ -128,7 +128,7 @@ def validate(x, y, z=None): return lib.iterator_wrapper(
 
 try:
 
-    throughput_times = [0.1,0.2,0.4,0.8,1.2,1.6,2.4,5,10,20]
+    throughput_times = [0.1,0.2,0.4,0.8,1.2,1.6,2.4,5,8]
     for t in throughput_times:
         for i in range(5):
             if verbose:
