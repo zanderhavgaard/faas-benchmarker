@@ -81,9 +81,9 @@ def str_replace(text:str, pat:list)-> str:
         text = text.replace(c,p)
     return text
 
-def generate_key_value_strings(dict:dict):
+def generate_key_value_strings(dictionary:dict):
     (key_string,value_string) = reduce(lambda x,y: ( f'{x[0]}{y[0]},', f'{x[1]}{y[1]},') if not isinstance(y[1],str) 
-                                    else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(dict.items()))
+                                    else ( f'{x[0]}{y[0]},', f"""{x[1]}'{y[1]}',""") ,[('','')] + list(dictionary.items()))
     return (key_string[:-1],value_string[:-1])
 
 def dict_to_query(dict:dict,table:str) -> str:
