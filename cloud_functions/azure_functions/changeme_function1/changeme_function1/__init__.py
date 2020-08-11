@@ -14,18 +14,20 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     import time
     start_time = time.time()
 
+    # we do not trust that the time is correct for all function platforms 
+    # so we adjust the recorded time with ntp
     import ntplib
     ntpc = ntplib.NTPClient()
     ntp_response_recieved = False
-    while not ntp_response_recieved:
+    retries = 10
+    while not ntp_response_recieved and retries >= 0:
+        retries -= 1
         try:
-            t1 = time.time()
-            ntp_response = ntpc.request('uk.pool.ntp.org')
-            t2 = time.time()
+            ntp_response = ntpc.request('ntp2.cam.ac.uk')
             ntp_response_recieved = True
         except ntplib.NTPException:
             print('no response from ntp request, trying again ...')
-    ntp_diff = (ntp_response.tx_time - ((t2 - t1) / 2)) - t1
+    ntp_diff = ntp_response.offset
 
     import logging
     import json

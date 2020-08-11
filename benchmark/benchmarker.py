@@ -14,8 +14,7 @@ from mysql_interface import SQL_Interface as db_interface
 import threading as th
 from concurrent import futures
 import traceback
-
-
+import ntplib
 from datetime import datetime
 from pprint import pprint
 
@@ -257,19 +256,17 @@ class Benchmarker:
             time.sleep(1)
 
     def get_ntp_diff(self):
-        import ntplib
         ntpc = ntplib.NTPClient()
         ntp_response_recieved = False
-        while not ntp_response_recieved:
+        retries = 10
+        while not ntp_response_recieved and retries >= 0:
+            retries -= 1
             try:
-                t1 = time.time()
-                ntp_response = ntpc.request('uk.pool.ntp.org')
-                t2 = time.time()
+                ntp_response = ntpc.request('ntp2.cam.ac.uk')
                 ntp_response_recieved = True
             except ntplib.NTPException:
                 print('no response from ntp request, trying again ...')
-        ntp_diff = (ntp_response.tx_time - ((t2 - t1) / 2)) - t1
-        return ntp_diff
+        return ntp_response.offset
 
 
 # create exception class for empty responses

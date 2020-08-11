@@ -12,15 +12,15 @@ def lambda_handler(event: dict, context: dict) -> dict:
     import ntplib
     ntpc = ntplib.NTPClient()
     ntp_response_recieved = False
-    while not ntp_response_recieved:
+    retries = 10
+    while not ntp_response_recieved and retries >= 0:
+        retries -= 1
         try:
-            t1 = time.time()
-            ntp_response = ntpc.request('uk.pool.ntp.org')
-            t2 = time.time()
+            ntp_response = ntpc.request('ntp2.cam.ac.uk')
             ntp_response_recieved = True
         except ntplib.NTPException:
             print('no response from ntp request, trying again ...')
-    ntp_diff = (ntp_response.tx_time - ((t2 - t1) / 2)) - t1
+    ntp_diff = ntp_response.offset
 
     import uuid
     import json
