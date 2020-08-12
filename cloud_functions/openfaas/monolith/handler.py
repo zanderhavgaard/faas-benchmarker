@@ -1971,17 +1971,19 @@ def get_time():
     ntpc = ntplib.NTPClient()
     retries = 0
     total_overhead = time.time() - start
-    while retries < 10:
-        retries += 1
-        try:
-            t1 = time.time()
-            ntp_response = ntpc.request('ntp2.cam.ac.uk')
-            t2 = time.time()
-            response_overhead = (t2 - t1) / 3
-            res = ntp_response.tx_time - total_overhead - response_overhead
-            return (res, total_overhead + response_overhead)
-        except ntplib.NTPException:
-            total_overhead += time.time() - t1
+    ntp_servers = ['0','1','2','3']
+    for ntp_server_num in ntp_servers:
+        while retries < 10:
+            retries += 1
+            try:
+                t1 = time.time()
+                ntp_response = ntpc.request(f'ntp{ntp_server_num}.cam.ac.uk')
+                t2 = time.time()
+                response_overhead = (t2 - t1) / 3
+                res = ntp_response.tx_time - total_overhead - response_overhead
+                return (res, total_overhead + response_overhead)
+            except ntplib.NTPException:
+                total_overhead += time.time() - t1
     return (start, total_overhead)
 
 # invoke another openfaas function using python requests, will make use of the API gateway
