@@ -4,21 +4,6 @@ def handle(req):
     import time
     start_time = time.time()
 
-    # we do not trust that the time is correct for all function platforms 
-    # so we adjust the recorded time with ntp
-    import ntplib
-    ntpc = ntplib.NTPClient()
-    ntp_response_recieved = False
-    retries = 10
-    while not ntp_response_recieved and retries >= 0:
-        retries -= 1
-        try:
-            ntp_response = ntpc.request('ntp2.cam.ac.uk')
-            ntp_response_recieved = True
-        except ntplib.NTPException:
-            print('no response from ntp request, trying again ...')
-    ntp_diff = ntp_response.offset
-
     # import dependencies on execution time
     import uuid
     import json
@@ -162,7 +147,32 @@ def handle(req):
             }),
             "identifier": identifier
         }
+def get_time():
+    # we do not trust that the time is correct for all function platforms 
+    # so we adjust the recorded time with ntp
+    start = time.time()
+    import ntplib
+    ntpc = ntplib.NTPClient()
+    retries = 0
+    overhead = time.time() - start
+    while retries < 10:
+        retries += 1
+        try:
+            t1 = time.time()
+            ntp_response = ntpc.request('ntp2.cam.ac.uk')
+            t2 = time.time()
+            res = ntp_response.tx_time - overhead - (t2-t1)/2
+            # print('latency',(t2-t1)/2,( (t2+ntp_response.offset)-ntp_response.tx_time),'overhead',overhead)
+            # print('offset test',ntp_response.offset,ntp_response.tx_time,t2,(t2-ntp_response.tx_time)) #-((t2-t1)/2))
+            if retries < 3:
+                raise ntplib.NTPException
+            return (res,overhead+(t2-t1),ntp_response.offset,ntp_response.tx_time,start,(t2-t1)/2)
+            # return (result,'tx_time',ntp_response.tx_time,'diff',ntp_response.tx_time-result,'offset',t1+ntp_response.offset,ntp_response.offset)
+        except ntplib.NTPException:
+            print(f'no response from ntp request, trying again ...{retries}')
+            overhead += time.time()-t1
 
+    return (start,overhead)
 # invoke another openfaas function using python requests, will make use of the API gateway
 # params:
 # function_name: name of function in to be called at the gateway
@@ -206,7 +216,7 @@ def invoke_nested_function(function_name: str,invoke_payload: dict, ntp_diff: fl
                 print('caught some error while doing a nested invoke,', e, str(e))
 
         # capture the invocation end time
-        end_time = time.time()
+        end_time = get_time()
 
         # parse response_json
         response_json = json.loads((response.content.decode()))
@@ -218,8 +228,8 @@ def invoke_nested_function(function_name: str,invoke_payload: dict, ntp_diff: fl
         body = json.loads(response_json['body'])
 
         # add invocation metadata to response
-        body[id]['invocation_start'] = start_time + ntp_diff
-        body[id]['invocation_end'] = end_time + ntp_diff
+        body[id]['invocation_start'] = start_time 
+        body[id]['invocation_end'] = end_time
 
         return body
 

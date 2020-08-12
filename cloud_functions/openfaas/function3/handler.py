@@ -254,4 +254,3 @@ def invoke_nested_function(function_name: str,invoke_payload: dict, ntp_diff: fl
                 "process_time": time.process_time()
             }
         }
-
