@@ -255,6 +255,26 @@ class Benchmarker:
         while(not self.futures_parsed):
             time.sleep(1)
 
+    def get_ntp_time(self):
+        import time
+        start = time.time()
+        import ntplib
+        ntpc = ntplib.NTPClient()
+        retries = 0
+        total_overhead = time.time() - start
+        while retries < 10:
+            retries += 1
+            try:
+                t1 = time.time()
+                ntp_response = ntpc.request('ntp2.cam.ac.uk')
+                t2 = time.time()
+                response_overhead = (t2 - t1) / 3
+                res = ntp_response.tx_time - total_overhead - response_overhead
+                return (res, total_overhead + response_overhead)
+            except ntplib.NTPException:
+                total_overhead += time.time() - t1
+        return (start, total_overhead)
+
     def get_ntp_diff(self):
         ntpc = ntplib.NTPClient()
         ntp_response_recieved = False
@@ -267,7 +287,6 @@ class Benchmarker:
             except ntplib.NTPException:
                 print('no response from ntp request, trying again ...')
         return ntp_response.offset
-
 
 # create exception class for empty responses
 # do something smarter here
