@@ -9,6 +9,7 @@ import traceback
 from provider_abstract import AbstractProvider
 import aiohttp
 import asyncio
+import benchmarker
 
 
 class AWSLambdaProvider(AbstractProvider):
@@ -49,7 +50,7 @@ class AWSLambdaProvider(AbstractProvider):
                              ) -> dict:
 
         # log start time of invocation
-        start_time = time.time() + self.ntp_diff
+        start_time, start_overhead = benchmarker.get_ntp_time()
 
         try:
             # async with aiohttp.ClientSession() as session:
@@ -80,7 +81,8 @@ class AWSLambdaProvider(AbstractProvider):
                     except aiohttp.ClientConnectionError:
                         print(f'Caught a ClientConnectionError at invocation attempt #{i}')
 
-            end_time = time.time() + self.ntp_diff
+            end_time, end_overhead = benchmarker.get_ntp_time()
+            end_time = end_time - start_overhead
 
             return (res, start_time, end_time, thread_number, number_of_threads) if response_code == 200 \
                 else ({'statusCode': response_code, 'message': res.strip()}, start_time, end_time, thread_number, number_of_threads)

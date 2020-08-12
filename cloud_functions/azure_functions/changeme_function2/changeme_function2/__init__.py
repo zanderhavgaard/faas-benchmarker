@@ -1,3 +1,4 @@
+
 # required for function definition
 import azure.functions as func
 
@@ -11,24 +12,9 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # req: HTTPRequest provided by azure
 
     # get start time
+    start_time, start_overhead = get_time()
+
     import time
-    start_time = time.time()
-
-    # we do not trust that the time is correct for all function platforms 
-    # so we adjust the recorded time with ntp
-    import ntplib
-    ntpc = ntplib.NTPClient()
-    ntp_response_recieved = False
-    retries = 10
-    while not ntp_response_recieved and retries >= 0:
-        retries -= 1
-        try:
-            ntp_response = ntpc.request('ntp2.cam.ac.uk')
-            ntp_response_recieved = True
-        except ntplib.NTPException:
-            print('no response from ntp request, trying again ...')
-    ntp_diff = ntp_response.offset
-
     import logging
     import json
     import uuid
@@ -53,8 +39,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 "identifier": identifier,
                 "uuid": invocation_uuid,
                 "function_name": function_name,
-                "function_cores": psutil.cpu_count(),
-                "invocation_ntp_diff": ntp_diff
+                "function_cores": psutil.cpu_count()
             },
         }
 
@@ -113,18 +98,12 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 nested_response = invoke_nested_function(
                     function_name=invoke['function_name'],
                     invoke_payload=invoke['invoke_payload'],
-                    code=invoke['code'],
-                    ntp_diff=ntp_diff
+                    code=invoke['code']
                 )
                 # add each nested invocation to response body
                 for id in nested_response.keys():
                     body[id] = nested_response[id]
 
-        # add timings and return
-        body[identifier]['execution_start'] = start_time + ntp_diff
-        body[identifier]['execution_end'] = time.time() + ntp_diff
-        body[identifier]['cpu'] = platform.processor()
-        body[identifier]['process_time'] = time.process_time()
 
         # for azure functions we have to follow the response form
         # that azure provides, so we add an extra key to body that
@@ -139,6 +118,17 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
             "Content-Type": "application/json; charset=utf-8"
         }
 
+        body[identifier]['cpu'] = platform.processor()
+        body[identifier]['process_time'] = time.process_time()
+
+        # get the end time and tne overhead
+        end_time, end_overhead = get_time()
+        # add timings and return
+        body[identifier]['execution_start'] = start_time
+        body[identifier]['execution_end'] = end_time - start_overhead
+        body[identifier]['invocation_ntp_diff'] = start_overhead + end_overhead
+
+
         # create the azure functions response
         response = func.HttpResponse(body=json.dumps(body),
                                      status_code=status_code,
@@ -151,6 +141,7 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
     # return httpResponse with error if exception occurs
     except Exception as e:
         import traceback
+        end_time, end_overhead = get_time()
         error_body = {
             "identifier": identifier,
             identifier: {
@@ -170,8 +161,9 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                 "level": None,
                 "memory": None,
                 "instance_identifier": None,
-                "execution_start": start_time + ntp_diff,
-                "execution_end": time.time() + ntp_diff,
+                "invocation_ntp_diff": start_overhead + end_overhead,
+                "execution_start": start_time,
+                "execution_end": end_time - start_overhead,
                 "cpu": platform.processor(),
                 "process_time": time.process_time()
             }
@@ -184,16 +176,39 @@ def main(req: func.HttpRequest, context: func.Context) -> func.HttpResponse:
                                  )
 
 
+# we do not trust that the time is correct for all function platforms 
+# so we ask an ntp server what it's time is
+def get_time():
+    import time
+    start = time.time()
+    import ntplib
+    ntpc = ntplib.NTPClient()
+    retries = 0
+    total_overhead = time.time() - start
+    ntp_servers = ['0','1','2','3']
+    for ntp_server_num in ntp_servers:
+        while retries < 10:
+            retries += 1
+            try:
+                t1 = time.time()
+                ntp_response = ntpc.request(f'ntp{ntp_server_num}.cam.ac.uk')
+                t2 = time.time()
+                response_overhead = (t2 - t1) / 3
+                res = ntp_response.tx_time - total_overhead - response_overhead
+                return (res, total_overhead + response_overhead)
+            except ntplib.NTPException:
+                total_overhead += time.time() - t1
+    return (start, total_overhead)
+
 def invoke_nested_function(function_name: str,
                            invoke_payload: dict,
-                           code: str,
-                           ntp_diff: float
+                           code: str
                            ) -> dict:
     import time
     import json
 
     # capture the invocation start time
-    start_time = time.time()
+    start_time, start_overhead = get_time()
 
     try:
         headers = {
@@ -212,7 +227,7 @@ def invoke_nested_function(function_name: str,
         )
 
         # capture the invocation end time
-        end_time = time.time()
+        end_time, end_overhead = get_time()
 
         # parse json payload to dict
         body = json.loads(response.content.decode())
@@ -220,15 +235,15 @@ def invoke_nested_function(function_name: str,
         id = body['identifier']
 
         # add invocation start/end times
-        body[id]['invocation_start'] = start_time + ntp_diff
-        body[id]['invocation_end'] = end_time + ntp_diff
+        body[id]['invocation_start'] = start_time
+        body[id]['invocation_end'] = end_time - end_overhead
 
         return body
 
     except Exception as e:
         import traceback
         import platform
-        end_time = time.time()
+        end_time, end_overhead = get_time()
         return {
             f"error-{function_name}-nested_invocation-{end_time}": {
                 "identifier": f"error-{function_name}-nested_invocation-{end_time}",
@@ -249,8 +264,9 @@ def invoke_nested_function(function_name: str,
                 "instance_identifier": None,
                 "execution_start": None,
                 "execution_end": None,
-                "invocation_start": start_time + ntp_diff,
-                "invocation_end": end_time + ntp_diff,
+                "invocation_ntp_diff": start_overhead + end_overhead,
+                "invocation_start": start_time,
+                "invocation_end": end_time - start_overhead,
                 "cpu": platform.processor(),
                 "process_time": time.process_time()
             }

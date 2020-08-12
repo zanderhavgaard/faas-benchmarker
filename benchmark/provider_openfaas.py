@@ -9,6 +9,7 @@ import http
 from pprint import pprint
 import aiohttp
 import asyncio
+import benchmarker
 
 
 class OpenFaasProvider(AbstractProvider):
@@ -48,7 +49,7 @@ class OpenFaasProvider(AbstractProvider):
         #  print('url', url)
 
         # log start time of invocation
-        start_time = time.time() + self.ntp_diff
+        start_time, start_overhead = benchmarker.get_ntp_time()
         cutoff_time = start_time + (60 * 5)
         res = 'no response recieved'
         errors = 0
@@ -85,7 +86,8 @@ class OpenFaasProvider(AbstractProvider):
                         print('response', response)
                         print('response content', response.content)
 
-            end_time = time.time() + self.ntp_diff
+            end_time, end_overhead = benchmarker.get_ntp_time()
+            end_time = end_time - start_overhead
 
             if errors != 0:
                 print(f'encountered {errors} errors while trying to invoke the function, most likely due to cold start.')
