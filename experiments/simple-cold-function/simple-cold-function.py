@@ -176,7 +176,8 @@ def check_coldtime(sleep: int, warmtime: float):
         if local_coldtime > (10 * avg_warmtime):
             benchmark = avg_warmtime * 10
         else:
-            benchmark = local_coldtime * 0.8
+            #  benchmark = local_coldtime * 0.8
+            benchmark = avg_warmtime * 1.75
 
         if(avg_warmtime > benchmark):
             check_coldtime(sleep+1200, avg_warmtime)
@@ -201,7 +202,7 @@ def set_cold_values():
 
         if(verbose):
             lib.dev_mode_print('logging time from set_cold_values', [
-                ('experiment_uuid,result_dict[identifier]',experiment_uuid, result_dict['identifier']),
+                ('experiment_uuid,result_dict[\'instance_identifier\']',experiment_uuid, result_dict['instance_identifier']),
                 ('sleep_time / 60', int(sleep_time / 60)),
                 ('sleep_time % 60', int( sleep_time % 60)),
                 ('increment', increment),
@@ -258,7 +259,8 @@ def verify_result():
                 ('sleep_time % 60', int(sleep_time % 60)),
                 ('increment', increment),
                 ('coldtime', latency_time > benchmark),
-                ('Final result', False)
+                ('Final result', False),
+                ('latency', latency_time)
                 ])
         
         append_result(
@@ -313,7 +315,8 @@ try:
     if coldtime > (10 * avg_warmtime):
         benchmark = avg_warmtime * 10
     else:
-        benchmark = coldtime * 0.8
+        #  benchmark = coldtime * 0.8
+        benchmark = avg_warmtime * 1.75
 
     if verbose:
         print('init benchmark', benchmark)
