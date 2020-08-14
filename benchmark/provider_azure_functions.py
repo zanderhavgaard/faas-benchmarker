@@ -72,12 +72,9 @@ class AzureFunctionsProvider(AbstractProvider):
             start_time = 0.0
             start_overhead = 0.0
             response_code = 0
-            res = None
+           
             async with aiohttp_session as session:
-                t1 = time.time()
                 start_time, start_overhead = benchmarker.get_ntp_time()
-                t2 = time.time()
-                print('time for get_ntp_time in invoke wrapper',t2-t1)
                 for i in range(5):
 
                     try:
@@ -114,7 +111,6 @@ class AzureFunctionsProvider(AbstractProvider):
 
         except Exception as e:
             return ({'statusCode': 9999999, 'message': str(e)}, time.time(), time.time(), thread_number, number_of_threads)
-
     # the functions are available under
     # https://<funtion_app_name>/api/<function_name>?code=<function_key>
     def invoke_function(self,

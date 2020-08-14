@@ -59,10 +59,7 @@ class AWSLambdaProvider(AbstractProvider):
             res = None
             async with aiohttp_session as session:
                 # log start time of invocation
-                t1 = time.time()
                 start_time, start_overhead = benchmarker.get_ntp_time()
-                t2 = time.time()
-                print('time for get_ntp_time in invoke wrapper',t2-t1)
                 for i in range(5):
 
                     try:

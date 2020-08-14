@@ -60,10 +60,7 @@ class OpenFaasProvider(AbstractProvider):
             response_code = 0
             async with aiohttp_session as session:
                 # log start time of invocation
-                t1 = time.time()
                 start_time, start_overhead = benchmarker.get_ntp_time()
-                t2 = time.time()
-                print('time for get_ntp_time in invoke wrapper',t2-t1)
                 while time.time() < cutoff_time:
                     try:
                         async with session.post(
