@@ -174,7 +174,7 @@ def check_coldtime(sleep: int, warmtime: float):
                                 ('execution_start', 'invocation_start')))
 
         if local_coldtime > (10 * avg_warmtime):
-            benchmark = avg_warmtime * 5
+            benchmark = avg_warmtime * 10
         else:
             benchmark = local_coldtime * 0.9
 
@@ -311,7 +311,7 @@ try:
     # coldtime is adjusted by 10% to avoid coldtime being an outlier
     # openfaas sometimes has large variation in cold time
     if coldtime > (10 * avg_warmtime):
-        benchmark = avg_warmtime * 5
+        benchmark = avg_warmtime * 10
     else:
         benchmark = coldtime * 0.9
 
