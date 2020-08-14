@@ -48,16 +48,22 @@ class OpenFaasProvider(AbstractProvider):
         # TODO remove when we feel sure that all of the stuff works...
         #  print('url', url)
 
-        # log start time of invocation
-        start_time, start_overhead = benchmarker.get_ntp_time()
-        cutoff_time = start_time + (60 * 5)
-        res = 'no response recieved'
+        start_time = 0.0
+        start_overhead = 0.0
+        response_code = 0
+        cutoff_time = time.time() + (60 * 5)
+        res = None
         errors = 0
 
         try:
             # async with aiohttp.ClientSession() as session:
             response_code = 0
             async with aiohttp_session as session:
+                # log start time of invocation
+                t1 = time.time()
+                start_time, start_overhead = benchmarker.get_ntp_time()
+                t2 = time.time()
+                print('time for get_ntp_time in invoke wrapper',t2-t1)
                 while time.time() < cutoff_time:
                     try:
                         async with session.post(
@@ -87,7 +93,7 @@ class OpenFaasProvider(AbstractProvider):
                         print('response content', response.content)
 
             end_time, end_overhead = benchmarker.get_ntp_time()
-            end_time = end_time - start_overhead
+            end_time -= start_overhead
 
             if errors != 0:
                 print(f'encountered {errors} errors while trying to invoke the function, most likely due to cold start.')

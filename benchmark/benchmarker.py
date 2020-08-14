@@ -271,11 +271,14 @@ class Benchmarker:
                 except ntplib.NTPException:
                     print('no response from ntp request, trying again ...')
         return 0.0
+    
+    
+
 
 def get_ntp_time():
-    import time
+    # import time
     start = time.time()
-    import ntplib
+    # import ntplib
     ntpc = ntplib.NTPClient()
     retries = 0
     total_overhead = time.time() - start
@@ -291,6 +294,7 @@ def get_ntp_time():
                 res = ntp_response.tx_time - total_overhead - response_overhead
                 return (res, total_overhead + response_overhead)
             except ntplib.NTPException:
+                print(f'caught exception get_ntp_time, iteration {retries}')
                 total_overhead += time.time() - t1
     return (start, total_overhead)
 

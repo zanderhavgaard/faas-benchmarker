@@ -600,7 +600,7 @@ def low_level_conccurent():
     c.end_experiment()
     # =====================================================================================
 
-
+    
 sequential_sanity_check()
 concurrent_sanity_check()
 test_monolith()
@@ -609,5 +609,5 @@ db_interface_sanity_check()
 # only relevant if changes to concurrent implementation is made
 # low_level_conccurent()
 
-db.delete_dev_mode_experiments()
+# db.delete_dev_mode_experiments()
 

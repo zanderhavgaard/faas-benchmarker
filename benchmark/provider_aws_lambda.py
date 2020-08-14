@@ -49,15 +49,20 @@ class AWSLambdaProvider(AbstractProvider):
                              number_of_threads: int
                              ) -> dict:
 
-        # log start time of invocation
-        start_time, start_overhead = benchmarker.get_ntp_time()
+        
 
         try:
             # async with aiohttp.ClientSession() as session:
+            start_time = 0.0
+            start_overhead = 0.0
             response_code = 0
             res = None
             async with aiohttp_session as session:
-
+                # log start time of invocation
+                t1 = time.time()
+                start_time, start_overhead = benchmarker.get_ntp_time()
+                t2 = time.time()
+                print('time for get_ntp_time in invoke wrapper',t2-t1)
                 for i in range(5):
 
                     try:
@@ -82,7 +87,7 @@ class AWSLambdaProvider(AbstractProvider):
                         print(f'Caught a ClientConnectionError at invocation attempt #{i}')
 
             end_time, end_overhead = benchmarker.get_ntp_time()
-            end_time = end_time - start_overhead
+            end_time -= start_overhead
 
             return (res, start_time, end_time, thread_number, number_of_threads) if response_code == 200 \
                 else ({'statusCode': response_code, 'message': res.strip()}, start_time, end_time, thread_number, number_of_threads)
