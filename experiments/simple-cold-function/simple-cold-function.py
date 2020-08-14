@@ -74,7 +74,7 @@ fx = 'function1'
 
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
-    time.sleep(45*60) 
+    time.sleep(65*60)
 
 # values used for aborting experiment if it runs more than 24 hours
 _timeout = 24 * 60 * 60
@@ -167,11 +167,17 @@ def check_coldtime(sleep: int, warmtime: float):
         time.sleep(sleep)
         res_dict = validate(invoke, 'initial coldtime reset')
         local_coldtime = res_dict['execution_start'] - res_dict['invocation_start']
-        benchmark = local_coldtime * 0.80 if not dev_mode else coldtime * 0.90
+
         avg_warmtime = validate(lib.reduce_dict_by_keys, 
                                 'avg_warmtime reset', 
                                 (create_invocation_list((10, 'create invocation_list')), 
                                 ('execution_start', 'invocation_start')))
+
+        if local_coldtime > (10 * avg_warmtime):
+            benchmark = avg_warmtime * 5
+        else:
+            benchmark = local_coldtime * 0.9
+
         if(avg_warmtime > benchmark):
             check_coldtime(sleep+1200, avg_warmtime)
     
@@ -296,33 +302,22 @@ try:
     if verbose:
         print('init coldtime', coldtime)
 
-    # coldtime is adjusted by 10% to avoid coldtime being an outlier
-    benchmark = coldtime * 0.90
-    if verbose:
-        print('init benchmark', benchmark)
-
     # calculates avg. time for warm function, default is 5 invocations as input and keys execution_start - invocation_start
     invo_list = create_invocation_list()
     avg_warmtime = validate(lib.reduce_dict_by_keys, 
                             'avg_warmtime',
                             (invo_list, ('execution_start', 'invocation_start')) )
     
+    # coldtime is adjusted by 10% to avoid coldtime being an outlier
+    # openfaas sometimes has large variation in cold time
+    if coldtime > (10 * avg_warmtime):
+        benchmark = avg_warmtime * 5
+    else:
+        benchmark = coldtime * 0.9
 
-    if(dev_mode):
-        benchmark = coldtime * 0.80
-        avg_warmtime = validate(lib.reduce_dict_by_keys, 
-                                'avg_warmtime', 
-                                (create_invocation_list((10, 'create invocation_list')), 
-                                ('execution_start', 'invocation_start')))
-        if(verbose):
-            lib.dev_mode_print('Values before any checks -> coldtime xp', [(
-                                                        'coldtime', coldtime), 
-                                                        ('benchmark', benchmark), 
-                                                        ('avg_warmtime', avg_warmtime)
-                                                        ])
-
-    
-    # sleep for 60 minutes if coldtime is not cold
+    if verbose:
+        print('init benchmark', benchmark)
+    # sleep for 40 minutes if coldtime is not cold
     check_coldtime(40*60, avg_warmtime)
 
     if(verbose):
