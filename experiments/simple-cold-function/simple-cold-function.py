@@ -176,7 +176,7 @@ def check_coldtime(sleep: int, warmtime: float):
         if local_coldtime > (10 * avg_warmtime):
             benchmark = avg_warmtime * 10
         else:
-            benchmark = local_coldtime * 0.9
+            benchmark = local_coldtime * 0.8
 
         if(avg_warmtime > benchmark):
             check_coldtime(sleep+1200, avg_warmtime)
@@ -313,7 +313,7 @@ try:
     if coldtime > (10 * avg_warmtime):
         benchmark = avg_warmtime * 10
     else:
-        benchmark = coldtime * 0.9
+        benchmark = coldtime * 0.8
 
     if verbose:
         print('init benchmark', benchmark)
