@@ -600,11 +600,42 @@ def low_level_conccurent():
     c.end_experiment()
     # =====================================================================================
 
+def number_test():
+    db = database(dev_mode)
+    benchmarker = create_benchmarker('test distrubution of latencies', 'test distrubution of latencies')
+
+    iterations = 100
+    response_times = []
+
+    first_res = benchmarker.invoke_function(function_name='function1')
+    pprint(first_res)
+    print()
+
+    for i in range(100):
+        t1 = time.time()
+        res = lib.get_dict( benchmarker.invoke_function(function_name='function1') )
+        t2 = time.time()
+        response_times.append(
+            (i,res['execution_start']-res['invocation_start'],t2-t1)
+        )
+
+    response_times.sort(key=lambda x: x[1])
+    print('sorted after latency from responses')
+    print('index 0 latency:',response_times[0][1],'tuple:',response_times[0])
+    print('index 0 latency:',response_times[0][1],'tuple:',response_times[len(response_times)-1])
+    print('avg latency',reduce(lambda x,y: x+y[1],response_times)/iterations)
+    response_times.sort(key=lambda x: x[2])
+    print('sorted after local latency ')
+    print('index 0 latency:',response_times[0][2],'tuple:',response_times[0])
+    print('index 0 latency:',response_times[0][2],'tuple:',response_times[len(response_times)-1])
+    print('avg latency',reduce(lambda x,y: x+y[2],response_times)/iterations)
+  
     
-sequential_sanity_check()
-concurrent_sanity_check()
-test_monolith()
-db_interface_sanity_check()
+# sequential_sanity_check()
+# concurrent_sanity_check()
+# test_monolith()
+# db_interface_sanity_check()
+number_test()
 
 # only relevant if changes to concurrent implementation is made
 # low_level_conccurent()
