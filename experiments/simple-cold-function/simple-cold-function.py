@@ -151,40 +151,67 @@ def append_result(
 # =====================================================================================
 # The actual logic if the experiment
 
-def check_coldtime(sleep: int, warmtime: float):
+def find_benchmark():
+    from functools import reduce
+
+    iterations = 100
+    response_times = []
+
+    # should be a cold invocation
+    first_res = benchmarker.invoke_function(function_name='function3')
+    cold_latency = first_res['execution_start']-first_res['invocation_start']
+
+    if verbose:
+        print('first cold invocation:')
+        pprint(first_res)
+        print()
+
+    if verbose:
+        print(f'invoking function {iterations} times to find an average latency')
+
+    for i in range(iterations):
+        t1 = time.time()
+        res = lib.get_dict( benchmarker.invoke_function(function_name='function3') )
+        t2 = time.time()
+        time.sleep(1)
+        response_times.append(
+            (i, res['execution_start']-res['invocation_start'], t2-t1, res['instance_identifier'])
+        )
+
+    response_times.sort(key=lambda x: x[1])
+
+    sliced = response_times[20:80]
+
+    sliced_avg = reduce(lambda x,y: x+y[1],[0.0] + sliced)/len(sliced)
+
+    average_warmtime = sliced_avg * 2
+
+    if verbose:
+        print(f'found average {sliced_avg}, adjusted: {average_warmtime}')
+
+    return (cold_latency, sliced_avg, average_warmtime)
+
+def check_coldtime(sleep: int, coldtime: float):
     global benchmark
 
     if verbose:
-        print('check_coldtime', sleep, warmtime)
+        print('check_coldtime', sleep, coldtime)
 
-    if(warmtime * 1.2 < benchmark):
-        print(f'benchmark found: {benchmark}, with {warmtime} as warmtime')
+    if(coldtime > benchmark):
+        print(f'benchmark found: {benchmark}, with {coldtime} as coldtime')
         return
     elif(sleep > 7200):
         raise Exception(
             'Benchmark could not be established after 2 hours sleep_time')
     else:
         time.sleep(sleep)
-        res_dict = validate(invoke, 'initial coldtime reset')
-        local_coldtime = res_dict['execution_start'] - res_dict['invocation_start']
-
-        avg_warmtime = validate(lib.reduce_dict_by_keys, 
-                                'avg_warmtime reset', 
-                                (create_invocation_list((10, 'create invocation_list')), 
-                                ('execution_start', 'invocation_start')))
-
-        if local_coldtime > (10 * avg_warmtime):
-            benchmark = avg_warmtime * 10
-        else:
-            #  benchmark = local_coldtime * 0.8
-            benchmark = avg_warmtime * 1.75
-
-        if(avg_warmtime > benchmark):
-            check_coldtime(sleep+1200, avg_warmtime)
+        local_coldtime, avg_warmtime, benchmark = find_benchmark()
+        if(coldtime < benchmark):
+            check_coldtime(sleep+1200, coldtime)
     
     # Find the values for when coldtimes occure
 def set_cold_values():
-    global sleep_time, increment, granularity, latest_latency_time,large_increment,minute_increment
+    global sleep_time, increment, granularity, latest_latency_time, large_increment, minute_increment
     while(True):
         if time.time() - start_time > _timeout:
             print('ABORTING due to 30 hour time constraint from set_cold_values function\n')
@@ -299,29 +326,31 @@ def verify_result():
 
 try:
 
-    initial_cold_start_response = validate(invoke, 'initial coldtime')
-    coldtime = initial_cold_start_response['execution_start'] - initial_cold_start_response['invocation_start']
-    if verbose:
-        print('init coldtime', coldtime)
+    #  initial_cold_start_response = validate(invoke, 'initial coldtime')
+    #  coldtime = initial_cold_start_response['execution_start'] - initial_cold_start_response['invocation_start']
+    #  if verbose:
+        #  print('init coldtime', coldtime)
 
     # calculates avg. time for warm function, default is 5 invocations as input and keys execution_start - invocation_start
-    invo_list = create_invocation_list()
-    avg_warmtime = validate(lib.reduce_dict_by_keys, 
-                            'avg_warmtime',
-                            (invo_list, ('execution_start', 'invocation_start')) )
+    #  invo_list = create_invocation_list()
+    #  avg_warmtime = validate(lib.reduce_dict_by_keys, 
+                            #  'avg_warmtime',
+                            #  (invo_list, ('execution_start', 'invocation_start')) )
     
     # coldtime is adjusted by 10% to avoid coldtime being an outlier
     # openfaas sometimes has large variation in cold time
-    if coldtime > (10 * avg_warmtime):
-        benchmark = avg_warmtime * 10
-    else:
+    #  if coldtime > (10 * avg_warmtime):
+        #  benchmark = avg_warmtime * 10
+    #  else:
         #  benchmark = coldtime * 0.8
-        benchmark = avg_warmtime * 1.75
+        #  benchmark = avg_warmtime * 1.75
+
+    coldtime, avg_warmtime, benchmark = find_benchmark()
 
     if verbose:
         print('init benchmark', benchmark)
     # sleep for 40 minutes if coldtime is not cold
-    check_coldtime(40*60, avg_warmtime)
+    check_coldtime(40*60, coldtime)
 
     if(verbose):
         lib.dev_mode_print('Initial Coldtime ', [
