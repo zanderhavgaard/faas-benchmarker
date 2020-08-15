@@ -109,9 +109,7 @@ errors = []
 invoke_1_nested = [
         {
             "function_name": f"{experiment_name}-{nested_fx}",
-            "invoke_payload": {
-                "StatusCode": 200,
-            }
+            "invoke_payload": {}
         }
     ]
 # invoke function and return the result dict
@@ -171,7 +169,7 @@ def find_benchmark():
     response_times = []
 
     # should be a cold invocation
-    first_res = benchmarker.invoke_function(function_name='function3')
+    first_res = lib.get_dict(benchmarker.invoke_function(function_name='function3'))
     cold_latency = first_res['execution_start']-first_res['invocation_start']
 
     if verbose:
@@ -197,12 +195,13 @@ def find_benchmark():
 
     sliced_avg = reduce(lambda x,y: x+y[1],[0.0] + sliced)/len(sliced)
 
-    average_warmtime = sliced_avg * 2
+    benchmark = sliced_avg * 2 if sliced_avg > 0.22 else 1.0
 
     if verbose:
-        print(f'found average {sliced_avg}, adjusted: {average_warmtime}')
+        print(f'cold_latency:',cold_latency)
+        print(f'found average {sliced_avg}, benchmark: {benchmark}')
 
-    return (cold_latency, sliced_avg, average_warmtime)
+    return (cold_latency, sliced_avg, benchmark)
 
 def check_coldtime(sleep: int, coldtime: float):
     global benchmark
