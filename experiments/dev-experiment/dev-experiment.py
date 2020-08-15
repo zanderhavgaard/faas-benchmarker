@@ -601,40 +601,48 @@ def low_level_conccurent():
     # =====================================================================================
 
 def number_test():
+    from functools import reduce
+
     db = database(dev_mode)
-    benchmarker = create_benchmarker('test distrubution of latencies', 'test distrubution of latencies')
+    benchmarker = create_benchmarker('dev-experiment', 'test distrubution of latencies')
 
     iterations = 100
     response_times = []
 
-    first_res = benchmarker.invoke_function(function_name='function1')
+    first_res = benchmarker.invoke_function(function_name='function3')
     pprint(first_res)
     print()
 
-    for i in range(100):
+    for i in range(iterations):
         t1 = time.time()
-        res = lib.get_dict( benchmarker.invoke_function(function_name='function1') )
+        res = lib.get_dict( benchmarker.invoke_function(function_name='function3') )
         t2 = time.time()
+        time.sleep(1)
         response_times.append(
-            (i,res['execution_start']-res['invocation_start'],t2-t1)
+            (i, res['execution_start']-res['invocation_start'], t2-t1, res['instance_identifier'])
         )
 
     response_times.sort(key=lambda x: x[1])
+
+    sliced = response_times[20:80]
+
+    sliced_avg = reduce(lambda x,y: x+y[1],[0.0] + sliced)/len(sliced)
+
+    #  pprint(response_times)
+
+    print('\n','sliced avg',sliced_avg,'\n')
+
     print('sorted after latency from responses')
     print('index 0 latency:',response_times[0][1],'tuple:',response_times[0])
-    print('index 0 latency:',response_times[0][1],'tuple:',response_times[len(response_times)-1])
-    print('avg latency',reduce(lambda x,y: x+y[1],response_times)/iterations)
-    response_times.sort(key=lambda x: x[2])
-    print('sorted after local latency ')
-    print('index 0 latency:',response_times[0][2],'tuple:',response_times[0])
-    print('index 0 latency:',response_times[0][2],'tuple:',response_times[len(response_times)-1])
-    print('avg latency',reduce(lambda x,y: x+y[2],response_times)/iterations)
-  
+    print('index 99 latency:',response_times[len(response_times)-1][1],'tuple:',response_times[len(response_times)-1])
+    print('avg latency',reduce(lambda x,y: x+y[1],[0.0] + response_times)/iterations)
+
+    benchmarker.end_experiment()
     
-# sequential_sanity_check()
-# concurrent_sanity_check()
-# test_monolith()
-# db_interface_sanity_check()
+sequential_sanity_check()
+concurrent_sanity_check()
+test_monolith()
+db_interface_sanity_check()
 number_test()
 
 # only relevant if changes to concurrent implementation is made
