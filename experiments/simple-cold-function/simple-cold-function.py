@@ -70,7 +70,7 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function1'
+fx = 'function3'
 
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
@@ -158,8 +158,8 @@ def find_benchmark():
     response_times = []
 
     # should be a cold invocation
-    first_res = benchmarker.invoke_function(function_name='function3')
-    cold_latency = first_res['execution_start']-first_res['invocation_start']
+    first_res = lib.get_dict(benchmarker.invoke_function(function_name=fx))
+    cold_latency = first_res['execution_start'] - first_res['invocation_start']
 
     if verbose:
         print('first cold invocation:')
@@ -171,7 +171,7 @@ def find_benchmark():
 
     for i in range(iterations):
         t1 = time.time()
-        res = lib.get_dict( benchmarker.invoke_function(function_name='function3') )
+        res = lib.get_dict( benchmarker.invoke_function(function_name=fx) )
         t2 = time.time()
         time.sleep(1)
         response_times.append(
@@ -184,12 +184,13 @@ def find_benchmark():
 
     sliced_avg = reduce(lambda x,y: x+y[1],[0.0] + sliced)/len(sliced)
 
-    average_warmtime = sliced_avg * 2
+    benchmark = sliced_avg * 2 if sliced_avg > 0.22 else 1.0
 
     if verbose:
-        print(f'found average {sliced_avg}, adjusted: {average_warmtime}')
+        print(f'coldtime_latency: {cold_latency}')
+        print(f'found average {sliced_avg}, benchmark: {benchmark}')
 
-    return (cold_latency, sliced_avg, average_warmtime)
+    return (cold_latency, sliced_avg, benchmark)
 
 def check_coldtime(sleep: int, coldtime: float):
     global benchmark
