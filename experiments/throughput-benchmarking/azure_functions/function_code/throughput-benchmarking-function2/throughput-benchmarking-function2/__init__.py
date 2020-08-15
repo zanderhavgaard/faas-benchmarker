@@ -193,7 +193,7 @@ def get_time():
                 t1 = time.time()
                 ntp_response = ntpc.request(f'ntp{ntp_server_num}.cam.ac.uk')
                 t2 = time.time()
-                response_overhead = (t2 - t1) / 3
+                response_overhead = (t2 - t1) / 2
                 res = ntp_response.tx_time - total_overhead - response_overhead
                 return (res, total_overhead + response_overhead)
             except ntplib.NTPException:
