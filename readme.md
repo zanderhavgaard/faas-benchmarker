@@ -64,7 +64,6 @@ These are respectively `function1, function2, function3 & monolith`.
 Function 1 through 3 is an attempt at creating a generic 'lab' cloud function.
 The function* provide a parameterized interface for configuring invocations using JSON.
 The parameters are:
-- `StatusCode`: int, the statuscode for the invoker, must be 200.
 - `sleep`: float, amount of seconds the function should sleep.
 - `thoughput_time`: float, amount of seconds to do arbitrary computations.
 - `invoke_nested`: list, JSON list with parameters for invoking functions from within the invoked function.
