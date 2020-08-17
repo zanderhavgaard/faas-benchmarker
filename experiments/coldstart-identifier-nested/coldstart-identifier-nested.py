@@ -109,9 +109,9 @@ invoke_1_nested = [
         }
     ]
 # invoke function and return the result dict
-def invoke():
+def invoke(args:dict):
     response = benchmarker.invoke_function(function_name=fx,
-                                        function_args= {'invoke_nested': invoke_1_nested})
+                                        function_args= {'invoke_nested': args})
     if 'error' in response:
         return errors.append(response)
     nested_dict = response[list(response.keys())[1]]
@@ -125,11 +125,6 @@ def err_func(): return benchmarker.end_experiment()
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 
-
-# creates list of invocation dicts.
-# args: tuble(x,y) -> x=length_of_list, y=error_point_string
-create_invocation_list = lambda x=(5, 'create invocation_list'): [
-    validate(invoke, x[1]) for i in range(x[0])]
 
 # parse data that needs to be logged to database.
 def append_result(
@@ -181,7 +176,7 @@ try:
         time.sleep(sleep)
 
         # should be a cold invocation
-        first_res = lib.get_dict(benchmarker.invoke_function(function_name=fx))
+        first_res = validate(invoke, 'first invocation from find_cold_instance', invoke_1_nested)
         cold_latency = first_res['execution_start'] - first_res['invocation_start']
 
         if verbose:
@@ -194,7 +189,7 @@ try:
 
         for i in range(iterations):
             t1 = time.time()
-            res = lib.get_dict( benchmarker.invoke_function(function_name=fx) )
+            res = validate(invoke, 'invoking from warmtime baseline', invoke_1_nested)
             t2 = time.time()
             response_times.append(
                 (i, res['execution_start']-res['invocation_start'], t2-t1)
@@ -239,7 +234,7 @@ try:
                 sys.exit()
 
             time.sleep(sleep_time)
-            result_dict = validate(invoke,f'invoking function: {fx} from cold start experiment')
+            result_dict = validate(invoke,f'invoking function: {fx} from cold start experiment',invoke_1_nested)
             local_identifier = result_dict['instance_identifier'] 
 
             if(verbose):
@@ -287,12 +282,12 @@ try:
                 sys.exit()
                 
             time.sleep(sleep_time)
-            result_dict = validate(invoke, f'invoking function: {fx} from validation of cold start experiment')
+            result_dict = validate(invoke, f'invoking function: {fx} from validation of cold start experiment',invoke_1_nested)
             local_identifier = result_dict['instance_identifier']
 
             if(verbose):
                 lib.dev_mode_print(f'logging cold time: {latency_time > benchmark} -> coldtime exp', [
-                    ('experiment_uuid,result_dict[instance_identifier]',experiment_uuid, result_dict['instance_identifier']),
+                    ('experiment_uuid, result_dict[instance_identifier]',experiment_uuid, result_dict['instance_identifier']),
                     ('sleep_time / 60', int(sleep_time / 60)),
                     ('sleep_time % 60', int(sleep_time % 60)),
                     ('increment', increment),
@@ -320,8 +315,8 @@ try:
         # run one last time and log result as final or 
         time.sleep(sleep_time)
 
-        result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment')
-        identifier = result_dict['instance_identifier'] - result_dict['invocation_start']
+        result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment',invoke_1_nested)
+        identifier = result_dict['instance_identifier'] 
         if identifier == cold_identifier:
             # log final result
             append_result(
@@ -335,6 +330,7 @@ try:
             sleep_time += granularity
             cold_identifier = identifier
             verify_result()       
+
 
     #  RUN THE EXPERIMENT LOGIC
 

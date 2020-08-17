@@ -117,7 +117,7 @@ class OpenFaasProvider(AbstractProvider):
             asyncio.set_event_loop(loop)
             # was
             # loop = asyncio.get_event_loop()
-
+    
             tasks = [asyncio.ensure_future(self.invoke_wrapper(
                                            url=invoke_url,
                                            data=function_args if function_args != None else {},

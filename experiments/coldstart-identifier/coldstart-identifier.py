@@ -175,7 +175,7 @@ try:
         time.sleep(sleep)
 
         # should be a cold invocation
-        first_res = lib.get_dict(benchmarker.invoke_function(function_name=fx))
+        first_res = lib.get_dict(validate(invoke,'first invocation from find_cold_instance'))
         cold_latency = first_res['execution_start'] - first_res['invocation_start']
 
         if verbose:
@@ -188,7 +188,7 @@ try:
 
         for i in range(iterations):
             t1 = time.time()
-            res = lib.get_dict( benchmarker.invoke_function(function_name=fx) )
+            res =  lib.get_dict(validate(invoke,'invocation from warmtime baseline'))
             t2 = time.time()
             response_times.append(
                 (i, res['execution_start']-res['invocation_start'], t2-t1)
