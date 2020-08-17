@@ -169,7 +169,7 @@ def find_benchmark():
     response_times = []
 
     # should be a cold invocation
-    first_res = lib.get_dict(benchmarker.invoke_function(function_name='function3'))
+    first_res = lib.get_dict( validate(invoke, 'first invocation from find_cold_instance', invoke_1_nested)) 
     cold_latency = first_res['execution_start']-first_res['invocation_start']
 
     if verbose:
@@ -182,7 +182,7 @@ def find_benchmark():
 
     for i in range(iterations):
         t1 = time.time()
-        res = lib.get_dict( benchmarker.invoke_function(function_name='function3') )
+        res = lib.get_dict( validate(invoke, 'invoking for warmtime baseline', invoke_1_nested)) 
         t2 = time.time()
         time.sleep(1)
         response_times.append(
@@ -236,7 +236,7 @@ def set_cold_values():
             sys.exit()
 
         time.sleep(sleep_time)
-        result_dict = validate(invoke,f'invoking function: {fx} from cold start experiment')
+        result_dict = lib.get_dict( validate(invoke, 'first invocation from find_cold_instance', invoke_1_nested)) 
         latest_latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
         if(verbose):
@@ -288,7 +288,7 @@ def verify_result():
             sys.exit()
             
         time.sleep(sleep_time)
-        result_dict = validate(invoke, f'invoking function: {fx} from validation of cold start experiment')
+        result_dict = lib.get_dict( validate(invoke, 'invoking from verify_result', invoke_1_nested)) 
         latency_time = result_dict['execution_start'] - result_dict['invocation_start']
 
         if(verbose):
@@ -320,7 +320,7 @@ def verify_result():
     # run one last time and log result as final or 
     time.sleep(sleep_time)
 
-    result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment')
+    result_dict = lib.get_dict( validate(invoke,  f'invoking function: {fx} from final invocation of cold start experiment', invoke_1_nested))
     latency_time = result_dict['execution_start'] - result_dict['invocation_start']
     if latency_time > benchmark:
         # log final result
@@ -338,24 +338,6 @@ def verify_result():
 
 try:
 
-    #  initial_cold_start_response = validate(invoke, 'initial coldtime')
-    #  coldtime = initial_cold_start_response['execution_start'] - initial_cold_start_response['invocation_start']
-    #  if verbose:
-        #  print('init coldtime', coldtime)
-
-    # calculates avg. time for warm function, default is 5 invocations as input and keys execution_start - invocation_start
-    #  invo_list = create_invocation_list()
-    #  avg_warmtime = validate(lib.reduce_dict_by_keys, 
-                            #  'avg_warmtime',
-                            #  (invo_list, ('execution_start', 'invocation_start')) )
-    
-    # coldtime is adjusted by 10% to avoid coldtime being an outlier
-    # openfaas sometimes has large variation in cold time
-    #  if coldtime > (10 * avg_warmtime):
-        #  benchmark = avg_warmtime * 10
-    #  else:
-        #  benchmark = coldtime * 0.8
-        #  benchmark = avg_warmtime * 1.75
 
     coldtime, avg_warmtime, benchmark = find_benchmark()
 
