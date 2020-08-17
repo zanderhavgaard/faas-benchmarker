@@ -1,0 +1,7 @@
+azure-functions
+requests
+psutil
+arrow
+pandas
+numpy
+ntplib
