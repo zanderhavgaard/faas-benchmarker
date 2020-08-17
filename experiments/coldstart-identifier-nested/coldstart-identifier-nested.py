@@ -40,9 +40,9 @@ verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
 # out what the experiment does and what it attempts to test
 description = f"""
 {experiment_name}: This experiment tests the time it takes for
-a single function instance to no longer be available due to inactivity. 
-The experiment is conducted by first invoking a single function 11 times, 
-the first time to make sure that the function instane is created, the the following
+a single function instance to no longer be available due to inactivity in a lab-like
+setting. The experiment is conducted by first invoking a single function 11 times via another 
+function, the first time to make sure that the function instane is created, the the following
 10 times to create a baseline for a hot invocation so that it can be determined that the
 first was a coldstart.
 Then the function is invoked continually with increasing delay between invocations,
@@ -70,7 +70,8 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function3'
+fx = 'function1'
+nested_fx = 'function2'
 
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
@@ -101,13 +102,20 @@ errors = []
 # ======================================================================================
 # Convienience methods needed for this experiment
 
+invoke_1_nested = [
+        {
+            "function_name": f"{experiment_name}-{nested_fx}",
+            "invoke_payload": {}
+        }
+    ]
 # invoke function and return the result dict
-# if thread_numb > 1 it will be done concurrently and the result averaged
 def invoke():
-    response = lib.get_dict(
-        benchmarker.invoke_function(function_name=fx))
-    return response if 'error' not in response else errors.append(response)
-
+    response = benchmarker.invoke_function(function_name=fx,
+                                        function_args= {'invoke_nested': invoke_1_nested})
+    if 'error' in response:
+        return errors.append(response)
+    nested_dict = response[list(response.keys())[1]]
+    return nested_dict if 'error' not in nested_dict else errors.append(nested_dict)
 
 
 # the wrapper ends the experiment if any it can not return a valid value
@@ -157,8 +165,6 @@ def err_func(): benchmarker.end_experiment()
 # x = function to apply, y:str = context, z = arguments for x, if any
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
-
-
 
 # =====================================================================================
 
