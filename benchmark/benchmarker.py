@@ -276,9 +276,7 @@ class Benchmarker:
 
 
 def get_ntp_time():
-    # import time
     start = time.time()
-    # import ntplib
     ntpc = ntplib.NTPClient()
     retries = 0
     total_overhead = time.time() - start

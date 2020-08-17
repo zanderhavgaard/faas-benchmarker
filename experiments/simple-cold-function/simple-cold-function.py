@@ -100,6 +100,7 @@ results = []
 
 # sift away errors at runtime and report them later
 errors = []
+
 # ======================================================================================
 # Convienience methods needed for this experiment
 
@@ -215,7 +216,7 @@ def set_cold_values():
     global sleep_time, increment, granularity, latest_latency_time, large_increment, minute_increment
     while(True):
         if time.time() - start_time > _timeout:
-            print('ABORTING due to 30 hour time constraint from set_cold_values function\n')
+            print('ABORTING due to 24 hour time constraint from set_cold_values function\n')
             benchmarker.end_experiment()
             # log experiments specific results, hence results not obtainable from the generic Invocation object
             lib.log_experiment_specifics(experiment_name,
@@ -267,7 +268,7 @@ def verify_result():
     iter_count = 5 if not dev_mode else 2
     while(iter_count > 0):
         if time.time() - start_time > _timeout:
-            print('ABORTING due to 30 hour time constraint from varification loop\n')
+            print('ABORTING due to 24 hour time constraint from varification loop\n')
             benchmarker.end_experiment()
             # log experiments specific results, hence results not obtainable from the generic Invocation object
             lib.log_experiment_specifics(experiment_name,
