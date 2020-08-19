@@ -27,9 +27,9 @@ class SQL_Interface:
 
     
     def get_delay_between_experiment(self,provider:str,threaded:bool) -> int:
-        query = """SELECT minutes,seconds FROM Coldstart WHERE exp_id in 
-        (SELECT uuid FROM Experiment WHERE cl_provider='{0}') AND cold=True AND final=True 
-        AND multithreaded={1} ORDER BY id DESC LIMIT 1;""".format(provider,threaded)
+        query = f"""SELECT minutes,seconds FROM Coldstart WHERE exp_id in \ 
+        (SELECT uuid FROM Experiment WHERE cl_provider='{provider}') AND cold=True AND final=True \ 
+        AND threads { '> 1' if threaded else '= 1'} ORDER BY id DESC LIMIT 1;"""
         res = np.array(self.tunnel.retrive_query(query)).tolist()
         return res[0][0]*60+res[0][1] if res != [] and res != None else 16 * 60
     
