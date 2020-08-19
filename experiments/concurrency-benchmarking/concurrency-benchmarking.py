@@ -175,12 +175,6 @@ try:
                                 experiment_uuid, 
                                 len(errors), 
                                 db.log_exp_result([lib.dict_to_query(x,table) for x in results]))
-
-    if verbose:
-        print('printing queries')
-        for q in [lib.dict_to_query(x,table) for x in results]:
-            print(q)
-            print()
         
 
 except Exception as e:

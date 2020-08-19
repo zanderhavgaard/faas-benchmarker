@@ -70,8 +70,8 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function1'
-nested_fx = 'function2'
+fx = 'function2'
+nested_fx = 'function3'
 
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
@@ -108,8 +108,11 @@ invoke_1_nested = [
             "invoke_payload": {}
         }
     ]
+
 # invoke function and return the result dict
 def invoke(args:dict):
+    print('args',args)
+    print('fx',fx)
     response = benchmarker.invoke_function(function_name=fx,
                                         function_args= {'invoke_nested': args})
     if 'error' in response:

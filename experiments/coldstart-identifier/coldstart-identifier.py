@@ -70,7 +70,7 @@ table = 'Coldstart'
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3)
-fx = 'function3'
+fx = 'function1'
 
 # sleep for 15 minutes to ensure coldstart
 if not dev_mode:
@@ -82,11 +82,11 @@ start_time = time.time()
 
 
 # time to sleep in between invocations, start at 5 minutes
-sleep_time = 60
+sleep_time = 300
 # increment for each iteration
 increment = sleep_time
 # granularity of result
-granularity = 20
+granularity = 10
 # value for last response latency
 cold_identifier = None
 # flags for controlling granularity of sleep value
@@ -175,7 +175,7 @@ try:
         time.sleep(sleep)
 
         # should be a cold invocation
-        first_res = lib.get_dict(validate(invoke,'first invocation from find_cold_instance'))
+        first_res = validate(invoke,'first invocation from find_cold_instance')
         cold_latency = first_res['execution_start'] - first_res['invocation_start']
 
         if verbose:
@@ -188,7 +188,7 @@ try:
 
         for i in range(iterations):
             t1 = time.time()
-            res =  lib.get_dict(validate(invoke,'invocation from warmtime baseline'))
+            res =  validate(invoke,'invocation from warmtime baseline')
             t2 = time.time()
             response_times.append(
                 (i, res['execution_start']-res['invocation_start'], t2-t1)
@@ -251,6 +251,12 @@ try:
             elif large_increment:   
                 sleep_time -= increment
                 large_increment = False
+                increment = 60
+                sleep_time += increment 
+                cold_identifier = local_identifier
+            elif minute_increment:
+                sleep_time -= increment
+                minute_increment = False
                 increment = granularity
                 sleep_time += increment 
                 cold_identifier = local_identifier
