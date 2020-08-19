@@ -17,7 +17,7 @@ def handle(req):
     invocation_uuid = str(uuid.uuid4())
 
     # unique name of this function
-    function_name = 'function2'
+    function_name = 'function3'
 
     # whoami?
     identifier = f'{function_name}-{invocation_uuid}'
