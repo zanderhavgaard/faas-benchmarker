@@ -111,13 +111,12 @@ invoke_1_nested = [
 
 # invoke function and return the result dict
 def invoke(args:dict):
-    print('args',args)
-    print('fx',fx)
     response = benchmarker.invoke_function(function_name=fx,
                                         function_args= {'invoke_nested': args})
     if 'error' in response:
         return errors.append(response)
     nested_dict = response[list(response.keys())[1]]
+    pprint(nested_dict)
     return nested_dict if 'error' not in nested_dict else errors.append(nested_dict)
 
 
@@ -138,7 +137,6 @@ def append_result(
                 cold,
                 final,
                 multithreaded=False) -> None:
-    global benchmark
 
     results.append({
         'exp_id': experiment_uuid,
@@ -147,7 +145,7 @@ def append_result(
         'seconds': seconds,
         'granularity': granularity,
         'threads':1,
-        'benchmark': benchmark,
+        'benchmark': 0.0,
         'cold': cold,
         'final': final
         })
@@ -289,7 +287,7 @@ try:
             local_identifier = result_dict['instance_identifier']
 
             if(verbose):
-                lib.dev_mode_print(f'logging cold time: {latency_time > benchmark} -> coldtime exp', [
+                lib.dev_mode_print(f'logging cold time: {local_identifier != cold_identifier} -> coldtime exp', [
                     ('experiment_uuid, result_dict[instance_identifier]',experiment_uuid, result_dict['instance_identifier']),
                     ('sleep_time / 60', int(sleep_time / 60)),
                     ('sleep_time % 60', int(sleep_time % 60)),
