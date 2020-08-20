@@ -31,7 +31,7 @@ class SQL_Interface:
         (SELECT uuid FROM Experiment WHERE cl_provider='{provider}') AND cold=True AND final=True \ 
         AND threads { '> 1' if threaded else '= 1'} ORDER BY id DESC LIMIT 1;"""
         res = np.array(self.tunnel.retrive_query(query)).tolist()
-        return res[0][0]*60+res[0][1] if res != [] and res != None else 16 * 60
+        return res[0][0]*60+res[0][1] if res != [] and res != None else 20 * 60
     
     def get_most_recent_from_table(self, table:str, args: str = '*', flag: bool = True) -> list:
         query = 'SELECT {0} from {1} where exp_id=(select max(id) from Experiment) ORDER BY id DESC LIMIT 1;'.format(args,table)
