@@ -141,7 +141,7 @@ def append_result(
         'seconds': seconds,
         'granularity': granularity,
         'threads':1,
-        'benchmark': benchmark,
+        'benchmark': 0.0,
         'cold': cold,
         'final': final
         })
@@ -291,7 +291,7 @@ try:
             local_identifier = result_dict['instance_identifier']
 
             if(verbose):
-                lib.dev_mode_print(f'logging cold time: {latency_time > benchmark} -> coldtime exp', [
+                lib.dev_mode_print(f'logging cold time: {local_identifier != cold_identifier} -> coldtime exp', [
                     ('experiment_uuid,result_dict[instance_identifier]',experiment_uuid, result_dict['instance_identifier']),
                     ('sleep_time / 60', int(sleep_time / 60)),
                     ('sleep_time % 60', int(sleep_time % 60)),
