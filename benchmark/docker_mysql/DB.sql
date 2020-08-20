@@ -112,6 +112,7 @@ CREATE TABLE IF NOT EXISTS `Error` (
   `invocation_end` DOUBLE DEFAULT 0.0 NOT NULL,
   `execution_total` DOUBLE DEFAULT 0.0,
   `invocation_total` DOUBLE DEFAULT 0.0,
+  `invocation_ntp_diff` DOUBLE DEFAULT 0.0,
   PRIMARY KEY (id),
   FOREIGN KEY (exp_id) REFERENCES Experiment(uuid) ON DELETE CASCADE
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1;
