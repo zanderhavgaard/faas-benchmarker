@@ -268,7 +268,7 @@ try:
                 return
 
     def verify_result():
-        global sleep_time, granularity
+        global sleep_time, granularity, cold_identifier
         # variefy that result is valid by using same sleeptime between invocations 5 times
         iter_count = 5 if not dev_mode else 2
         while(iter_count > 0):

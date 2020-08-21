@@ -92,6 +92,7 @@ cold_identifier = None
 # flags for controlling granularity of sleep value
 large_increment = True
 minute_increment = True
+benchmark = 0.0
 
 # results specific gathered and logged from logic of this experiment
 results = []
@@ -272,7 +273,7 @@ try:
                 return
 
     def verify_result():
-        global sleep_time, granularity
+        global sleep_time, granularity, cold_identifier
         # variefy that result is valid by using same sleeptime between invocations 5 times
         iter_count = 5 if not dev_mode else 2
         while(iter_count > 0):
