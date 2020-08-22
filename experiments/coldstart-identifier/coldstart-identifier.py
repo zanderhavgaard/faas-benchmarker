@@ -322,7 +322,7 @@ try:
         time.sleep(sleep_time)
 
         result_dict = validate(invoke, f'invoking function: {fx} from final invocation of cold start experiment')
-        identifier = result_dict['instance_identifier'] - result_dict['invocation_start']
+        identifier = result_dict['instance_identifier']
         if identifier == cold_identifier:
             # log final result
             append_result(
