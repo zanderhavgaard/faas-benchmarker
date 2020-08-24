@@ -159,7 +159,7 @@ def find_benchmark():
     response_times = []
 
     # should be a cold invocation
-    first_res = lib.get_dict(benchmarker.invoke_function(function_name=fx))
+    first_res = validate(invoke,'first_res in find_benchmark')
     cold_latency = first_res['execution_start'] - first_res['invocation_start']
 
     if verbose:
@@ -172,7 +172,7 @@ def find_benchmark():
 
     for i in range(iterations):
         t1 = time.time()
-        res = lib.get_dict( benchmarker.invoke_function(function_name=fx) )
+        res = validate(invoke,f'number {i} in warm_time baseline')
         t2 = time.time()
         time.sleep(1)
         response_times.append(

@@ -82,6 +82,7 @@ class OpenFaasProvider(AbstractProvider):
 
                     except aiohttp.ClientConnectionError:
                         errors += 1
+                
 
                     except Exception as e:
                         errors += 1
