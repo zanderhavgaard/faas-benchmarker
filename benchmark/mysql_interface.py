@@ -180,6 +180,11 @@ class SQL_Interface:
      
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
+    
+    def get_raw_query(self,query:str, flag:bool = True):
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res).tolist()
+
         
 
 
