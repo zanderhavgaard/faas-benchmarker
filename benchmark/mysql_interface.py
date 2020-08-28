@@ -126,6 +126,14 @@ class SQL_Interface:
         query = 'select * from Error;'
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
+    
+    def get_latest_metadata_by_experiment(self, experiment_name:str):
+        query = f"""select cl_provider,uuid from (select uuid,max(id),cl_provider from Experiment where name='{experiment_name}' 
+                group by cl_provider order by cl_provider) x;"""
+        res = self.tunnel.retrive_query(query)
+        return np.array(res).tolist()
+
+
 
     # ========================================================================================================
     # coldstart experiment specific
