@@ -65,6 +65,16 @@ class GraphGenerater():
                 plot.savefig(f'{self.dir_path}/{ndir}/{"_".join([typep]+name.split())}.png')
         
         plt.clf()
+    
+    def save_table(df, description):
+        if self.dev_mode:
+            print(df.to_latex(index=False))
+        else:
+            with open(f'{self.dir_path}-tables.txt', 'w') as f:
+                f.write(f'\n -- New table --\n')
+                f.write(f'{description}\n')
+                f.write(df.to_latex(index=False))
+                f.write('\n')
 
     
 
@@ -126,6 +136,7 @@ class GraphGenerater():
                     palette= config['palette'] if 'palette' in config else None,
                     hue_order= config['hue_order'] if 'hue_order' in config else None,
                     markers= config['markers'] if 'markers' in config else None,
+                    alpha= config['alpha'] if 'alpha' in config else None,
                     data= data)
         if 'xlabel' in config:
             plt.xlabel(config['xlabel'][0], size=config['xlabel'][1])
@@ -170,6 +181,7 @@ class GraphGenerater():
     ###########################
     # --> Categorial plots <--#
     ###########################
+    
     def cat_plot(self, data, config:dict, name:str, ndir:str, h_size=20):
         # if (not self.dev_mode) and (not os.path.exists(f'{self.dir_path}/{ndir}')):
         #     os.mkdir(f'{self.dir_path}/{ndir}')
@@ -223,6 +235,7 @@ class GraphGenerater():
                     palette= config['palette'] if 'palette' in config else None,
                     jitter= config['jitter'] if 'jitter' in config else False,
                     hue_order= config['hue_order'] if 'hue_order' in config else None,
+                    alpha= config['alpha'] if 'alpha' in config else None,
                     data= data)
         
         if 'xlabel' in config:
@@ -647,6 +660,8 @@ class GraphGenerater():
     
         self.save_figure(config,plot,name,ndir,'dynamicplot')
         
+    
+    
         
 
         
