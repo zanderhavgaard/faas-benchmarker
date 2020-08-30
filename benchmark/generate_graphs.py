@@ -27,13 +27,13 @@ db = database(True)
 gg = GraphGenerater(name_of_report, dev_mode)
 
 # meta coloring and order for produced graphs
-hue_order = ['OpenFaaS','AWS Lambda','Azure Functions']
+hue_order = ['openfaas','aws_lambda','azure_functions']
 
-provider_color_dict = {'OpenFaaS': '#2316deff',
-                    'AWS Lambda':'#ff8c00ff',
-                    'Azure Functions': '#ffd700ff',
+provider_color_dict = {'openfaas': '#2316deff',
+                    'aws_lambda':'#ff8c00ff',
+                    'azure_functions': '#ffd700ff',
                     }
-print('test',provider_color_dict['AWS Lambda'])
+
 colors = {
     'light_gray': '#708090ff',
     'blue': '#191970ff'
@@ -225,10 +225,8 @@ def large_function(ldir:str, devmode:bool):
     open_df = db.get_raw_query(query_by_provider(experiment_uuids['openfaas']))
     azure_df = db.get_raw_query(query_by_provider(experiment_uuids['azure_functions']))
     joint_df = pd.concat([aws_df,open_df,azure_df])
+    
 
-    # copy_aws_linear_df = aws_linear_df.copy(deep=True)  
-    # copy_aws_linear_df['instance_id'] = copy_aws_linear_df.instance_id.map(lambda x: int(abs(int(hash(x)))/10000000000000000))
-    # gg.strip_plot(copy_aws_linear_df,config,' AWS latency per function_instance',directory)
 
 
        
@@ -236,6 +234,8 @@ def large_function(ldir:str, devmode:bool):
         'x': 'function_name',
         'y': 'latency',
         'hue': 'provider',
+        'palette': provider_color_dict,
+        'hue_order': hue_order,
         'ylabel': ('Latency in seconds',12),
         'xlabel': ('Function name',12),
         'markers': ['o','s','v'],
@@ -272,7 +272,7 @@ def large_function(ldir:str, devmode:bool):
 
     # open_avg = open_df.groupby('function_name')['latency'].sum()
     # azure_avg = azure_df.groupby('function_name')['latency'].sum()
-    # data = {'provider': ['AWS Lambda','OpenFaaS','Azure Functions'],
+    # data = {'provider': ['aws_lambda','openfaas','azure_functions'],
     #         'reg_func': [aws_avg[0]/len(aws_df),open_avg[0]/len(open_df),azure_avg[0]/len(azure_df)],
     #         'monolith':  [aws_avg[1]/len(aws_df),open_avg[1]/len(open_df),azure_avg[1]/len(azure_df)]}
     # df = pd.DataFrame(data)
@@ -283,16 +283,16 @@ def large_function(ldir:str, devmode:bool):
     # print(avg_latency)
     # pprint(aws_sum)
 # ------------------------------------------------------------------------------------------
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
-    config['hue_order'] = ['AWS Lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
+    config['hue_order'] = ['aws_lambda']
     config['markers'] = ['s']
     gg.swarm_plot(aws_df, config, 'AWS latency small vs large function',directory)
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
-    config['hue_order'] = ['OpenFaaS']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
+    config['hue_order'] = ['openfaas']
     config['markers'] = ['o']
     gg.swarm_plot(open_df, config, 'OpenFaaS latency small vs large function',directory)
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
-    config['hue_order'] = ['Azure Functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
+    config['hue_order'] = ['azure_functions']
     config['markers'] = ['v']
     gg.swarm_plot(azure_df, config, 'Azure latency small vs large function',directory)
 
@@ -411,7 +411,7 @@ def coldtimes_graphs(ldir:str, devmode:bool):
         'y': 'latency',
         'hue': 'provider',
         'palette': provider_color_dict,
-        'hue_order': ['AWS Lambda'],
+        'hue_order': ['aws_lambda'],
         'ylabel': ('latency in seconds',12),
         'xlabel': ('Cold time vs warm time',12),
         'markers': ['s'],
@@ -425,10 +425,10 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     }
 
     gg.box_plot(aws_linear_df, config, 'AWS cold times distribution',directory)
-    config['hue_order'] = ['OpenFaaS']
+    config['hue_order'] = ['openfaas']
     config['markers'] = ['o']
     gg.box_plot(open_linear_df, config, 'OpenFaaS cold times distribution',directory)
-    config['hue_order'] = ['Azure Functions']
+    config['hue_order'] = ['azure_functions']
     config['markers'] = ['v']
     gg.box_plot(azure_linear_df, config, 'Azure cold times distribution',directory)
 
@@ -453,16 +453,16 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     gg.scatter_plot(joint_linear_df,config,'Latency relative to invocation start',directory,18)
 
     open_linear_df.loc[(open_linear_df.latency > 10.0 ),'latency']=3.00
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
     gg.scatter_plot(aws_linear_df,config,' AWS latency relative to invocation start',directory,18)
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
     gg.scatter_plot(open_linear_df,config,' OpenFaaS latency relative to invocation start',directory,18)
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['v']
     gg.scatter_plot(azure_linear_df,config,'Azure latency relative to invocation start',directory,18)
 
@@ -483,9 +483,9 @@ def coldtimes_graphs(ldir:str, devmode:bool):
         'line_kws':{'color':colors['light_gray']},
     }
 
-    aws = np.array(aws_linear_df['cold'].value_counts()).tolist()+['AWS Lambda']
-    openf = np.array(open_linear_df['cold'].value_counts()).tolist()+['OpenFaaS']
-    azure = np.array(azure_linear_df['cold'].value_counts()).tolist()+['Azure Functions']
+    aws = np.array(aws_linear_df['cold'].value_counts()).tolist()+['aws_lambda']
+    openf = np.array(open_linear_df['cold'].value_counts()).tolist()+['openfaas']
+    azure = np.array(azure_linear_df['cold'].value_counts()).tolist()+['azure_functions']
     zipped = list(zip(aws,openf,azure))
     data = {'provider': zipped[2], 'cold': zipped[1],'warm': zipped[0]}
     df = pd.DataFrame(data)
@@ -500,16 +500,24 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     config['y'] = 'latency'
     config['xlabel'] = ('Function instance',12)
     config['ylabel'] = ('Latency in seconds',12)
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
+    config['markers'] = ['s']
     
     copy_aws_linear_df = aws_linear_df.copy(deep=True)  
     copy_aws_linear_df['instance_id'] = copy_aws_linear_df.instance_id.map(lambda x: int(abs(int(hash(x)))/10000000000000000))
     gg.strip_plot(copy_aws_linear_df,config,' AWS latency per function instance',directory)
 
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
+    config['markers'] = ['o']
     copy_open_linear_df = open_linear_df.copy(deep=True)  
     copy_open_linear_df['instance_id'] = copy_open_linear_df.instance_id.map(lambda x: int(abs(int(hash(x)))/10000000000000000))
     gg.strip_plot(copy_open_linear_df,config,'OpenFaaS latency per function instance',directory)
 
-
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
+    config['markers'] = ['v']
     copy_azure_linear_df = azure_linear_df.copy(deep=True)  
     copy_azure_linear_df['instance_id'] = copy_azure_linear_df.instance_id.map(lambda x: int(abs(int(hash(x)))/10000000000000000))
     gg.strip_plot(copy_azure_linear_df,config,'Azure latency per function instance',directory)
@@ -537,16 +545,16 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     'line_kws':{'color':colors['light_gray']},
     }
 
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
     gg.box_plot(aws_linear_nested_df, config, 'AWS cold times distribution: nested',directory)
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
     gg.box_plot(open_linear_nested_df, config, 'OpenFaaS cold times distribution: nested',directory)
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['v']
     gg.box_plot(azure_linear_nested_df, config, 'Azure cold times distribution: nested',directory)
 
@@ -572,16 +580,16 @@ def coldtimes_graphs(ldir:str, devmode:bool):
 
 
     open_linear_nested_df.loc[(open_linear_nested_df.latency > 3.0 ),'latency']=3.00
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
     gg.scatter_plot(aws_linear_nested_df,config,' AWS latency relative to invocation start: nested',directory,18)
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
     gg.scatter_plot(open_linear_nested_df,config,' OpenFaaS latency relative to invocation start: nested',directory,18)
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['v']
     gg.scatter_plot(azure_linear_nested_df,config,'Azure latency relative to invocation start: nested',directory,18)
 
@@ -603,9 +611,9 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     }
 
 
-    aws = np.array(aws_linear_nested_df['cold'].value_counts()).tolist()+['AWS Lambda']
-    openf = np.array(open_linear_nested_df['cold'].value_counts()).tolist()+['OpenFaaS']
-    azure = np.array(azure_linear_nested_df['cold'].value_counts()).tolist()+['Azure Functions']
+    aws = np.array(aws_linear_nested_df['cold'].value_counts()).tolist()+['aws_lambda']
+    openf = np.array(open_linear_nested_df['cold'].value_counts()).tolist()+['openfaas']
+    azure = np.array(azure_linear_nested_df['cold'].value_counts()).tolist()+['azure_functions']
     zipped = list(zip(aws,openf,azure))
     data = {'provider': zipped[2], 'cold': zipped[1],'warm': zipped[0]}
     df = pd.DataFrame(data)
@@ -624,25 +632,25 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     
     copy_aws_linear_nested_df = aws_linear_nested_df.copy(deep=True)  
     copy_aws_linear_nested_df['instance_id'] = copy_aws_linear_nested_df.instance_id.map(lambda x: int(abs(int(hash(x)))/10000000000000000))
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
-    gg.strip_plot(copy_aws_linear_nested_df,config,' AWS latency per function_instance: nested',directory)
+    gg.strip_plot(copy_aws_linear_nested_df,config,' AWS latency per function instance: nested',directory)
 
     copy_open_linear_nested_df = open_linear_nested_df.copy(deep=True)  
     open_linear_nested_df['instance_id'] = copy_open_linear_nested_df.instance_id.map(lambda x: int(abs(int(hash(x)))/10000000000000000))
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
-    gg.strip_plot(copy_open_linear_nested_df,config,'OpenFaaS latency per function_instance: nested',directory)
+    gg.strip_plot(copy_open_linear_nested_df,config,'OpenFaaS latency per function instance: nested',directory)
 
 
     copy_azure_linear_nested_df = azure_linear_nested_df.copy(deep=True)  
     copy_azure_linear_nested_df['instance_id'] = copy_azure_linear_nested_df.instance_id.map(lambda x: int(abs(int(hash(x)))/10000000000000000))
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['v']
-    gg.strip_plot(copy_azure_linear_nested_df,config,'Azure latency per function_instance: nested',directory)
+    gg.strip_plot(copy_azure_linear_nested_df,config,'Azure latency per function instance: nested',directory)
 
 #########################
 # --> load-scenario <-- #
@@ -669,9 +677,9 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     
     gg.bar_plot(joint_error_df,config,'error by provider for load-scenario: pyramid',directory,18)
 
-    aws = np.array(aws_pyramid_df['cold'].value_counts()).tolist()+['AWS Lambda']
-    openf = np.array(open_pyramid_df['cold'].value_counts()).tolist()+['OpenFaaS']
-    azure = np.array(azure_pyramid_df['cold'].value_counts()).tolist()+['Azure Functions']
+    aws = np.array(aws_pyramid_df['cold'].value_counts()).tolist()+['aws_lambda']
+    openf = np.array(open_pyramid_df['cold'].value_counts()).tolist()+['openfaas']
+    azure = np.array(azure_pyramid_df['cold'].value_counts()).tolist()+['azure_functions']
     zipped = list(zip(aws,openf,azure))
     data = {'provider': zipped[2], 'cold': zipped[1],'warm': zipped[0]}
     df = pd.DataFrame(data)
@@ -719,6 +727,7 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     config = {
         'x': 'invocation_start',
         'y': 'latency',
+        'hue': 'provider',
         'ylabel': ('Latency in seconds',12),
         'xlabel': ('Invocation start time',12),
         'fit_reg': False,
@@ -728,16 +737,16 @@ def coldtimes_graphs(ldir:str, devmode:bool):
         'line_kws':{'color':colors['light_gray']},
     }
 
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
     gg.lm_plot(aws_pyramid_df, config, 'AWS latency: pyramid', directory)
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
     gg.lm_plot(open_pyramid_df, config, 'OpenFaaS latency: pyramid', directory)
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['v']
     gg.lm_plot(azure_pyramid_df, config, 'Azure latency: pyramid', directory)
    
@@ -751,6 +760,7 @@ def coldtimes_graphs(ldir:str, devmode:bool):
         'palette': provider_color_dict,
         'hue_order': hue_order,
         'markers': ['o','s','v'],
+        'fit_reg': False,
         # 'hist':True,
         # 'kde': False,
         # 'height': 4,
@@ -786,7 +796,7 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     azure_cold_times = reduce(lambda x,y: x+y[1],[0]+list(azure_count.items()))
     # print(azure_count,'\n')
 
-    data = {'provider': ['AWS Lambda','OpenFaaS','Azure Functions'],
+    data = {'provider': ['aws_lambda','openfaas','azure_functions'],
             'cold_start': [aws_cold_starts,open_cold_starts,azure_cold_starts],
             'cold_times': [aws_cold_times,open_cold_times,azure_cold_times]}
     df = pd.DataFrame(data)
@@ -837,9 +847,9 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     
     gg.bar_plot(joint_error_spike_df,config,'Error by provider for load-scenario: spikes',directory,18)
 
-    aws = np.array(aws_spike_df['cold'].value_counts()).tolist()+['Aws Lambda']
-    openf = np.array(open_spike_df['cold'].value_counts()).tolist()+['OpenFaaS']
-    azure = np.array(azure_spike_df['cold'].value_counts()).tolist()+['Azure Functions']
+    aws = np.array(aws_spike_df['cold'].value_counts()).tolist()+['aws_lambda']
+    openf = np.array(open_spike_df['cold'].value_counts()).tolist()+['openfaas']
+    azure = np.array(azure_spike_df['cold'].value_counts()).tolist()+['azure_functions']
     zipped = list(zip(aws,openf,azure))
     data = {'provider': zipped[2], 'cold': zipped[1],'warm': zipped[0]}
     df = pd.DataFrame(data)
@@ -887,6 +897,7 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     config = {
         'x': 'invocation_start',
         'y': 'latency',
+        'hue': 'provider',
         'ylabel': ('Latency in seconds',12),
         'xlabel': ('Invocation start time',12),
         'fit_reg': False,
@@ -896,16 +907,16 @@ def coldtimes_graphs(ldir:str, devmode:bool):
         'line_kws':{'color':colors['light_gray']},
     }
 
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
     gg.lm_plot(aws_spike_df, config, 'AWS latency: spikes', directory)
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
     gg.lm_plot(open_spike_df, config, 'OpenFaaS latency: spikes', directory)
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['v']
     gg.lm_plot(azure_spike_df, config, 'Azure latency: spikes', directory)
     config['hue_order'] = hue_order
@@ -956,7 +967,7 @@ def coldtimes_graphs(ldir:str, devmode:bool):
     azure_cold_times = reduce(lambda x,y: x+y[1],[0]+list(azure_count.items()))
     # print(azure_count,'\n')
 
-    data = {'provider': ['AWS Lambda','OpenFaaS','Azure Functions'],
+    data = {'provider': ['aws_lambda','openfaas','azure_functions'],
             'cold_start': [aws_cold_starts,open_cold_starts,azure_cold_starts],
             'cold_times': [aws_cold_times,open_cold_times,azure_cold_times]}
     df = pd.DataFrame(data)
@@ -1055,16 +1066,16 @@ def throughput_graphs(directory:str, devmode:bool ):
     gg.lm_plot(all_invo_df,config,'Ops per second: all',directory)
     
     # for appendix
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
     gg.lm_plot(pd.concat([aws_invo_single_df,aws_invo_multi_df]),config,'AWS ops per second: all',directory )
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
     gg.lm_plot(pd.concat([open_invo_single_df,open_invo_multi_df]),config,'OpenFaaS ops per second: all',directory )
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['v']
     gg.lm_plot(pd.concat([azure_invo_single_df,azure_invo_multi_df]),config,'Azure ops per second: all',directory )
 
@@ -1076,8 +1087,17 @@ def throughput_graphs(directory:str, devmode:bool ):
     gg.lm_plot(joined_single_df,config,'Ops per second mapped to latency: sequential  ',directory)
     gg.lm_plot(joined_multi_df,config,'Ops per second mapped to latency: concurrent',directory)
     gg.lm_plot(all_invo_df,config,'Ops per second mapped to latency: all',directory)
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
+    config['markers'] = ['s']
     gg.lm_plot(pd.concat([aws_invo_single_df,aws_invo_multi_df]),config,'AWS ops per second mapped to latency: all',directory)
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
+    config['markers'] = ['o']
     gg.lm_plot(pd.concat([open_invo_single_df,open_invo_multi_df]),config,'OpenFaaS ops per second mapped to latency: all',directory)
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
+    config['markers'] = ['v']
     gg.lm_plot(pd.concat([azure_invo_single_df,azure_invo_multi_df]),config,'Azure ops per second mapped to latency: all',directory)
 
     # for appendix - no correlation found for latency
@@ -1160,16 +1180,16 @@ def throughput_graphs(directory:str, devmode:bool ):
     config['y_strip'] = 'running_time_matrix'
     config['bins'] = 30
 
-    config['hue_order'] = ['AWS Lambda']
-    config['palette'] = {'AWS Lambda':provider_color_dict['AWS Lambda']}
+    config['hue_order'] = ['aws_lambda']
+    config['palette'] = {'aws_lambda':provider_color_dict['aws_lambda']}
     config['markers'] = ['s']
     gg.box_plot(pd.concat([aws_monolith_df,aws_monolith_multi_df]),config,'AWS Time for matrix calc: all',directory)
-    config['hue_order'] = ['OpenFaaS']
-    config['palette'] = {'OpenFaaS':provider_color_dict['OpenFaaS']}
+    config['hue_order'] = ['openfaas']
+    config['palette'] = {'openfaas':provider_color_dict['openfaas']}
     config['markers'] = ['o']
     gg.box_plot(pd.concat([open_monolith_df,open_monolith_multi_df]),config,'OpenFaaS Time for matrix calc: all',directory)
-    config['hue_order'] = ['Azure Functions']
-    config['palette'] = {'Azure Functions':provider_color_dict['Azure Functions']}
+    config['hue_order'] = ['azure_functions']
+    config['palette'] = {'azure_functions':provider_color_dict['azure_functions']}
     config['markers'] = ['s']
     gg.box_plot(pd.concat([azure_monolith_df,azure_monolith_multi_df]),config,'azure Time for matrix calc: all',directory)
     config['hue_order'] = hue_order
@@ -1230,11 +1250,11 @@ def test(directory:str, dev_mode:bool):
     db = database(True)
     gg = GraphGenerater('report',dev_mode)
 
-    hue_order = ['OpenFaaS','AWS Lambda','Azure Functions']
+    hue_order = ['openfaas','aws_lambda','azure_functions']
 
-    provider_color_dict = dict({'AWS Lambda':'#ff8c00ff',
-                        'Azure Functions': '#ffd700ff',
-                        'OpenFaaS': '#2316deff',
+    provider_color_dict = dict({'aws_lambda':'#ff8c00ff',
+                        'azure_functions': '#ffd700ff',
+                        'openfaas': '#2316deff',
                         })
 
 

@@ -41,8 +41,8 @@ class GraphGenerater():
         if (not dev_mode) and (not os.path.exists(env_path)):
             os.mkdir(env_path)
 
-        self.report_dir = f'-{dir_name}'
-        self.dir_path = f'{env_path}-{dir_name}'
+        self.report_dir = f'{dir_name}'
+        self.dir_path = f'{env_path}/{dir_name}'
      
         if (not dev_mode) and (not os.path.exists(self.dir_path)):
             os.mkdir(self.dir_path)
