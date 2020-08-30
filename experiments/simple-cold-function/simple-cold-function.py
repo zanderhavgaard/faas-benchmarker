@@ -193,6 +193,8 @@ def find_benchmark():
 
     return (cold_latency, sliced_avg, benchmark)
 
+    
+
 def check_coldtime(sleep: int, coldtime: float):
     global benchmark
 

@@ -128,10 +128,13 @@ class SQL_Interface:
         return res if flag else np.array(res).tolist()
     
     def get_latest_metadata_by_experiment(self, experiment_name:str):
-        query = f"""select cl_provider,uuid from (select uuid,max(id),cl_provider from Experiment where name='{experiment_name}' 
-                group by cl_provider order by cl_provider) x;"""
-        res = self.tunnel.retrive_query(query)
-        return np.array(res).tolist()
+        from pprint import pprint
+        aws_df = self.tunnel.retrive_query(f"""select cl_provider,uuid from Experiment where name = '{experiment_name}' and cl_provider = 'aws_lambda' order by id desc limit 1;""") 
+        open_df = self.tunnel.retrive_query(f"""select cl_provider,uuid from Experiment where name = '{experiment_name}' and cl_provider = 'openfaas' order by id desc limit 1; """)
+        azure_df = self.tunnel.retrive_query(f"""select cl_provider,uuid from Experiment where name = '{experiment_name}' and cl_provider = 'azure_functions' order by id desc limit 1;""")
+        joined = pd.concat([aws_df , open_df ,azure_df])
+        return np.array(joined).tolist()
+
 
 
 

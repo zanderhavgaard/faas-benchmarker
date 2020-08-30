@@ -1,5 +1,8 @@
+graphs/
+
 *.lock
 azure-functions-core-tools
+
 
 logs/*
 # any env files..

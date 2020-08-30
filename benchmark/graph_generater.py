@@ -66,13 +66,14 @@ class GraphGenerater():
         
         plt.clf()
     
-    def save_table(df, description):
+    def save_table(self,df, description, ndir):
         if self.dev_mode:
             print(df.to_latex(index=False))
+            print(df)
         else:
-            with open(f'{self.dir_path}-tables.txt', 'w') as f:
+            with open(f'{self.dir_path}/{ndir}-tables.txt', 'w') as f:
                 f.write(f'\n -- New table --\n')
-                f.write(f'{description}\n')
+                f.write(f'\n{description}\n')
                 f.write(df.to_latex(index=False))
                 f.write('\n')
 
