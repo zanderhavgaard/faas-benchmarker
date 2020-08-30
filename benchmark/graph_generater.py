@@ -36,18 +36,40 @@ class GraphGenerater():
     def __init__(self, dir_name: str, dev_mode:bool=False):
         self.dev_mode = dev_mode
         env_path = os.getenv('fbrd') + '/graphs'
-        timestampStr = datetime.now().strftime("%d-%b-%Y_(%H:%M)")
+        # timestampStr = datetime.now().strftime("%d-%b-%Y_%H_%M")
    
         if (not dev_mode) and (not os.path.exists(env_path)):
             os.mkdir(env_path)
 
-        self.dir_path = f'{env_path}/{timestampStr}-{dir_name}'
+        self.report_dir = f'-{dir_name}'
+        self.dir_path = f'{env_path}-{dir_name}'
      
         if (not dev_mode) and (not os.path.exists(self.dir_path)):
             os.mkdir(self.dir_path)
-        
+
+    def gen_fig_tex(self, path, caption, label):
+
+         with open(f'{self.dir_path}/fig_tex.txt', 'a+') as f:
+                f.write("""
+\\FloatBarrier
+\\begin{figure}[!htb]
+\\begin{center}
+\\includegraphics[width=1\\textwidth]{%s}
+\\caption{%s}
+\\label{%s}
+\\end{center}
+\\end{figure}
+\\FloatBarrier
+
+""" % (
+        path,
+        caption,
+        label,
+    )) 
 
     def save_figure(self,config: dict, plot, name:str, ndir:str, typep:str='placeholder', legend:bool=True):
+            
+
         if self.dev_mode:
             if legend:
                 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
@@ -56,13 +78,20 @@ class GraphGenerater():
         else:
             if not os.path.exists(f'{self.dir_path}/{ndir}'):
                 os.mkdir(f'{self.dir_path}/{ndir}')
+
+            name_no_colon = name.replace(':','')
+            path = f'graphs/{self.report_dir}/{ndir}/{"_".join([typep]+name_no_colon.split())}.png'
+            caption = name.replace('_','\\_')
+            label = f'figure:{ndir}:{"_".join([typep]+name_no_colon.split())}'
+            self.gen_fig_tex(path, caption, label)
+            
             if legend:
                 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
                 print(self.dir_path,ndir,typep,)
 
-                plot.figure.savefig(f'{self.dir_path}/{ndir}/{"_".join([typep]+name.split())}.png',bbox_inches='tight')
+                plot.figure.savefig(f'{self.dir_path}/{ndir}/{"_".join([typep]+name_no_colon.split())}.png',bbox_inches='tight')
             else:
-                plot.savefig(f'{self.dir_path}/{ndir}/{"_".join([typep]+name.split())}.png')
+                plot.savefig(f'{self.dir_path}/{ndir}/{"_".join([typep]+name_no_colon.split())}.png')
         
         plt.clf()
     
@@ -71,7 +100,7 @@ class GraphGenerater():
             print(df.to_latex(index=False))
             print(df)
         else:
-            with open(f'{self.dir_path}/{ndir}-tables.txt', 'w') as f:
+            with open(f'{self.dir_path}/{ndir}-tables.txt', 'a+') as f:
                 f.write(f'\n -- New table --\n')
                 f.write(f'\n{description}\n')
                 f.write(df.to_latex(index=False))
