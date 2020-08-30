@@ -126,6 +126,17 @@ class SQL_Interface:
         query = 'select * from Error;'
         res = self.tunnel.retrive_query(query)
         return res if flag else np.array(res).tolist()
+    
+    def get_latest_metadata_by_experiment(self, experiment_name:str):
+        from pprint import pprint
+        aws_df = self.tunnel.retrive_query(f"""select cl_provider,uuid from Experiment where name = '{experiment_name}' and cl_provider = 'aws_lambda' order by id desc limit 1;""") 
+        open_df = self.tunnel.retrive_query(f"""select cl_provider,uuid from Experiment where name = '{experiment_name}' and cl_provider = 'openfaas' order by id desc limit 1; """)
+        azure_df = self.tunnel.retrive_query(f"""select cl_provider,uuid from Experiment where name = '{experiment_name}' and cl_provider = 'azure_functions' order by id desc limit 1;""")
+        joined = pd.concat([aws_df , open_df ,azure_df])
+        return np.array(joined).tolist()
+
+
+
 
     # ========================================================================================================
     # coldstart experiment specific
@@ -172,6 +183,21 @@ class SQL_Interface:
         ORDER BY id LIMIT 1;""".format(uuid if uuid != None else latest_cold_q)
         res = np.array(self.tunnel.retrive_query(query)).tolist()
         return None if res == [] else res[0][0]
+    
+    def get_invocations_experiment_type(self,experiment_name, args:str = None, flag: bool = True):
+        fields = f"""name,cl_provider,total_time,experiment_uuid, {args}""" if args != None else "*"
+        query = f"""SELECT {fields} from (select name, cl_provider, total_time, uuid as experiment_uuid from Experiment 
+                where name = '{experiment_name}') x left join Invocation i on i.exp_id=x.experiment_uuid;"""
+     
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res).tolist()
+    
+    def get_raw_query(self,query:str, flag:bool = True):
+        res = self.tunnel.retrive_query(query)
+        return res if flag else np.array(res).tolist()
+
+        
+
 
     
     # Function lifetime experiment specific

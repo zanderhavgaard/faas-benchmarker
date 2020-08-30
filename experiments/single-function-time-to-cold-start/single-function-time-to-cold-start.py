@@ -250,7 +250,7 @@ try:
             else:
                 sleep_time += increment
 
-        # reset increment as last value was never applayed
+        # reset increment as last value was never applied
         increment * 2
 
     set_cold_values()

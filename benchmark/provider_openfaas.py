@@ -145,13 +145,11 @@ class OpenFaasProvider(AbstractProvider):
                    thread_number: int,
                    number_of_threads: int) -> dict:
         try:
-
             if (response != None) and (response['statusCode'] == 200):
 
                 # get the identifier
                 # identifier = response_json['identifier']
                 identifier = response['identifier']
-
                 # parse response body
                 response_data = json.loads(response['body'])
 
@@ -164,7 +162,7 @@ class OpenFaasProvider(AbstractProvider):
                 response_data[identifier]['invocation_start'] = start_time
                 response_data[identifier]['invocation_end'] = end_time
                 response_data['root_identifier'] = identifier
-
+    
                 return response_data
 
             else:

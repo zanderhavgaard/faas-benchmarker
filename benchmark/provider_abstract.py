@@ -74,8 +74,8 @@ class AbstractProvider(ABC):
                 return [x.result() for x in tasks]
             
             future = self.executor.submit(asyncio_execution, self, invoke_url, numb_requests, function_args)
-
-            return future if not parse else [self.parse_data(a,b,c,d,e) for (a,b,c,d,e) in  future.result()]
+          
+            return future if not parse else [self.parse_data(a,b,c,d,e) for (a,b,c,d,e) in future.result()]
         
         except Exception as e:
             self.print_error(function_args,e)
