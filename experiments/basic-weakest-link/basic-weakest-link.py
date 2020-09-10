@@ -7,7 +7,6 @@ import traceback
 from benchmarker import Benchmarker
 from mysql_interface import SQL_Interface as database
 import function_lib as lib
-from pprint import pprint
 
 # =====================================================================================
 # Read cli arguments from calling script
@@ -40,8 +39,7 @@ verbose = eval(sys.argv[7]) if len(sys.argv) > 7 else False
 # describe experiment, should be verbose enough to figure
 # out what the experiment does and what it attempts to test
 description = f"""
-{experiment_name}: invokes all cloud function a 1000 times in a lab-like environment as it
-is done from one cloud function to another. 
+{experiment_name}: basic-weakest-link
 """
 
 # =====================================================================================
@@ -65,10 +63,8 @@ table = None
 experiment_uuid = benchmarker.experiment.uuid
 
 # what function to test on (1-3), or 'monolith' 
-# fx = None
-# nested_fx = None
-fx_list = ['function1','function2','function3','monolith']
-
+fx_num = 1
+fx = f'{experiment_name}{fx_num}'
 
 # =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
@@ -86,34 +82,28 @@ results = []
 # sift away errors at runtime and report them later
 errors = []
 # ======================================================================================
-# def get_nested(nested_fx):
-#     return [
-#             {
-#                 "function_name": f"{experiment_name}-{nested_fx}",
-#                 "invoke_payload": {}
-#             }
-#         ]
 
-def create_nesting(function:str):
-    nested = {
-        "function_name": f"{experiment_name}-{function}",
-        "invoke_payload": {}
-        }
-    
-    return {'invoke_nested':[nested]}
+# ***************************************************
+# * comment below function out and other invoke     *
+# * function in if experiment is concurrent invoked *
+# ***************************************************
+def invoke(args:dict= None):
+    response = lib.get_dict(
+        benchmarker.invoke_function(function_name=fx, function_args=args))
+    return response if 'error' not in response else errors.append(response)
 
+# def invoke(thread_numb:int, args:dict= None):
 
-def invoke( args ):
-    print('\nfunction:',args[0])
-    print('dict:',args[1])
-    print()
-    response = benchmarker.invoke_function(function_name=args[0], function_args=args[1])
- 
-    if 'error' in response:
-        return errors.append(response)
-    nested_dict = response[list(response.keys())[1]]
-  
-    return nested_dict if 'error' not in nested_dict else errors.append(nested_dict)
+#     err_count = len(errors)
+#     # sift away potential error responses and transform responseformat to list of dicts from list of dict of dicts
+#     invocations = list(filter(None, [x if 'error' not in x else errors.append(x) for x in map(lambda x: lib.get_dict(x), 
+#     benchmarker.invoke_function_conccurrently(function_name=fx, numb_threads=thread_numb,function_args=args))]))
+#     # add list of transformed dicts together (only numerical values) and divide with number of responses to get average
+   
+#     # *** NOTE if a single accumulated dict is desired as return value comment below line in ***
+#     # invocations = lib.accumulate_dicts(invocations)
+#     # return error count and result for this particular invocation 
+#     return None if invocations == {} or invocations == [] else (len(errors)-err_count, invocations)
 
 # function to be given to validate function if not successful
 # if other action is desired give other function as body
@@ -124,24 +114,50 @@ def err_func(): benchmarker.end_experiment()
 def validate(x, y, z=None): return lib.iterator_wrapper(
     x, y, experiment_name, z, err_func)
 
+# parse data that needs to be logged to database.
+# can take whatever needed arguments but has to return/append a dict
+def append_result(values_to_log) -> None:
+    # key HAS to have same name as column in database
+    results.append({
+        # key : value
+        })
 
 # =====================================================================================
 
 try:
+
+    nested = {'invoke_nested': [{
+                "function_name": f"{experiment_name}-function2",
+                "invoke_payload": {
+                        "invoke_nested": [{
+                            "function_name": f"{experiment_name}-function3",
+                            "invoke_payload": {
+                                "invoke_nested": [{
+                                    "function_name": f"{experiment_name}-monolith",
+                                    "invoke_payload": {}
+                                }]
+                            }
+                        }]
+                    }
+                }]
+    }
+
+    for i in range(1000):
+        validate(invoke,f"invocation {i}",nested)
     
-    for i in range(len(fx_list)):
-        time.sleep(coldtime if not dev_mode else 1.0)
-        fx = fx_list[i]
-        nested_fx = fx_list[(i+1) % len(fx_list)]
-        for n in range(1000):
-            validate(invoke,f'invoking {fx} at iteration {n}',(fx_list[i],create_nesting(nested_fx)))
+    
 
 
-    # =====================================================================================
+   # =====================================================================================
     # end of the experiment, results are logged to database
     benchmarker.end_experiment()
     # =====================================================================================
-    
+    # log experiments specific results, hence results not obtainable from the generic Invocation object
+    lib.log_experiment_specifics(experiment_name,
+                                experiment_uuid, 
+                                len(errors), 
+                                db.log_exp_result([lib.dict_to_query(x, table) for x in results]))
+
 except Exception as e:
     # this will print to logfile
     print(f'Ending experiment {experiment_name} due to fatal runtime error')

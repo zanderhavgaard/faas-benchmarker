@@ -263,7 +263,7 @@ try:
                 cold_identifier = local_identifier
             else:
                 append_result(
-                            result_dict['identifier'],
+                            result_dict['instance_identifier'],
                             int(sleep_time / 60),
                             int(sleep_time % 60),
                             increment,
