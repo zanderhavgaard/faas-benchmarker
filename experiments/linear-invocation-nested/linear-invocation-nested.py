@@ -104,6 +104,9 @@ def create_nesting(function:str):
 
 
 def invoke( args ):
+    print('\nfunction:',args[0])
+    print('dict:',args[1])
+    print()
     response = benchmarker.invoke_function(function_name=args[0], function_args=args[1])
  
     if 'error' in response:
