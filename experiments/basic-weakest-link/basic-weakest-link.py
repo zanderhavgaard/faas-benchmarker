@@ -62,9 +62,6 @@ table = None
 # UUID from experiment
 experiment_uuid = benchmarker.experiment.uuid
 
-# what function to test on (1-3), or 'monolith' 
-fx_num = 1
-fx = f'{experiment_name}{fx_num}'
 
 # =====================================================================================
 # meassured time for a function to be cold in a sequantial environment
@@ -88,8 +85,9 @@ errors = []
 # * function in if experiment is concurrent invoked *
 # ***************************************************
 def invoke(args:dict= None):
-    response = lib.get_dict(
-        benchmarker.invoke_function(function_name=fx, function_args=args))
+    print('invoke')
+    response = benchmarker.invoke_function(function_name='monolith', function_args=args)
+    print(response)
     return response if 'error' not in response else errors.append(response)
 
 # def invoke(thread_numb:int, args:dict= None):
@@ -127,13 +125,13 @@ def append_result(values_to_log) -> None:
 try:
 
     nested = {'invoke_nested': [{
-                "function_name": f"{experiment_name}-function2",
+                "function_name": f"{experiment_name}-function1",
                 "invoke_payload": {
                         "invoke_nested": [{
-                            "function_name": f"{experiment_name}-function3",
+                            "function_name": f"{experiment_name}-function2",
                             "invoke_payload": {
                                 "invoke_nested": [{
-                                    "function_name": f"{experiment_name}-monolith",
+                                    "function_name": f"{experiment_name}-function3",
                                     "invoke_payload": {}
                                 }]
                             }
