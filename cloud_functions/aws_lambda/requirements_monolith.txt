@@ -7,7 +7,7 @@ psutil==5.7.0
 python-dateutil==2.8.1
 s3transfer==0.3.3
 six==1.14.0
-urllib3==1.25.8
+urllib3==1.26.5
 pandas==1.1.0
 numpy==1.19.1
 arrow==0.15.8
