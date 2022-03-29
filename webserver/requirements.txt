@@ -17,7 +17,7 @@ jmespath==0.9.5
 MarkupSafe==1.1.1
 numpy==1.18.3
 pandas==1.0.3
-paramiko==2.7.1
+paramiko==2.10.1
 psutil==5.7.0
 pycparser==2.20
 pyfiglet==0.8.post1
